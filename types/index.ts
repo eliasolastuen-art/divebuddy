@@ -66,6 +66,8 @@ export interface PlanningFolder {
   created_at: string
 }
 
+export type TrainingMode = 'training' | 'test' | 'competition'
+
 export interface Training {
   id: string
   club_id: string
@@ -74,6 +76,7 @@ export interface Training {
   title: string
   status: 'draft' | 'published' | 'completed'
   training_type: string
+  mode: TrainingMode
   scheduled_date?: string
   notes?: string
   created_at: string

@@ -293,36 +293,43 @@ export default function TrainingDetailPage() {
                       block.items.map((item: any, ii: number) => {
                         const name = item.library_item?.name || item.custom_name || '–'
                         const dd = item.library_item?.dd
+                        const dur = item.duration_seconds
+                        const durLabel = dur
+                          ? `${Math.floor(dur / 60)}:${String(dur % 60).padStart(2, '0')}`
+                          : null
+                        const setsPrefix = item.sets > 1 ? `${item.sets} × ` : ''
                         return (
                           <div key={item.id} style={{
                             display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-                            padding: '11px 0',
+                            padding: '10px 0',
                             borderBottom: ii < block.items.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
                           }}>
-                            <div style={{ flex: 1 }}>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', marginBottom: 2 }}>{name}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>
+                                {setsPrefix}{name}
+                              </div>
                               {dd && (
                                 <span style={{ fontSize: 11, color: '#D4A017', fontWeight: 700 }}>DD {dd}</span>
                               )}
                             </div>
-                            <div style={{ display: 'flex', gap: 14, marginLeft: 12 }}>
-                              {item.sets && (
-                                <div style={{ textAlign: 'center' }}>
-                                  <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{item.sets}</div>
-                                  <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Set</div>
-                                </div>
+                            <div style={{ display: 'flex', gap: 6, marginLeft: 10, flexShrink: 0, flexWrap: 'wrap', justifyContent: 'flex-end' }}>
+                              {durLabel && (
+                                <span style={{
+                                  fontSize: 12, fontWeight: 700,
+                                  background: 'rgba(13,115,119,0.08)', color: '#0D7377',
+                                  padding: '3px 8px', borderRadius: 9999,
+                                }}>
+                                  ⏱ {durLabel}
+                                </span>
                               )}
                               {item.reps && (
-                                <div style={{ textAlign: 'center' }}>
-                                  <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{item.reps}</div>
-                                  <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Reps</div>
-                                </div>
-                              )}
-                              {item.duration_seconds && (
-                                <div style={{ textAlign: 'center' }}>
-                                  <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{item.duration_seconds}</div>
-                                  <div style={{ fontSize: 9, color: '#94A3B8', textTransform: 'uppercase', fontWeight: 700, letterSpacing: '0.06em' }}>Sek</div>
-                                </div>
+                                <span style={{
+                                  fontSize: 12, fontWeight: 700,
+                                  background: 'rgba(100,116,139,0.08)', color: '#475569',
+                                  padding: '3px 8px', borderRadius: 9999,
+                                }}>
+                                  🔁 {item.reps}
+                                </span>
                               )}
                             </div>
                           </div>

@@ -27,6 +27,7 @@ interface BlockItem {
   sets?: number
   reps?: number
   height?: string
+  duration_seconds?: number
   notes: string
   isFromLibrary: boolean
   libraryItem?: any
@@ -62,6 +63,7 @@ interface BlockTemplate {
     sets?: number
     reps?: number
     height?: string
+    duration_seconds?: number
     notes?: string
     order_index: number
   }[]
@@ -149,6 +151,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           sets: item.sets,
           reps: item.reps,
           height: item.height,
+          duration_seconds: item.duration_seconds,
           notes: item.notes || '',
           isFromLibrary: !!item.library_item_id,
           libraryItem: item.library_item,
@@ -209,6 +212,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         sets: ti.sets ?? undefined,
         reps: ti.reps ?? undefined,
         height: ti.height ?? undefined,
+        duration_seconds: ti.duration_seconds ?? undefined,
         notes: ti.notes || '',
         isFromLibrary: !!ti.library_item_id,
         libraryItem: ti.library_item,
@@ -247,6 +251,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         sets: it.sets ?? null,
         reps: it.reps ?? null,
         height: it.height ?? null,
+        duration_seconds: it.duration_seconds ?? null,
         notes: it.notes || null,
         order_index: i,
       })
@@ -265,6 +270,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         reps: undefined,
         sets: undefined,
         height: undefined,
+        duration_seconds: undefined,
         notes: '',
         isFromLibrary: true,
         libraryItem: { id: item.id, name: item.name, dd: item.dd, type: item.type },
@@ -277,7 +283,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
   const addCustomItem = (blockId: string) => {
     setBlocks(b => b.map(block => block.id !== blockId ? block : {
       ...block,
-      items: [...block.items, { id: genId(), custom_name: '', sets: undefined, reps: undefined, height: undefined, notes: '', isFromLibrary: false }]
+      items: [...block.items, { id: genId(), custom_name: '', sets: undefined, reps: undefined, height: undefined, duration_seconds: undefined, notes: '', isFromLibrary: false }]
     }))
     setPickerBlockId(null)
   }
@@ -310,7 +316,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
     setLoadingTemplates(true)
     const { data } = await supabase
       .from('block_templates')
-      .select('id, name, category, block_template_items(id, library_item_id, custom_name, sets, reps, height, notes, order_index, library_item:library_items(id, name, dd, type))')
+      .select('id, name, category, block_template_items(id, library_item_id, custom_name, sets, reps, height, duration_seconds, notes, order_index, library_item:library_items(id, name, dd, type))')
       .order('created_at', { ascending: false })
     if (data) {
       setTemplates(data.map((t: any) => ({
@@ -381,6 +387,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             sets: item.sets || null,
             reps: item.reps || null,
             height: item.height || null,
+            duration_seconds: item.duration_seconds ?? null,
             notes: item.notes || null,
             sort_order: j,
           })
@@ -529,12 +536,12 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                         </div>
                       </div>
 
-                      {/* Sets / Reps / Height */}
-                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8 }}>
+                      {/* Sets / Reps / Höjd / Tid */}
+                      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr 1.4fr', gap: 6 }}>
                         {([
-                          { field: 'sets',   label: 'Set',    type: 'number', placeholder: '–' },
-                          { field: 'reps',   label: 'Reps',   type: 'number', placeholder: '–' },
-                          { field: 'height', label: 'Höjd',   type: 'text',   placeholder: '3m' },
+                          { field: 'sets',   label: 'Set',  type: 'number', placeholder: '–' },
+                          { field: 'reps',   label: 'Reps', type: 'number', placeholder: '–' },
+                          { field: 'height', label: 'Höjd', type: 'text',   placeholder: '3m' },
                         ] as const).map(({ field, label, type, placeholder }) => (
                           <div key={field}>
                             <div style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: 4, textAlign: 'center', letterSpacing: '0.05em' }}>{label}</div>
@@ -550,10 +557,46 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                               }}
                               placeholder={placeholder}
                               className="glass-input"
-                              style={{ width: '100%', padding: '8px 6px', fontSize: 15, fontWeight: 600, textAlign: 'center', borderRadius: 10 }}
+                              style={{ width: '100%', padding: '8px 4px', fontSize: 15, fontWeight: 600, textAlign: 'center', borderRadius: 10 }}
                             />
                           </div>
                         ))}
+                        {/* Time: min:sec */}
+                        <div>
+                          <div style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', marginBottom: 4, textAlign: 'center', letterSpacing: '0.05em' }}>Tid</div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+                            <input
+                              type="number"
+                              min={0}
+                              value={item.duration_seconds != null ? Math.floor(item.duration_seconds / 60) : ''}
+                              onChange={e => {
+                                const mins = e.target.value ? parseInt(e.target.value) : 0
+                                const secs = item.duration_seconds != null ? item.duration_seconds % 60 : 0
+                                const total = mins * 60 + secs
+                                updateItem(block.id, item.id, 'duration_seconds', total || undefined)
+                              }}
+                              placeholder="00"
+                              className="glass-input"
+                              style={{ width: '100%', padding: '8px 2px', fontSize: 15, fontWeight: 600, textAlign: 'center', borderRadius: 10 }}
+                            />
+                            <span style={{ fontSize: 14, fontWeight: 700, color: '#94A3B8', flexShrink: 0 }}>:</span>
+                            <input
+                              type="number"
+                              min={0}
+                              max={59}
+                              value={item.duration_seconds != null ? item.duration_seconds % 60 : ''}
+                              onChange={e => {
+                                const secs = e.target.value ? Math.min(59, parseInt(e.target.value)) : 0
+                                const mins = item.duration_seconds != null ? Math.floor(item.duration_seconds / 60) : 0
+                                const total = mins * 60 + secs
+                                updateItem(block.id, item.id, 'duration_seconds', total || undefined)
+                              }}
+                              placeholder="00"
+                              className="glass-input"
+                              style={{ width: '100%', padding: '8px 2px', fontSize: 15, fontWeight: 600, textAlign: 'center', borderRadius: 10 }}
+                            />
+                          </div>
+                        </div>
                       </div>
                     </div>
                   ))}
