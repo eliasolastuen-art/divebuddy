@@ -11,6 +11,7 @@ export interface ExerciseData {
   group_name: string | null
   notes: string | null
   category_id: string
+  tags?: string[]
 }
 
 interface ExerciseForm {
@@ -42,7 +43,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
-  // Reset form whenever the modal opens or the exercise changes
   useEffect(() => {
     if (!open) return
     if (exercise) {
@@ -72,7 +72,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
     console.log('Saving exercise:', form)
     setSaving(true)
 
-    // Note: DB column is `description`, not `notes`
     const payload = {
       name: form.name.trim(),
       code: form.code.trim() || null,
@@ -112,11 +111,27 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
     <>
       <div
         onClick={onClose}
-        style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 100 }}
+        style={{
+          position: 'fixed',
+          inset: 0,
+          background: 'rgba(15,23,42,0.4)',
+          backdropFilter: 'blur(4px)',
+          WebkitBackdropFilter: 'blur(4px)',
+          zIndex: 9998, // ✅ FIX
+        }}
       />
       <div
         className="glass-sheet"
-        style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 101, padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)', maxHeight: '94vh', overflowY: 'auto' }}
+        style={{
+          position: 'fixed',
+          bottom: 0,
+          left: 0,
+          right: 0,
+          zIndex: 9999, // ✅ FIX
+          padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 120px)', // ✅ FIX
+          maxHeight: '94vh',
+          overflowY: 'auto'
+        }}
       >
         <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
 
@@ -132,7 +147,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           </button>
         </div>
 
-        {/* Name */}
         <div style={{ marginBottom: 16 }}>
           <div className="text-label" style={{ marginBottom: 8 }}>Name *</div>
           <input
@@ -145,7 +159,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           />
         </div>
 
-        {/* Code + Group */}
         <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12, marginBottom: 16 }}>
           <div>
             <div className="text-label" style={{ marginBottom: 8 }}>Code</div>
@@ -184,7 +197,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           </div>
         </div>
 
-        {/* Category */}
         <div style={{ marginBottom: 16 }}>
           <div className="text-label" style={{ marginBottom: 8 }}>Category</div>
           <select
@@ -199,7 +211,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           </select>
         </div>
 
-        {/* Notes */}
         <div style={{ marginBottom: 24 }}>
           <div className="text-label" style={{ marginBottom: 8 }}>Notes</div>
           <textarea
@@ -212,7 +223,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           />
         </div>
 
-        {/* Save */}
         <button
           onClick={handleSave}
           disabled={saving || !form.name.trim()}
@@ -222,7 +232,6 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           {saving ? 'Saving…' : 'Save'}
         </button>
 
-        {/* Delete (edit mode only) */}
         {exercise && !showDeleteConfirm && (
           <button
             onClick={() => setShowDeleteConfirm(true)}

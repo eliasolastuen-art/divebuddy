@@ -12,6 +12,8 @@ export interface TrainingRow {
   mode: TrainingMode
   scheduled_date?: string
   group_id?: string
+  is_active?: boolean
+  started_at?: string
   groups?: { name: string; color: string | null }
 }
 
@@ -64,11 +66,16 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
       })
       .select()
       .single()
-    setLoading(false)
     if (error || !data) {
       console.error('Failed to start session:', error)
+      setLoading(false)
       return
     }
+    await supabase
+      .from('trainings')
+      .update({ is_active: true, started_at: new Date().toISOString() })
+      .eq('id', training.id)
+    setLoading(false)
     onSessionStarted()
     router.push(`/live/session/${data.id}`)
   }

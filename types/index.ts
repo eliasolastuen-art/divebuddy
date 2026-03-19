@@ -68,6 +68,8 @@ export interface PlanningFolder {
 
 export type TrainingMode = 'training' | 'test' | 'competition'
 
+export type SessionState = 'planned' | 'live' | 'completed'
+
 export interface Training {
   id: string
   club_id: string
@@ -78,6 +80,23 @@ export interface Training {
   training_type: string
   mode: TrainingMode
   scheduled_date?: string
+  notes?: string
+  is_active: boolean
+  started_at?: string
+  ended_at?: string
+  start_time?: string
+  end_time?: string
+  purpose?: string
+  purpose_type?: string
+  created_at: string
+  updated_at: string
+}
+
+export interface SessionLog {
+  id: string
+  training_id: string
+  athlete_id: string
+  score?: number
   notes?: string
   created_at: string
   updated_at: string

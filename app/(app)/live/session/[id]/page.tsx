@@ -3,6 +3,7 @@ import { useEffect, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Timer } from 'lucide-react'
+import AthleteLogging from './AthleteLogging'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -46,7 +47,7 @@ export default function LiveSessionPage() {
   const sid = Array.isArray(sessionId) ? sessionId[0] : sessionId as string
   const router = useRouter()
 
-  const [sessionInfo, setSessionInfo] = useState<{ id: string; training_id: string | null; groupName: string | null } | null>(null)
+  const [sessionInfo, setSessionInfo] = useState<{ id: string; training_id: string | null; groupName: string | null; group_id: string | null } | null>(null)
   const [blocks, setBlocks] = useState<SessionBlock[]>([])
   const [loading, setLoading] = useState(true)
   const [noTraining, setNoTraining] = useState(false)
@@ -64,14 +65,14 @@ export default function LiveSessionPage() {
 
       const { data: session } = await supabase
         .from('live_sessions')
-        .select('id, training_id, groups(name)')
+        .select('id, training_id, group_id, groups(name)')
         .eq('id', sid)
         .single()
 
       if (!session) { setLoading(false); return }
 
       const groupName = (session as any).groups?.name ?? null
-      setSessionInfo({ id: session.id, training_id: (session as any).training_id, groupName })
+      setSessionInfo({ id: session.id, training_id: (session as any).training_id, groupName, group_id: (session as any).group_id ?? null })
 
       if (!(session as any).training_id) {
         setNoTraining(true)
@@ -145,10 +146,13 @@ export default function LiveSessionPage() {
     setEnding(true)
     stopTimer()
     const supabase = createClient()
-    await supabase
-      .from('live_sessions')
-      .update({ status: 'ended', ended_at: new Date().toISOString() })
-      .eq('id', sid)
+    const now = new Date().toISOString()
+    await Promise.all([
+      supabase.from('live_sessions').update({ status: 'ended', ended_at: now }).eq('id', sid),
+      sessionInfo?.training_id
+        ? supabase.from('trainings').update({ is_active: false, ended_at: now, status: 'completed' }).eq('id', sessionInfo.training_id)
+        : Promise.resolve(),
+    ])
     router.push('/live')
   }
 
@@ -373,6 +377,15 @@ export default function LiveSessionPage() {
           })
         )}
       </div>
+
+      {/* Athlete logging section */}
+      {!loading && sessionInfo?.training_id && (
+        <AthleteLogging
+          trainingId={sessionInfo.training_id}
+          groupId={sessionInfo.group_id}
+          onFinish={handleEnd}
+        />
+      )}
 
       {/* All done state */}
       {!loading && !noTraining && totalItems > 0 && checkedCount === totalItems && (

@@ -4,32 +4,9 @@ import { createClient } from '@/lib/supabase/client'
 import { MOCK_SESSION } from '@/lib/context/session'
 import { CalendarDays } from 'lucide-react'
 import { useRouter } from 'next/navigation'
+import { getMondayOfWeek, getISOWeekNumber, toDateString } from '@/lib/utils/week'
 import WeekNavigator from './WeekNavigator'
 import TrainingCard, { type TrainingRow } from './TrainingCard'
-
-// ─── Week helpers ─────────────────────────────────────────────────────────────
-
-function getMondayOfWeek(offset: number): Date {
-  const now = new Date()
-  const day = now.getDay() // 0=Sun, 1=Mon …
-  const diffToMonday = (day === 0 ? -6 : 1 - day)
-  const monday = new Date(now)
-  monday.setDate(now.getDate() + diffToMonday + offset * 7)
-  monday.setHours(0, 0, 0, 0)
-  return monday
-}
-
-function getISOWeekNumber(date: Date): number {
-  const d = new Date(Date.UTC(date.getFullYear(), date.getMonth(), date.getDate()))
-  const dayNum = d.getUTCDay() || 7
-  d.setUTCDate(d.getUTCDate() + 4 - dayNum)
-  const yearStart = new Date(Date.UTC(d.getUTCFullYear(), 0, 1))
-  return Math.ceil((((d.getTime() - yearStart.getTime()) / 86400000) + 1) / 7)
-}
-
-function toDateString(d: Date): string {
-  return d.toISOString().split('T')[0]
-}
 
 // ─── Component ────────────────────────────────────────────────────────────────
 
