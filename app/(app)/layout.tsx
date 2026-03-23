@@ -2,10 +2,49 @@
 
 import BottomNav from '@/components/nav/BottomNav'
 import HamburgerMenu from '@/components/nav/HamburgerMenu'
+import { UserProvider, useUser } from '@/lib/context/user'
 import { Menu } from 'lucide-react'
 import { useState } from 'react'
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
+function RoleSwitcher() {
+  const { roles, activeRole, setActiveRole } = useUser()
+
+  const switchable = roles.filter(r => r !== 'admin')
+  if (switchable.length < 2) return null
+
+  return (
+    <div style={{
+      display: 'flex',
+      background: 'rgba(0,0,0,0.06)',
+      borderRadius: 20,
+      padding: 3,
+    }}>
+      {switchable.map(role => (
+        <button
+          key={role}
+          onClick={() => setActiveRole(role)}
+          style={{
+            padding: '4px 12px',
+            borderRadius: 16,
+            border: 'none',
+            fontSize: 12,
+            fontWeight: 700,
+            cursor: 'pointer',
+            textTransform: 'capitalize',
+            transition: 'all 0.18s ease',
+            background: activeRole === role ? 'white' : 'transparent',
+            color: activeRole === role ? '#0D7377' : '#94A3B8',
+            boxShadow: activeRole === role ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+          }}
+        >
+          {role}
+        </button>
+      ))}
+    </div>
+  )
+}
+
+function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
 
   return (
@@ -47,6 +86,8 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
             <Menu size={18} color="#1E293B" strokeWidth={2.2} />
           </button>
 
+          <RoleSwitcher />
+
           <span style={{
             fontSize: 18,
             fontWeight: 800,
@@ -54,8 +95,6 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
           }}>
             DiveBuddy
           </span>
-
-          <div style={{ width: 40 }} />
         </div>
       </header>
 
@@ -75,5 +114,13 @@ export default function AppLayout({ children }: { children: React.ReactNode }) {
       {/* Bottom Nav */}
       <BottomNav />
     </div>
+  )
+}
+
+export default function AppLayout({ children }: { children: React.ReactNode }) {
+  return (
+    <UserProvider>
+      <AppShell>{children}</AppShell>
+    </UserProvider>
   )
 }

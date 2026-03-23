@@ -3,6 +3,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { signIn, signUp } from '@/lib/auth'
+import { processInvite } from '@/lib/actions/processInvite'
 
 export default function LoginPage() {
   const router = useRouter()
@@ -27,6 +28,7 @@ export default function LoginPage() {
         setMessage({ type: 'error', text: error.message })
         setLoading(false)
       } else {
+        await processInvite()
         router.push('/dashboard')
       }
     } else {

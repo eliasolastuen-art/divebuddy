@@ -3,8 +3,9 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { X, ChevronRight, BookOpen, Users, LogOut } from 'lucide-react'
+import { X, ChevronRight, BookOpen, Users, LogOut, Shield } from 'lucide-react'
 import { signOut } from '@/lib/auth'
+import { useUser } from '@/lib/context/user'
 import { MOCK_SESSION } from '@/lib/context/session'
 
 interface Props {
@@ -20,6 +21,7 @@ interface Group {
 
 export default function HamburgerMenu({ open, onClose }: Props) {
   const router = useRouter()
+  const { roles } = useUser()
   const [groups, setGroups] = useState<Group[]>([])
   const [visible, setVisible] = useState(false)
 
@@ -184,6 +186,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
             {[
               { href: '/library', label: 'Bibliotek', Icon: BookOpen },
               { href: '/groups',  label: 'Alla grupper & atleter', Icon: Users },
+              ...(roles.includes('admin') ? [{ href: '/admin', label: 'Admin', Icon: Shield }] : []),
             ].map((item, i, arr) => {
               const { Icon } = item
               return (

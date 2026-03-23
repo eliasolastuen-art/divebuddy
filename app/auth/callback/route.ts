@@ -1,4 +1,5 @@
 import { createClient } from '@/lib/supabase/server'
+import { processInvite } from '@/lib/actions/processInvite'
 import { NextResponse, type NextRequest } from 'next/server'
 
 export async function GET(request: NextRequest) {
@@ -8,6 +9,7 @@ export async function GET(request: NextRequest) {
   if (code) {
     const supabase = await createClient()
     await supabase.auth.exchangeCodeForSession(code)
+    await processInvite()
   }
 
   return NextResponse.redirect(`${origin}/dashboard`)
