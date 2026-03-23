@@ -1,8 +1,10 @@
 'use client'
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { X, ChevronRight, BookOpen, Users } from 'lucide-react'
+import { X, ChevronRight, BookOpen, Users, LogOut } from 'lucide-react'
+import { signOut } from '@/lib/auth'
 import { MOCK_SESSION } from '@/lib/context/session'
 
 interface Props {
@@ -17,6 +19,7 @@ interface Group {
 }
 
 export default function HamburgerMenu({ open, onClose }: Props) {
+  const router = useRouter()
   const [groups, setGroups] = useState<Group[]>([])
   const [visible, setVisible] = useState(false)
 
@@ -209,6 +212,39 @@ export default function HamburgerMenu({ open, onClose }: Props) {
               )
             })}
           </div>
+        </div>
+
+        {/* Sign out */}
+        <div style={{
+          padding: '12px 12px',
+          borderTop: '1px solid rgba(0,0,0,0.06)',
+        }}>
+          <button
+            onClick={async () => {
+              await signOut()
+              onClose()
+              router.push('/login')
+            }}
+            style={{
+              width: '100%',
+              display: 'flex', alignItems: 'center', gap: 12,
+              padding: '11px 10px', borderRadius: 14,
+              background: 'rgba(239,68,68,0.06)',
+              border: '1px solid rgba(239,68,68,0.12)',
+              cursor: 'pointer',
+            }}
+          >
+            <div style={{
+              width: 34, height: 34, borderRadius: 11,
+              background: 'rgba(239,68,68,0.1)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+            }}>
+              <LogOut size={16} color="#DC2626" strokeWidth={2} />
+            </div>
+            <span style={{ fontSize: 15, fontWeight: 600, color: '#DC2626' }}>
+              Sign out
+            </span>
+          </button>
         </div>
       </div>
     </>
