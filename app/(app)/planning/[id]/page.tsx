@@ -140,7 +140,161 @@ export default function TrainingDetailPage() {
   return (
     <>
       <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 100 }}>
-        {/* ALLT ANNAT ÄR IDENTISKT */}
+
+        {/* ── Header ───────────────────────────────────────────────────────── */}
+        <div style={{
+          position: 'sticky', top: 0, zIndex: 10,
+          display: 'flex', alignItems: 'center', gap: 12,
+          padding: '0 16px', height: 56,
+          background: 'rgba(248,250,252,0.92)', backdropFilter: 'blur(12px)',
+          borderBottom: '1px solid rgba(0,0,0,0.06)',
+        }}>
+          <button
+            onClick={() => router.back()}
+            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            <ArrowLeft size={16} color="#0F172A" strokeWidth={2.5} />
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {training.title}
+            </div>
+            {totalItems > 0 && (
+              <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>{totalItems} övningar</div>
+            )}
+          </div>
+          <button
+            onClick={() => setShowMenu(true)}
+            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            <MoreHorizontal size={18} color="#0F172A" strokeWidth={2} />
+          </button>
+        </div>
+
+        <div style={{ padding: '16px 16px 0' }}>
+
+          {/* ── Meta card ────────────────────────────────────────────────────── */}
+          <div className="glass-card" style={{ padding: '16px 18px', marginBottom: 16, borderRadius: 18 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
+              {/* Status badge */}
+              <span style={{ padding: '4px 10px', borderRadius: 20, background: s.bg, color: s.text, fontSize: 12, fontWeight: 700 }}>
+                {s.label}
+              </span>
+              {/* Mode badge */}
+              {training.mode && training.mode !== 'training' && (
+                <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.1)', color: '#6366F1', fontSize: 12, fontWeight: 700 }}>
+                  {training.mode === 'test' ? 'Test' : 'Tävling'}
+                </span>
+              )}
+              {/* Date */}
+              {training.scheduled_date && (
+                <span style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>
+                  {new Date(training.scheduled_date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
+                </span>
+              )}
+            </div>
+
+            {training.notes && (
+              <p style={{ fontSize: 13, color: '#64748B', marginTop: 10, lineHeight: 1.5, marginBottom: 0 }}>
+                {training.notes}
+              </p>
+            )}
+          </div>
+
+          {/* ── Status actions ───────────────────────────────────────────────── */}
+          {training.status === 'draft' && (
+            <button
+              onClick={() => updateStatus('published')}
+              style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, #0D7377, #0a5a5d)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16, boxShadow: '0 3px 12px rgba(13,115,119,0.3)' }}
+            >
+              Publicera pass
+            </button>
+          )}
+          {training.status === 'published' && (
+            <button
+              onClick={() => updateStatus('draft')}
+              style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px solid rgba(100,116,139,0.2)', background: 'transparent', color: '#64748B', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }}
+            >
+              Ångra publicering
+            </button>
+          )}
+
+          {/* ── Blocks ───────────────────────────────────────────────────────── */}
+          {blocks.length === 0 ? (
+            <div style={{ textAlign: 'center', padding: '48px 20px' }}>
+              <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga block</p>
+              <p style={{ fontSize: 13, color: '#94A3B8' }}>Redigera passet för att lägga till övningar.</p>
+            </div>
+          ) : (
+            blocks.map(block => {
+              const bc = BLOCK_COLORS[block.category] ?? { color: '#64748B', emoji: '📋' }
+              return (
+                <div key={block.id} style={{ marginBottom: 16 }}>
+                  {/* Block header */}
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, paddingLeft: 2 }}>
+                    <span style={{ fontSize: 16 }}>{bc.emoji}</span>
+                    <span style={{ fontSize: 12, fontWeight: 800, color: bc.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+                      {block.name}
+                    </span>
+                    {block.notes && (
+                      <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500, marginLeft: 4 }}>— {block.notes}</span>
+                    )}
+                  </div>
+
+                  {/* Items */}
+                  <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+                    {(block.items || []).length === 0 ? (
+                      <div style={{ padding: '14px 16px', fontSize: 13, color: '#94A3B8', fontStyle: 'italic' }}>Inga övningar i detta block</div>
+                    ) : (
+                      (block.items || []).map((item: any, ii: number) => {
+                        const itemName = item.library_item?.name || item.custom_name || '–'
+                        const setsPrefix = item.sets && item.sets > 1 ? `${item.sets} × ` : ''
+                        return (
+                          <div
+                            key={item.id}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: ii < (block.items.length - 1) ? '1px solid rgba(0,0,0,0.05)' : 'none' }}
+                          >
+                            <div style={{ width: 28, height: 28, borderRadius: 9, background: `${bc.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                              <div style={{ width: 7, height: 7, borderRadius: '50%', background: bc.color }} />
+                            </div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{setsPrefix}{itemName}</div>
+                              {item.notes && (
+                                <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes}</div>
+                              )}
+                            </div>
+                            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
+                              {item.reps && (
+                                <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(100,116,139,0.08)', color: '#475569', padding: '3px 8px', borderRadius: 9999 }}>
+                                  🔁 {item.reps}
+                                </span>
+                              )}
+                              {item.duration_seconds && (
+                                <span style={{ fontSize: 11, fontWeight: 700, background: `${bc.color}12`, color: bc.color, padding: '3px 8px', borderRadius: 9999 }}>
+                                  ⏱ {Math.floor(item.duration_seconds / 60)}:{String(item.duration_seconds % 60).padStart(2, '0')}
+                                </span>
+                              )}
+                            </div>
+                          </div>
+                        )
+                      })
+                    )}
+                  </div>
+                </div>
+              )
+            })
+          )}
+
+          {/* ── Edit button ──────────────────────────────────────────────────── */}
+          <button
+            onClick={() => setShowEdit(true)}
+            style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 14, fontWeight: 700, color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 }}
+          >
+            <LayoutList size={16} strokeWidth={2} />
+            Redigera pass
+          </button>
+        </div>
       </div>
 
       {/* Action menu */}
