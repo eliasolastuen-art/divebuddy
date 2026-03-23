@@ -1,4 +1,12 @@
 export type LibraryItemType = 'dive' | 'dryland' | 'strength' | 'mobility' | 'warmup' | 'custom'
+
+export interface BlockCategoryRecord {
+  id: string
+  name: string
+  emoji: string
+  color: string
+  sort_order: number
+}
 export type BlockCategory = 'vatten' | 'land' | 'styrka' | 'rorlighet' | 'uppvarmning' | 'tavling'
 
 export interface Category {
