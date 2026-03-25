@@ -6,7 +6,7 @@ import { X, Check, Search, ChevronUp, ChevronDown, Plus, Trash2, Bookmark, Layou
 import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -111,6 +111,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
   existingBlocks?: any[]
 }) {
   const supabase = createClient()
+  const { profile } = useUser()
 
   // Session fields
   const [title, setTitle]           = useState('')
@@ -215,7 +216,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       .then(({ data }) => { if (data) setPickerCategories(data as any) })
 
     // Load groups
-    supabase.from('groups').select('id, name, color').eq('club_id', MOCK_SESSION.clubId).order('name')
+    supabase.from('groups').select('id, name, color').eq('club_id', profile?.club_id ?? '').order('name')
       .then(({ data }) => { if (data) setGroups(data) })
 
     // Load purpose types (include group_id + block_category for filtering/linking)
@@ -581,7 +582,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       }
     } else {
       const { data: training, error: insertError } = await supabase.from('trainings').insert({
-        club_id: MOCK_SESSION.clubId,
+        club_id: profile?.club_id,
         training_type: 'training',
         ...trainingData,
       }).select().single()

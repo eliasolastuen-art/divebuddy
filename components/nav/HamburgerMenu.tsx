@@ -3,10 +3,9 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { X, ChevronRight, BookOpen, Users, LogOut, Shield } from 'lucide-react'
+import { X, ChevronRight, BookOpen, Users, LogOut, Shield, Waves } from 'lucide-react'
 import { signOut } from '@/lib/auth'
 import { useUser } from '@/lib/context/user'
-import { MOCK_SESSION } from '@/lib/context/session'
 
 interface Props {
   open: boolean
@@ -21,19 +20,21 @@ interface Group {
 
 export default function HamburgerMenu({ open, onClose }: Props) {
   const router = useRouter()
-  const { roles } = useUser()
+  const { roles, profile } = useUser()
   const [groups, setGroups] = useState<Group[]>([])
   const [visible, setVisible] = useState(false)
 
   useEffect(() => {
     if (open) {
       setVisible(true)
-      createClient()
-        .from('groups')
-        .select('*')
-        .eq('club_id', MOCK_SESSION.clubId)
-        .order('name')
-        .then(({ data }) => { if (data) setGroups(data) })
+      if (profile?.club_id) {
+        createClient()
+          .from('groups')
+          .select('*')
+          .eq('club_id', profile.club_id)
+          .order('name')
+          .then(({ data }) => { if (data) setGroups(data) })
+      }
     } else {
       const t = setTimeout(() => setVisible(false), 280)
       return () => clearTimeout(t)
@@ -125,96 +126,133 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         {/* Scrollable content */}
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 12px', position: 'relative' }}>
 
-          {/* Groups section */}
-          <div style={{
-            fontSize: 11, fontWeight: 700, color: '#94A3B8',
-            textTransform: 'uppercase', letterSpacing: '0.08em',
-            padding: '0 10px', marginBottom: 8,
-          }}>
-            Grupper
-          </div>
-
-          {groups.length === 0 ? (
-            <div style={{ padding: '14px 10px', color: '#94A3B8', fontSize: 13 }}>
-              Inga grupper ännu
+          {/* Atlet-vy: förenklad meny */}
+          {!roles.includes('coach') && !roles.includes('admin') ? (
+            <div className="glass-card" style={{ padding: 6 }}>
+              {[
+                { href: '/athlete', label: 'Min sida', Icon: Waves },
+              ].map((item, i, arr) => {
+                const { Icon } = item
+                return (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={onClose}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
+                      borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                    }}
+                  >
+                    <div style={{
+                      width: 34, height: 34, borderRadius: 11,
+                      background: 'rgba(13,115,119,0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                    }}>
+                      <Icon size={16} color="#0D7377" strokeWidth={2} />
+                    </div>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                      {item.label}
+                    </span>
+                    <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
+                  </Link>
+                )
+              })}
             </div>
           ) : (
-            <div className="glass-card" style={{ padding: 6, marginBottom: 16 }}>
-              {groups.map((group, i) => (
-                <Link
-                  key={group.id}
-                  href={`/groups/${group.id}`}
-                  onClick={onClose}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
-                    borderBottom: i < groups.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
-                  }}
-                >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 11,
-                    background: `${group.color || '#0D7377'}18`,
-                    border: `1.5px solid ${group.color || '#0D7377'}30`,
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <span style={{ fontSize: 15, fontWeight: 800, color: group.color || '#0D7377' }}>
-                      {group.name.charAt(0)}
-                    </span>
-                  </div>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
-                    {group.name}
-                  </span>
-                  <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
-                </Link>
-              ))}
-            </div>
+            <>
+              {/* Groups section */}
+              <div style={{
+                fontSize: 11, fontWeight: 700, color: '#94A3B8',
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+                padding: '0 10px', marginBottom: 8,
+              }}>
+                Grupper
+              </div>
+
+              {groups.length === 0 ? (
+                <div style={{ padding: '14px 10px', color: '#94A3B8', fontSize: 13 }}>
+                  Inga grupper ännu
+                </div>
+              ) : (
+                <div className="glass-card" style={{ padding: 6, marginBottom: 16 }}>
+                  {groups.map((group, i) => (
+                    <Link
+                      key={group.id}
+                      href={`/groups/${group.id}`}
+                      onClick={onClose}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
+                        borderBottom: i < groups.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                      }}
+                    >
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 11,
+                        background: `${group.color || '#0D7377'}18`,
+                        border: `1.5px solid ${group.color || '#0D7377'}30`,
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: group.color || '#0D7377' }}>
+                          {group.name.charAt(0)}
+                        </span>
+                      </div>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                        {group.name}
+                      </span>
+                      <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
+                    </Link>
+                  ))}
+                </div>
+              )}
+
+              {/* Divider */}
+              <div style={{ height: 1, background: 'rgba(0,0,0,0.05)', margin: '4px 10px 16px' }} />
+
+              {/* Other links */}
+              <div style={{
+                fontSize: 11, fontWeight: 700, color: '#94A3B8',
+                textTransform: 'uppercase', letterSpacing: '0.08em',
+                padding: '0 10px', marginBottom: 8,
+              }}>
+                Övrigt
+              </div>
+
+              <div className="glass-card" style={{ padding: 6 }}>
+                {[
+                  { href: '/library', label: 'Bibliotek', Icon: BookOpen },
+                  { href: '/groups', label: 'Alla grupper & atleter', Icon: Users },
+                  ...(roles.includes('admin') ? [{ href: '/admin', label: 'Admin', Icon: Shield }] : []),
+                ].map((item, i, arr) => {
+                  const { Icon } = item
+                  return (
+                    <Link
+                      key={item.href}
+                      href={item.href}
+                      onClick={onClose}
+                      style={{
+                        display: 'flex', alignItems: 'center', gap: 12,
+                        padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
+                        borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                      }}
+                    >
+                      <div style={{
+                        width: 34, height: 34, borderRadius: 11,
+                        background: 'rgba(13,115,119,0.1)',
+                        display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
+                      }}>
+                        <Icon size={16} color="#0D7377" strokeWidth={2} />
+                      </div>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                        {item.label}
+                      </span>
+                      <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
+                    </Link>
+                  )
+                })}
+              </div>
+            </>
           )}
-
-          {/* Divider */}
-          <div style={{ height: 1, background: 'rgba(0,0,0,0.05)', margin: '4px 10px 16px' }} />
-
-          {/* Other links */}
-          <div style={{
-            fontSize: 11, fontWeight: 700, color: '#94A3B8',
-            textTransform: 'uppercase', letterSpacing: '0.08em',
-            padding: '0 10px', marginBottom: 8,
-          }}>
-            Övrigt
-          </div>
-
-          <div className="glass-card" style={{ padding: 6 }}>
-            {[
-              { href: '/library', label: 'Bibliotek', Icon: BookOpen },
-              { href: '/groups',  label: 'Alla grupper & atleter', Icon: Users },
-              ...(roles.includes('admin') ? [{ href: '/admin', label: 'Admin', Icon: Shield }] : []),
-            ].map((item, i, arr) => {
-              const { Icon } = item
-              return (
-                <Link
-                  key={item.href}
-                  href={item.href}
-                  onClick={onClose}
-                  style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
-                    borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
-                  }}
-                >
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 11,
-                    background: 'rgba(13,115,119,0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-                  }}>
-                    <Icon size={16} color="#0D7377" strokeWidth={2} />
-                  </div>
-                  <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
-                    {item.label}
-                  </span>
-                  <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
-                </Link>
-              )
-            })}
-          </div>
         </div>
 
         {/* Sign out */}

@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import type { TrainingMode } from '@/types'
 
 export interface TrainingRow {
@@ -32,6 +32,7 @@ interface Props {
 
 export default function TrainingCard({ training, onSessionStarted }: Props) {
   const router = useRouter()
+  const { profile } = useUser()
   const [loading, setLoading] = useState(false)
 
   const mode = training.mode ?? 'training'
@@ -55,11 +56,12 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
     e.stopPropagation()
     setLoading(true)
     const supabase = createClient()
+    if (!profile?.club_id) return
     const { data, error } = await supabase
       .from('live_sessions')
       .insert({
-        club_id: MOCK_SESSION.clubId,
-        coach_id: MOCK_SESSION.coachId,
+        club_id: profile.club_id,
+        coach_id: profile.id,
         group_id: training.group_id ?? null,
         training_id: training.id,
         status: 'active',

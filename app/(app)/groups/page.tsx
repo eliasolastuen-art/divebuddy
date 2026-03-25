@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import { UserPlus, Users, UserCheck, X, Pencil, Trash2, GripVertical } from 'lucide-react'
 import {
   DndContext, PointerSensor, TouchSensor, useSensor, useSensors,
@@ -70,23 +70,26 @@ export default function GroupsPage() {
 
   const [saving, setSaving] = useState(false)
 
+  const { profile } = useUser()
+
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
     useSensor(TouchSensor, { activationConstraint: { delay: 200, tolerance: 5 } }),
   )
 
   const load = async () => {
+    if (!profile?.club_id) return
     const supabase = createClient()
     const [{ data: g }, { data: a }] = await Promise.all([
-      supabase.from('groups').select('*').eq('club_id', MOCK_SESSION.clubId).order('sort_order').order('name'),
-      supabase.from('athletes').select('*').eq('club_id', MOCK_SESSION.clubId).order('name'),
+      supabase.from('groups').select('*').eq('club_id', profile.club_id).order('sort_order').order('name'),
+      supabase.from('athletes').select('*').eq('club_id', profile.club_id).order('name'),
     ])
     if (g) setGroups(g)
     if (a) setAthletes(a)
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [profile?.id])
 
   const handleGroupDragEnd = async (event: DragEndEvent) => {
     const { active, over } = event
@@ -105,7 +108,7 @@ export default function GroupsPage() {
     if (!newAthleteName.trim() || !newAthleteGroup) return
     setSaving(true)
     await createClient().from('athletes').insert({
-      club_id: MOCK_SESSION.clubId,
+      club_id: profile?.club_id,
       group_id: newAthleteGroup,
       name: newAthleteName.trim(),
       email: newAthleteEmail.trim() || null,
@@ -119,7 +122,7 @@ export default function GroupsPage() {
     if (!newGroupName.trim()) return
     setSaving(true)
     await createClient().from('groups').insert({
-      club_id: MOCK_SESSION.clubId,
+      club_id: profile?.club_id,
       name: newGroupName.trim(),
       color: newGroupColor,
     })

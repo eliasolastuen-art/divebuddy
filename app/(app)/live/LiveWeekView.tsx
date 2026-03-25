@@ -1,7 +1,7 @@
 'use client'
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import { CalendarDays } from 'lucide-react'
 import { useRouter } from 'next/navigation'
 import { getMondayOfWeek, getISOWeekNumber, toDateString } from '@/lib/utils/week'
@@ -12,6 +12,7 @@ import TrainingCard, { type TrainingRow } from './TrainingCard'
 
 export default function LiveWeekView() {
   const router = useRouter()
+  const { profile } = useUser()
   const [weekOffset, setWeekOffset] = useState(0)
   const [trainings, setTrainings] = useState<TrainingRow[]>([])
   const [loading, setLoading] = useState(true)
@@ -24,10 +25,12 @@ export default function LiveWeekView() {
   const load = async () => {
     setLoading(true)
     const supabase = createClient()
+    if (!profile?.club_id) { setLoading(false); return }
+
     const { data } = await supabase
       .from('trainings')
       .select('id, title, status, training_type, scheduled_date, group_id, groups(name, color)')
-      .eq('club_id', MOCK_SESSION.clubId)
+      .eq('club_id', profile.club_id)
       .gte('scheduled_date', toDateString(monday))
       .lte('scheduled_date', toDateString(sunday))
       .order('scheduled_date')
@@ -40,7 +43,7 @@ export default function LiveWeekView() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [weekOffset])
+  useEffect(() => { load() }, [weekOffset, profile?.id])
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 100 }}>

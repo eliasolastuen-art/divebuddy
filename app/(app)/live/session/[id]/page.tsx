@@ -4,7 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Timer, Star } from 'lucide-react'
 import AthleteLogging from './AthleteLogging'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -57,6 +57,7 @@ export default function LiveSessionPage() {
   const { id: sessionId } = useParams()
   const sid = Array.isArray(sessionId) ? sessionId[0] : sessionId as string
   const router = useRouter()
+  const { profile } = useUser()
 
   const [sessionInfo, setSessionInfo] = useState<{ id: string; training_id: string | null; groupName: string | null; group_id: string | null } | null>(null)
   const [blocks, setBlocks] = useState<SessionBlock[]>([])
@@ -98,7 +99,7 @@ export default function LiveSessionPage() {
       let athQuery = supabase
         .from('athletes')
         .select('id, name')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile?.club_id ?? '')
         .order('name')
       if (group_id) athQuery = athQuery.eq('group_id', group_id)
       const { data: ath } = await athQuery

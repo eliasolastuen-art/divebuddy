@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { DndContext, DragEndEvent, PointerSensor, useSensor, useSensors } from '@dnd-kit/core'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import {
   getMondayOfWeek, getISOWeekNumber, getDaysOfWeek,
   toDateString, getSessionState,
@@ -42,6 +42,7 @@ function toCalendarTraining(t: RawTraining): CalendarTraining {
 // ─── Component ────────────────────────────────────────────────────────────────
 
 export default function CalendarWeekView() {
+  const { profile } = useUser()
   const [weekOffset, setWeekOffset]       = useState(0)
   const [trainings, setTrainings]         = useState<CalendarTraining[]>([])
   const [unscheduled, setUnscheduled]     = useState<CalendarTraining[]>([])
@@ -66,7 +67,7 @@ export default function CalendarWeekView() {
       supabase
         .from('trainings')
         .select('id, title, status, mode, training_type, scheduled_date, group_id, start_time, end_time, is_active, started_at, ended_at, groups(name, color)')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile?.club_id ?? '')
         .gte('scheduled_date', toDateString(monday))
         .lte('scheduled_date', toDateString(sunday))
         .order('scheduled_date')
@@ -74,7 +75,7 @@ export default function CalendarWeekView() {
       supabase
         .from('trainings')
         .select('id, title, status, mode, training_type, scheduled_date, group_id, start_time, end_time, is_active, started_at, ended_at, groups(name, color)')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile?.club_id ?? '')
         .eq('status', 'draft')
         .is('scheduled_date', null)
         .order('created_at', { ascending: false })
@@ -87,7 +88,7 @@ export default function CalendarWeekView() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [weekOffset])
+  useEffect(() => { load() }, [weekOffset, profile?.id])
 
   // ── DnD ──────────────────────────────────────────────────────────────────────
 

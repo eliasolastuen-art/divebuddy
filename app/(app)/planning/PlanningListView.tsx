@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import { getISOWeekNumber } from '@/lib/utils/week'
 import {
   Plus, FolderPlus, ChevronRight, FileText, X,
@@ -403,6 +403,7 @@ interface GroupTab {
 
 export default function PlanningListView() {
   const router = useRouter()
+  const { profile } = useUser()
 
   const [folders,         setFolders]         = useState<PlanningFolder[]>([])
   const [trainings,       setTrainings]       = useState<TrainingRow[]>([])
@@ -437,10 +438,10 @@ export default function PlanningListView() {
       supabase
         .from('trainings')
         .select('id, title, status, training_type, scheduled_date, folder_id, group_id, purpose, purpose_type, groups(name, color)')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile?.club_id ?? '')
         .order('scheduled_date', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false }),
-      supabase.from('groups').select('id, name, color').eq('club_id', MOCK_SESSION.clubId).order('name'),
+      supabase.from('groups').select('id, name, color').eq('club_id', profile?.club_id ?? '').order('name'),
     ])
     if (f) setFolders(f)
     if (t) setTrainings(t as unknown as TrainingRow[])
@@ -456,7 +457,7 @@ export default function PlanningListView() {
     if (!newFolderName.trim()) return
     setSavingFolder(true)
     const { error } = await createClient().from('planning_folders').insert({
-      club_id: MOCK_SESSION.clubId, coach_id: MOCK_SESSION.coachId,
+      club_id: profile?.club_id, coach_id: profile?.id,
       name: newFolderName.trim(), color: newFolderColor, sort_order: folders.length,
     })
     setSavingFolder(false)
@@ -489,7 +490,7 @@ export default function PlanningListView() {
   const handleDuplicate = async (t: TrainingRow) => {
     const supabase = createClient()
     const { data: newT } = await supabase.from('trainings').insert({
-      club_id:        MOCK_SESSION.clubId,
+      club_id:        profile?.club_id,
       title:          t.title + ' (kopia)',
       folder_id:      t.folder_id || null,
       group_id:       t.group_id  || null,

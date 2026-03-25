@@ -2,7 +2,7 @@
 import { useEffect, useRef, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import { Users } from 'lucide-react'
 
 interface Athlete {
@@ -23,6 +23,7 @@ interface Props {
 
 export default function AthleteLogging({ trainingId, groupId, onFinish }: Props) {
   const router = useRouter()
+  const { profile } = useUser()
   const [athletes, setAthletes] = useState<Athlete[]>([])
   const [logs, setLogs]         = useState<Record<string, LogState>>({})
   const [finishing, setFinishing] = useState(false)
@@ -37,10 +38,11 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
     const load = async () => {
       const supabase = createClient()
 
+      if (!profile?.club_id) return
       let athleteQuery = supabase
         .from('athletes')
         .select('id, name')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile.club_id)
         .order('name')
 
       if (groupId) athleteQuery = athleteQuery.eq('group_id', groupId)
@@ -68,7 +70,7 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
     }
 
     load()
-  }, [trainingId, groupId])
+  }, [trainingId, groupId, profile?.id])
 
   // ── Auto-save (debounced per athlete) ─────────────────────────────────────
 

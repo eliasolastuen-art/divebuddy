@@ -23,14 +23,6 @@ export interface Club {
   created_at: string
 }
 
-export interface Coach {
-  id: string
-  club_id: string
-  name: string
-  email: string
-  role: string
-}
-
 export interface Group {
   id: string
   club_id: string

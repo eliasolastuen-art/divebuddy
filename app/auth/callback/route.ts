@@ -7,9 +7,17 @@ export async function GET(request: NextRequest) {
   const code = searchParams.get('code')
 
   if (code) {
-    const supabase = await createClient()
-    await supabase.auth.exchangeCodeForSession(code)
-    await processInvite()
+    try {
+      const supabase = await createClient()
+      await supabase.auth.exchangeCodeForSession(code)
+      const result = await processInvite()
+
+      if (result.status === 'no_access') {
+        return NextResponse.redirect(`${origin}/no-access`)
+      }
+    } catch (err) {
+      console.error('[auth/callback] error:', err)
+    }
   }
 
   return NextResponse.redirect(`${origin}/dashboard`)

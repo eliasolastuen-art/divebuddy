@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import ActiveSessionCard, { type LiveSession } from './ActiveSessionCard'
 import TodayTrainings, { type TrainingWithGroup } from './TodayTrainings'
 import UpcomingTrainings from './UpcomingTrainings'
@@ -21,6 +21,7 @@ function SectionHeader({ label }: { label: string }) {
 
 export default function LiveOverview() {
   const router = useRouter()
+  const { profile } = useUser()
   const [activeSession, setActiveSession] = useState<LiveSession | null>(null)
   const [todayTrainings, setTodayTrainings] = useState<TrainingWithGroup[]>([])
   const [upcomingTrainings, setUpcomingTrainings] = useState<TrainingWithGroup[]>([])
@@ -31,24 +32,26 @@ export default function LiveOverview() {
     const supabase = createClient()
     const today = new Date().toISOString().split('T')[0]
 
+    if (!profile?.club_id) return
+
     const [sessionRes, todayRes, upcomingRes] = await Promise.all([
       supabase
         .from('live_sessions')
         .select('*, groups(name, color)')
         .eq('status', 'active')
-        .eq('club_id', MOCK_SESSION.clubId)
-        .eq('coach_id', MOCK_SESSION.coachId)
+        .eq('club_id', profile.club_id)
+        .eq('coach_id', profile.id)
         .maybeSingle(),
       supabase
         .from('trainings')
         .select('*, groups(name, color)')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile.club_id)
         .eq('scheduled_date', today)
         .order('created_at'),
       supabase
         .from('trainings')
         .select('*, groups(name, color)')
-        .eq('club_id', MOCK_SESSION.clubId)
+        .eq('club_id', profile.club_id)
         .gt('scheduled_date', today)
         .order('scheduled_date')
         .limit(10),
@@ -60,7 +63,7 @@ export default function LiveOverview() {
     setLoading(false)
   }
 
-  useEffect(() => { load() }, [])
+  useEffect(() => { load() }, [profile?.id])
 
   const handleEndSession = async (session: LiveSession) => {
     setEnding(true)

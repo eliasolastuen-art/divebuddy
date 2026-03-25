@@ -1,7 +1,11 @@
 'use client'
 
 import Link from 'next/link'
+import { useEffect, useState } from 'react'
+import { useRouter } from 'next/navigation'
 import { Play, CalendarDays, ChevronRight, Target, Zap } from 'lucide-react'
+import { useUser } from '@/lib/context/user'
+import { createClient } from '@/lib/supabase/client'
 
 const season = [
   { label: "Pre-season", short: "Pre" },
@@ -21,6 +25,39 @@ const today = 2 // Wednesday = index 2
 const weekFocus = ["Entries", "Competition simulation", "3m consistency"]
 
 export default function DashboardPage() {
+  const { profile, activeRole, roles, loading } = useUser()
+  const [clubName, setClubName] = useState<string | null>(null)
+  const router = useRouter()
+
+  // Atleter utan coach/admin-roll redirectas till sin egna sida
+  useEffect(() => {
+    if (loading) return
+    if (roles.length > 0 && !roles.includes('coach') && !roles.includes('admin')) {
+      router.replace('/athlete')
+    }
+  }, [roles, loading, router])
+
+  useEffect(() => {
+    if (!profile?.club_id) return
+    createClient()
+      .from('clubs')
+      .select('name')
+      .eq('id', profile.club_id)
+      .single()
+      .then(({ data }) => { if (data) setClubName(data.name) })
+  }, [profile?.club_id])
+
+  const roleLabels: Record<string, string> = {
+    admin: 'Admin',
+    coach: 'Coach',
+    athlete: 'Atlet',
+  }
+  const roleLabel = activeRole ? roleLabels[activeRole] ?? activeRole : null
+
+  const greeting = activeRole
+    ? activeRole.charAt(0).toUpperCase() + activeRole.slice(1)
+    : 'Coach'
+
   return (
     <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520, margin: '0 auto' }}>
 
@@ -38,14 +75,32 @@ export default function DashboardPage() {
         <div style={{ position: 'absolute', bottom: -20, right: 40, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative' }}>
-          <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em', textTransform: 'uppercase', marginBottom: 4 }}>
-            Good morning
-          </p>
+          {clubName && (
+            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
+              {clubName}
+            </p>
+          )}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
+            <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>
+              Good morning
+            </p>
+            {roleLabel && (
+              <span style={{
+                fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
+                background: 'rgba(255,255,255,0.15)',
+                border: '1px solid rgba(255,255,255,0.2)',
+                borderRadius: 6, padding: '2px 8px',
+                letterSpacing: '0.04em', textTransform: 'uppercase',
+              }}>
+                {roleLabel}
+              </span>
+            )}
+          </div>
           <h1 style={{ fontSize: 28, fontWeight: 800, color: 'white', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 2 }}>
-            Coach 👋
+            {greeting} 👋
           </h1>
           <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', fontWeight: 500, marginBottom: 20 }}>
-            Thursday, 13 March 2026
+            {new Date().toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
           </p>
 
           {/* Quick action buttons */}

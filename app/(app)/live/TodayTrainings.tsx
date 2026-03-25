@@ -2,7 +2,7 @@
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import { CalendarDays } from 'lucide-react'
 
 export interface TrainingWithGroup {
@@ -27,16 +27,18 @@ interface Props {
 
 export default function TodayTrainings({ trainings, onSessionStarted }: Props) {
   const router = useRouter()
+  const { profile } = useUser()
   const [starting, setStarting] = useState<string | null>(null)
 
   const handleStart = async (training: TrainingWithGroup) => {
     setStarting(training.id)
     const supabase = createClient()
+    if (!profile?.club_id) return
     const { data, error } = await supabase
       .from('live_sessions')
       .insert({
-        club_id: MOCK_SESSION.clubId,
-        coach_id: MOCK_SESSION.coachId,
+        club_id: profile.club_id,
+        coach_id: profile.id,
         group_id: training.group_id ?? null,
         status: 'active',
       })

@@ -8,7 +8,6 @@ interface Profile {
   id: string
   email: string | null
   full_name: string | null
-  role: string | null
   club_id: string | null
 }
 
@@ -51,7 +50,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
       const { data: profile } = await supabase
         .from('profiles')
-        .select('*')
+        .select('id, email, full_name, club_id')
         .eq('id', user.id)
         .single()
 

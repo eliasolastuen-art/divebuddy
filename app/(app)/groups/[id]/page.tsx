@@ -3,7 +3,8 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Pencil, Trash2, X } from 'lucide-react'
+import { useUser } from '@/lib/context/user'
+import { ArrowLeft, Pencil, Trash2, X, UserPlus } from 'lucide-react'
 
 interface Group {
   id: string
@@ -24,6 +25,7 @@ const GROUP_COLORS = ['#0D7377','#D4A017','#6366F1','#EC4899','#10B981','#F97316
 export default function GroupPage() {
   const params = useParams()
   const router = useRouter()
+  const { profile } = useUser()
   const groupId = params.id as string
   const supabase = createClient()
 
@@ -45,6 +47,12 @@ export default function GroupPage() {
   const [confirmDeleteAthlete, setConfirmDeleteAthlete] = useState(false)
 
   const [saving, setSaving] = useState(false)
+
+  // Invite state
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<'athlete' | 'coach'>('athlete')
+  const [inviteSending, setInviteSending] = useState(false)
+  const [inviteMessage, setInviteMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null)
 
   const load = async () => {
     const [{ data: groupData }, { data: athleteData }] = await Promise.all([
@@ -94,6 +102,27 @@ export default function GroupPage() {
     setEditAthleteEmail(a.email ?? '')
     setEditAthleteActive(a.active)
     setConfirmDeleteAthlete(false)
+    setInviteEmail(a.email ?? '')
+    setInviteRole('athlete')
+    setInviteMessage(null)
+  }
+
+  const sendAthleteInvite = async () => {
+    if (!inviteEmail.trim() || !profile?.club_id) return
+    setInviteSending(true)
+    setInviteMessage(null)
+    const res = await fetch('/api/invite', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ email: inviteEmail.trim(), roles: [inviteRole], clubId: profile.club_id }),
+    })
+    const result = await res.json()
+    setInviteMessage(
+      res.ok
+        ? { type: 'success', text: `Invite sent to ${inviteEmail}` }
+        : { type: 'error', text: result.error ?? 'Failed to send invite.' }
+    )
+    setInviteSending(false)
   }
 
   const saveAthlete = async () => {
@@ -170,7 +199,7 @@ export default function GroupPage() {
             {athletes.map((athlete, ii) => (
               <button
                 key={athlete.id}
-                onClick={() => openEditAthlete(athlete)}
+                onClick={() => router.push(`/groups/${groupId}/athletes/${athlete.id}`)}
                 style={{ width: '100%', display: 'flex', alignItems: 'center', padding: '14px 18px', borderBottom: ii < athletes.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
               >
                 <div style={{ width: 42, height: 42, borderRadius: 14, background: `${groupColor}18`, border: `1.5px solid ${groupColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginRight: 14 }}>
@@ -258,6 +287,69 @@ export default function GroupPage() {
             <button onClick={saveAthlete} disabled={saving || !editAthleteName.trim()} className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: 15, cursor: 'pointer', opacity: editAthleteName.trim() ? 1 : 0.4, marginBottom: 10 }}>
               {saving ? 'Sparar...' : 'Spara ändringar'}
             </button>
+
+            {/* Invite to app */}
+            <div style={{ margin: '14px 0', padding: '16px', background: 'rgba(13,115,119,0.05)', borderRadius: 14, border: '1px solid rgba(13,115,119,0.1)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
+                <UserPlus size={15} color="#0D7377" strokeWidth={2.2} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: '#0D7377' }}>Invite to app</span>
+              </div>
+
+              {inviteMessage && (
+                <div style={{
+                  padding: '8px 12px', borderRadius: 8, marginBottom: 10,
+                  fontSize: 12, fontWeight: 500,
+                  background: inviteMessage.type === 'error' ? 'rgba(239,68,68,0.08)' : 'rgba(13,115,119,0.08)',
+                  color: inviteMessage.type === 'error' ? '#DC2626' : '#0D7377',
+                }}>
+                  {inviteMessage.text}
+                </div>
+              )}
+
+              <input
+                type="email"
+                placeholder="Email address"
+                value={inviteEmail}
+                onChange={e => setInviteEmail(e.target.value)}
+                className="glass-input"
+                style={{ width: '100%', padding: '10px 12px', fontSize: 14, marginBottom: 10, boxSizing: 'border-box' }}
+              />
+
+              <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                {(['athlete', 'coach'] as const).map(r => (
+                  <button
+                    key={r}
+                    onClick={() => setInviteRole(r)}
+                    style={{
+                      flex: 1, padding: '8px 0', borderRadius: 9, fontSize: 13, fontWeight: 600,
+                      cursor: 'pointer', textTransform: 'capitalize',
+                      border: inviteRole === r ? '1.5px solid #0D7377' : '1.5px solid rgba(0,0,0,0.1)',
+                      background: inviteRole === r ? 'rgba(13,115,119,0.1)' : 'rgba(255,255,255,0.6)',
+                      color: inviteRole === r ? '#0D7377' : '#64748B',
+                    }}
+                  >
+                    {r}
+                  </button>
+                ))}
+              </div>
+
+              <button
+                onClick={sendAthleteInvite}
+                disabled={inviteSending || !inviteEmail.trim()}
+                style={{
+                  width: '100%', padding: '10px 0', borderRadius: 10,
+                  fontSize: 13, fontWeight: 700, border: 'none',
+                  background: 'linear-gradient(135deg, #0D7377, #0a5c60)',
+                  color: 'white', cursor: inviteSending ? 'not-allowed' : 'pointer',
+                  opacity: inviteEmail.trim() ? 1 : 0.5,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                }}
+              >
+                <UserPlus size={14} strokeWidth={2.2} />
+                {inviteSending ? 'Sending...' : 'Send invite'}
+              </button>
+            </div>
+
             {!confirmDeleteAthlete ? (
               <button onClick={() => setConfirmDeleteAthlete(true)} style={{ width: '100%', padding: '13px', fontSize: 14, fontWeight: 700, cursor: 'pointer', borderRadius: 14, background: 'rgba(220,38,38,0.08)', border: 'none', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <Trash2 size={14} strokeWidth={2.5} /> Ta bort atlet

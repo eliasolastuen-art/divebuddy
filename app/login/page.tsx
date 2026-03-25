@@ -2,12 +2,11 @@
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { signIn, signUp } from '@/lib/auth'
-import { processInvite } from '@/lib/actions/processInvite'
+import { signIn } from '@/lib/auth'
+import { createClient } from '@/lib/supabase/client'
 
 export default function LoginPage() {
   const router = useRouter()
-  const [mode, setMode] = useState<'login' | 'signup'>('login')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [loading, setLoading] = useState(false)
@@ -15,33 +14,35 @@ export default function LoginPage() {
 
   const handleSubmit = async () => {
     if (!email || !password) {
-      setMessage({ type: 'error', text: 'Please fill in all fields.' })
+      setMessage({ type: 'error', text: 'Fyll i alla fält.' })
       return
     }
 
     setLoading(true)
     setMessage(null)
 
-    if (mode === 'login') {
-      const { error } = await signIn(email, password)
-      if (error) {
-        setMessage({ type: 'error', text: error.message })
-        setLoading(false)
-      } else {
-        await processInvite()
-        router.push('/dashboard')
-      }
+    const { error } = await signIn(email, password)
+    if (error) {
+      setMessage({ type: 'error', text: error.message })
+      setLoading(false)
     } else {
-      const { error } = await signUp(email, password)
-      if (error) {
-        setMessage({ type: 'error', text: error.message })
-        setLoading(false)
-      } else {
-        setMessage({ type: 'success', text: 'Account created! Check your email to confirm, then log in.' })
-        setMode('login')
-        setLoading(false)
-      }
+      router.push('/dashboard')
     }
+  }
+
+  const handleResetPassword = async () => {
+    if (!email) {
+      setMessage({ type: 'error', text: 'Ange din e-post först.' })
+      return
+    }
+    const supabase = createClient()
+    const { error } = await supabase.auth.resetPasswordForEmail(email, {
+      redirectTo: `${window.location.origin}/reset-password`,
+    })
+    setMessage(error
+      ? { type: 'error', text: error.message }
+      : { type: 'success', text: 'Återställningsmail skickat!' }
+    )
   }
 
   return (
@@ -91,36 +92,9 @@ export default function LoginPage() {
         padding: 28,
       }}>
 
-        {/* Mode toggle */}
-        <div style={{
-          display: 'flex',
-          background: 'rgba(0,0,0,0.05)',
-          borderRadius: 12,
-          padding: 4,
-          marginBottom: 24,
-        }}>
-          {(['login', 'signup'] as const).map(m => (
-            <button
-              key={m}
-              onClick={() => { setMode(m); setMessage(null) }}
-              style={{
-                flex: 1,
-                padding: '8px 0',
-                borderRadius: 9,
-                border: 'none',
-                fontSize: 14,
-                fontWeight: 600,
-                cursor: 'pointer',
-                transition: 'all 0.2s ease',
-                background: mode === m ? 'white' : 'transparent',
-                color: mode === m ? '#0D7377' : '#94A3B8',
-                boxShadow: mode === m ? '0 1px 4px rgba(0,0,0,0.12)' : 'none',
-              }}
-            >
-              {m === 'login' ? 'Log in' : 'Sign up'}
-            </button>
-          ))}
-        </div>
+        <h2 style={{ fontSize: 18, fontWeight: 700, color: '#0F172A', margin: '0 0 20px', letterSpacing: '-0.02em' }}>
+          Logga in
+        </h2>
 
         {/* Message */}
         {message && (
@@ -144,7 +118,7 @@ export default function LoginPage() {
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <input
             type="email"
-            placeholder="Email"
+            placeholder="E-post"
             value={email}
             onChange={e => setEmail(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -159,7 +133,7 @@ export default function LoginPage() {
           />
           <input
             type="password"
-            placeholder="Password"
+            placeholder="Lösenord"
             value={password}
             onChange={e => setPassword(e.target.value)}
             onKeyDown={e => e.key === 'Enter' && handleSubmit()}
@@ -174,24 +148,41 @@ export default function LoginPage() {
           />
         </div>
 
+        {/* Forgot password */}
+        <button
+          onClick={handleResetPassword}
+          style={{
+            background: 'none',
+            border: 'none',
+            color: '#0D7377',
+            fontSize: 13,
+            fontWeight: 500,
+            cursor: 'pointer',
+            padding: '8px 0 0',
+            textAlign: 'left',
+          }}
+        >
+          Glömt lösenord?
+        </button>
+
         {/* Submit */}
         <button
           onClick={handleSubmit}
-          disabled={loading}
+          disabled={loading || !email || !password}
           className="btn-primary"
           style={{
             width: '100%',
             padding: '14px 0',
-            marginTop: 20,
+            marginTop: 16,
             borderRadius: 14,
             fontSize: 15,
             fontWeight: 700,
             border: 'none',
             cursor: loading ? 'not-allowed' : 'pointer',
-            opacity: loading ? 0.7 : 1,
+            opacity: loading || !email || !password ? 0.6 : 1,
           }}
         >
-          {loading ? '...' : mode === 'login' ? 'Log in' : 'Create account'}
+          {loading ? 'Loggar in...' : 'Logga in'}
         </button>
       </div>
     </div>

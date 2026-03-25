@@ -4,7 +4,7 @@ import { useRouter } from 'next/navigation'
 import { useDraggable } from '@dnd-kit/core'
 import { CSS } from '@dnd-kit/utilities'
 import { createClient } from '@/lib/supabase/client'
-import { MOCK_SESSION } from '@/lib/context/session'
+import { useUser } from '@/lib/context/user'
 import type { SessionState, TrainingMode } from '@/types'
 
 const MODE_LABEL: Record<TrainingMode, string> = {
@@ -43,6 +43,7 @@ interface Props {
 
 export default function SessionCard({ training, compact = false, onRefresh }: Props) {
   const router = useRouter()
+  const { profile } = useUser()
   const [loading, setLoading] = useState(false)
 
   const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
@@ -64,8 +65,8 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
     const { data, error } = await supabase
       .from('live_sessions')
       .insert({
-        club_id: MOCK_SESSION.clubId,
-        coach_id: MOCK_SESSION.coachId,
+        club_id: profile?.club_id,
+        coach_id: profile?.id,
         group_id: training.group_id ?? null,
         training_id: training.id,
         status: 'active',
