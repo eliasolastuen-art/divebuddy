@@ -374,7 +374,7 @@ export default function BlockTemplatePage() {
               </div>
             </div>
 
-            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 20px calc(env(safe-area-inset-bottom, 0px) + 20px)' }}>
+            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 20px calc(var(--safe-bottom) + 20px)' }}>
               {filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8', fontSize: 14 }}>Inga övningar</div>
               ) : (

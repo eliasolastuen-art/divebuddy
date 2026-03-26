@@ -59,23 +59,23 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: 'var(--surface-bg)',
+      height: '100dvh',
       display: 'flex',
       flexDirection: 'column',
+      background: 'var(--surface-bg)',
       overflow: 'hidden',
     }}>
-
-      {/* Header */}
+      {/* Header — fixed height, never overlaps content */}
       <header style={{
-        position: 'sticky',
-        top: 0,
+        flexShrink: 0,
+        height: 'var(--header-height)',
+        paddingTop: 'var(--safe-top)',
         zIndex: 40,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
+        position: 'relative',
       }}>
         <div className="glass-nav" style={{
+          height: '100%',
           padding: '0 16px',
-          height: 56,
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
@@ -86,7 +86,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
             style={{
               width: 40, height: 40,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.6)',
+              background: 'rgba(255,255,255,0.7)',
               border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: 12,
               cursor: 'pointer',
@@ -95,14 +95,8 @@ function AppShell({ children }: { children: React.ReactNode }) {
           >
             <Menu size={18} color="#1E293B" strokeWidth={2.2} />
           </button>
-
           <RoleSwitcher />
-
-          <span style={{
-            fontSize: 18,
-            fontWeight: 800,
-            color: '#0D7377'
-          }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#0D7377', letterSpacing: '-0.02em' }}>
             DiveBuddy
           </span>
         </div>
@@ -110,18 +104,17 @@ function AppShell({ children }: { children: React.ReactNode }) {
 
       <HamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
-      {/* Content */}
-      <main
-        style={{
-          flex: 1,
-          overflowY: 'auto',
-          paddingBottom: 'var(--content-bottom-padding)',
-        }}
-      >
+      {/* Content — scrolls freely, never hidden behind nav */}
+      <main style={{
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        paddingBottom: 'var(--content-bottom)',
+      }}>
         {children}
       </main>
 
-      {/* Bottom Nav */}
+      {/* Bottom Nav — part of flex flow, never overlaps */}
       <BottomNav />
     </div>
   )

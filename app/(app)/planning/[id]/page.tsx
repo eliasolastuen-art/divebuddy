@@ -319,7 +319,7 @@ export default function TrainingDetailPage() {
               left: 0,
               right: 0,
               zIndex: 9999, // ✅ FIX
-              padding: '16px 16px calc(env(safe-area-inset-bottom, 0px) + 40px)',
+              padding: '16px 16px calc(var(--safe-bottom) + 40px)',
             }}
           >
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />

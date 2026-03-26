@@ -676,7 +676,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           </div>
         )}
 
-        <div style={{ padding: '20px 16px calc(env(safe-area-inset-bottom, 0px) + 40px)', maxWidth: 520, margin: '0 auto' }}>
+        <div style={{ padding: '20px 16px calc(var(--safe-bottom) + 40px)', maxWidth: 520, margin: '0 auto' }}>
 
           {/* Session info */}
           <div className="glass-card" style={{ padding: '20px 18px', marginBottom: 16 }}>
@@ -1017,7 +1017,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         {showBlockPicker && (
           <>
             <div onClick={() => setShowBlockPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
-            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)', maxHeight: '85vh', overflowY: 'auto' }}>
+            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 24px)', maxHeight: '85vh', overflowY: 'auto' }}>
               <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
 
               {/* Tabs */}
@@ -1141,7 +1141,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             </div>
 
             {/* Items list */}
-            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 16px calc(env(safe-area-inset-bottom, 0px) + 24px)' }}>
+            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 16px calc(var(--safe-bottom) + 24px)' }}>
               {filteredPickerItems.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '60px 0', color: '#94A3B8', fontSize: 14 }}>Inga övningar</div>
               ) : pickerCategory !== 'all' || pickerSearch.trim() || pickerBlockCategory !== 'all' ? (
@@ -1176,7 +1176,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Spara mall</div>
@@ -1222,7 +1222,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       {showNewPurposeSheet && (
         <>
           <div onClick={() => !savingPurpose && setShowNewPurposeSheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 10000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Ny fokustyp</div>
             <input
@@ -1258,7 +1258,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       {editingPurposeType && (
         <>
           <div onClick={() => !savingEditPurpose && setEditingPurposeType(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 10000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Redigera fokustyp</div>
             <input
@@ -1336,7 +1336,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       {showSaveTrainingSheet && (
         <>
           <div onClick={() => !savingTraining && setShowSaveTrainingSheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 400 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Spara träning som mall</div>
             <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>{blocks.length} block · {blocks.reduce((s, b) => s + b.items.length, 0)} övningar</div>

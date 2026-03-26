@@ -48,22 +48,23 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
 
   return (
     <div style={{
-      minHeight: '100vh',
-      background: 'var(--surface-bg)',
+      height: '100dvh',
       display: 'flex',
       flexDirection: 'column',
+      background: 'var(--surface-bg)',
       overflow: 'hidden',
     }}>
       {/* Group Header */}
       <header style={{
-        position: 'sticky',
-        top: 0,
+        flexShrink: 0,
+        height: 'var(--header-height)',
+        paddingTop: 'var(--safe-top)',
         zIndex: 40,
-        paddingTop: 'env(safe-area-inset-top, 0px)',
+        position: 'relative',
       }}>
         <div className="glass-nav" style={{
+          height: '100%',
           padding: '0 16px',
-          height: 56,
           display: 'flex',
           alignItems: 'center',
           gap: 14,
@@ -74,7 +75,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
             style={{
               width: 40, height: 40,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.6)',
+              background: 'rgba(255,255,255,0.7)',
               border: '1px solid rgba(0,0,0,0.08)',
               borderRadius: 12,
               cursor: 'pointer',
@@ -117,33 +118,34 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
         </div>
       </header>
 
-      {/* Content */}
-      <main style={{ flex: 1, overflowY: 'auto', paddingBottom: 100 }}>
+      {/* Content — scrolls freely */}
+      <main style={{
+        flex: 1,
+        overflowY: 'auto',
+        overflowX: 'hidden',
+        paddingBottom: 'var(--content-bottom)',
+      }}>
         {children}
       </main>
 
-      {/* Group Bottom Nav */}
+      {/* Group Bottom Nav — flex in flow, never overlaps */}
       <nav style={{
-        position: 'fixed',
-        bottom: 0, left: 0, right: 0,
-        zIndex: 990,
-        display: 'flex',
-        justifyContent: 'center',
-        padding: `8px 16px calc(env(safe-area-inset-bottom, 0px) + 8px)`,
-        pointerEvents: 'none',
+        flexShrink: 0,
+        paddingBottom: 'var(--safe-bottom)',
+        background: 'var(--glass-bg-strong)',
+        backdropFilter: 'blur(20px)',
+        WebkitBackdropFilter: 'blur(20px)',
+        borderTop: '1px solid rgba(0,0,0,0.06)',
+        zIndex: 40,
       }}>
         <div style={{
           display: 'flex',
           justifyContent: 'space-around',
           alignItems: 'center',
-          width: '100%',
+          height: 'var(--nav-height)',
           maxWidth: 500,
-          background: 'rgba(255,255,255,0.9)',
-          backdropFilter: 'blur(12px)',
-          borderRadius: 20,
-          padding: '6px 10px',
-          pointerEvents: 'all',
-          boxShadow: '0 8px 24px rgba(0,0,0,0.12)',
+          margin: '0 auto',
+          padding: '0 8px',
         }}>
           {tabs.map((tab) => {
             const active = tab.href === `/groups/${groupId}`
@@ -158,22 +160,32 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
                   display: 'flex',
                   flexDirection: 'column',
                   alignItems: 'center',
-                  gap: 4,
+                  gap: 3,
                   textDecoration: 'none',
-                  padding: '6px 10px',
+                  padding: '8px 16px',
                   borderRadius: 12,
                   minWidth: 72,
+                  transition: 'opacity 0.15s',
                 }}
               >
-                <Icon
-                  size={20}
-                  strokeWidth={active ? 2.5 : 1.8}
-                  color={active ? groupColor : '#94A3B8'}
-                />
+                <div style={{
+                  width: 32, height: 32,
+                  borderRadius: 10,
+                  background: active ? `${groupColor}18` : 'transparent',
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  transition: 'background 0.15s',
+                }}>
+                  <Icon
+                    size={20}
+                    strokeWidth={active ? 2.5 : 1.8}
+                    color={active ? groupColor : '#94A3B8'}
+                  />
+                </div>
                 <span style={{
-                  fontSize: 11,
+                  fontSize: 10,
                   fontWeight: active ? 700 : 500,
                   color: active ? groupColor : '#94A3B8',
+                  letterSpacing: '0.01em',
                 }}>
                   {tab.label}
                 </span>

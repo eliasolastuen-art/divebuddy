@@ -2,190 +2,128 @@
 @tailwind components;
 @tailwind utilities;
 
-/* ─── CSS Variables ──────────────────────────────────────────── */
 :root {
   --brand-teal: #0D7377;
-  --brand-teal-light: rgba(13, 115, 119, 0.12);
+  --brand-teal-light: rgba(13, 115, 119, 0.1);
   --brand-dark: #0F172A;
-
-  --glass-bg: rgba(255, 255, 255, 0.72);
-  --glass-bg-strong: rgba(255, 255, 255, 0.88);
-  --glass-border: rgba(255, 255, 255, 0.55);
+  --header-height: 56px;
+  --nav-height: 72px;
+  --safe-top: env(safe-area-inset-top, 0px);
+  --safe-bottom: env(safe-area-inset-bottom, 0px);
+  --content-top: calc(var(--header-height) + var(--safe-top));
+  --content-bottom: calc(var(--nav-height) + var(--safe-bottom) + 16px);
+  --surface-bg: #F0F4F8;
+  --surface-card: rgba(255, 255, 255, 0.9);
+  --glass-bg: rgba(255, 255, 255, 0.75);
+  --glass-bg-strong: rgba(255, 255, 255, 0.95);
+  --glass-border: rgba(255, 255, 255, 0.6);
   --glass-border-subtle: rgba(0, 0, 0, 0.06);
-
-  --surface-bg: #EEF2F7;
-  --surface-card: rgba(255, 255, 255, 0.85);
-
-  --nav-height: 80px;
-  --content-bottom-padding: calc(env(safe-area-inset-bottom, 0px) + 96px);
+  --radius-card: 18px;
+  --radius-sheet: 24px;
+  --shadow-card: 0 2px 12px rgba(0,0,0,0.06), 0 1px 3px rgba(0,0,0,0.04);
+  --shadow-nav: 0 -1px 0 rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.1);
+  --shadow-sheet: 0 -4px 40px rgba(0,0,0,0.12);
 }
 
-/* ─── Base ───────────────────────────────────────────────────── */
-*, *::before, *::after {
-  box-sizing: border-box;
-}
+*, *::before, *::after { box-sizing: border-box; }
 
 html {
-  -webkit-text-size-adjust: 100%;
+  height: 100%;
+  overscroll-behavior: none;
 }
 
 body {
+  height: 100%;
   background-color: var(--surface-bg);
-  background-image:
-    radial-gradient(ellipse at 20% 0%, rgba(13, 115, 119, 0.08) 0%, transparent 60%),
-    radial-gradient(ellipse at 80% 100%, rgba(13, 115, 119, 0.05) 0%, transparent 60%);
   color: var(--brand-dark);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
-  font-feature-settings: 'cv02', 'cv03', 'cv04', 'cv11';
+  overscroll-behavior: none;
+  -webkit-overflow-scrolling: touch;
 }
 
-/* ─── Safe Area Utilities ────────────────────────────────────── */
-.pt-safe {
-  padding-top: env(safe-area-inset-top, 0px);
-}
-.pb-safe {
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-}
-.pl-safe {
-  padding-left: env(safe-area-inset-left, 0px);
-}
-.pr-safe {
-  padding-right: env(safe-area-inset-right, 0px);
-}
-.mb-safe {
-  margin-bottom: env(safe-area-inset-bottom, 0px);
-}
-.h-safe-bottom {
-  height: env(safe-area-inset-bottom, 0px);
-}
-
-/* ─── Glass Utilities ────────────────────────────────────────── */
-.glass {
-  background: var(--glass-bg);
+/* Glass components */
+.glass-nav {
+  background: rgba(248, 250, 252, 0.92);
   backdrop-filter: blur(20px) saturate(180%);
   -webkit-backdrop-filter: blur(20px) saturate(180%);
-  border: 1px solid var(--glass-border);
-}
-
-.glass-strong {
-  background: var(--glass-bg-strong);
-  backdrop-filter: blur(24px) saturate(200%);
-  -webkit-backdrop-filter: blur(24px) saturate(200%);
-  border: 1px solid var(--glass-border);
 }
 
 .glass-card {
   background: var(--surface-card);
-  backdrop-filter: blur(12px) saturate(160%);
-  -webkit-backdrop-filter: blur(12px) saturate(160%);
-  border: 1px solid rgba(255, 255, 255, 0.7);
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-  border-radius: 20px;
-}
-
-.glass-nav {
-  background: rgba(255, 255, 255, 0.78);
-  backdrop-filter: blur(32px) saturate(200%);
-  -webkit-backdrop-filter: blur(32px) saturate(200%);
-  border: 1px solid rgba(255, 255, 255, 0.6);
+  border-radius: var(--radius-card);
+  border: 1px solid rgba(255,255,255,0.8);
+  box-shadow: var(--shadow-card);
 }
 
 .glass-sheet {
   background: var(--glass-bg-strong);
-  backdrop-filter: blur(28px) saturate(180%);
-  -webkit-backdrop-filter: blur(28px) saturate(180%);
-  border-top: 1px solid rgba(255,255,255,0.7);
-  border-radius: 28px 28px 0 0;
+  border-radius: var(--radius-sheet) var(--radius-sheet) 0 0;
+  box-shadow: var(--shadow-sheet);
 }
 
 .glass-input {
-  background: rgba(255, 255, 255, 0.6);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border: 1px solid rgba(0, 0, 0, 0.1);
-  border-radius: 14px;
-  transition: all 0.15s ease;
+  background: rgba(255,255,255,0.7);
+  border: 1.5px solid rgba(0,0,0,0.08);
+  border-radius: 12px;
+  color: var(--brand-dark);
+  font-size: 15px;
+  outline: none;
+  transition: border-color 0.15s ease;
 }
 
 .glass-input:focus {
-  background: rgba(255, 255, 255, 0.85);
   border-color: var(--brand-teal);
-  box-shadow: 0 0 0 3px rgba(13, 115, 119, 0.12);
-  outline: none;
+  background: white;
 }
 
-/* ─── Shadow Utilities ───────────────────────────────────────── */
-.shadow-glass {
-  box-shadow: 0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-}
-
-.shadow-float {
-  box-shadow: 0 8px 32px rgba(13, 115, 119, 0.12), 0 2px 8px rgba(0,0,0,0.08);
-}
-
-.shadow-card {
-  box-shadow: 0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04);
-}
-
-.shadow-modal {
-  box-shadow: 0 20px 60px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.12);
-}
-
-/* ─── Button Utilities ───────────────────────────────────────── */
 .btn-primary {
-  background: linear-gradient(135deg, #0D7377 0%, #0a5c60 100%);
+  background: var(--brand-teal);
   color: white;
   border: none;
-  border-radius: 9999px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  transition: all 0.15s ease;
-  box-shadow: 0 4px 16px rgba(13, 115, 119, 0.3), 0 1px 4px rgba(0,0,0,0.1);
+  border-radius: 14px;
+  font-weight: 700;
+  font-size: 15px;
+  cursor: pointer;
+  transition: opacity 0.15s ease, transform 0.1s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-primary:active {
-  transform: scale(0.97);
-  box-shadow: 0 2px 8px rgba(13, 115, 119, 0.2);
-}
+.btn-primary:active { opacity: 0.85; transform: scale(0.98); }
 
 .btn-secondary {
-  background: rgba(255,255,255,0.7);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
+  background: rgba(255,255,255,0.8);
+  border: 1px solid rgba(0,0,0,0.09);
+  border-radius: 14px;
+  font-weight: 600;
   color: var(--brand-dark);
-  border: 1px solid rgba(0,0,0,0.1);
+  cursor: pointer;
+  transition: all 0.15s ease;
+  -webkit-tap-highlight-color: transparent;
+}
+
+.chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  padding: 6px 14px;
   border-radius: 9999px;
+  font-size: 13px;
   font-weight: 600;
   transition: all 0.15s ease;
   -webkit-tap-highlight-color: transparent;
 }
 
-.btn-secondary:active {
-  transform: scale(0.97);
-  background: rgba(255,255,255,0.9);
+.chip-active {
+  background: var(--brand-teal);
+  color: white;
+  box-shadow: 0 2px 8px rgba(13,115,119,0.25);
 }
 
-/* ─── Typography ─────────────────────────────────────────────── */
-.text-display {
-  font-size: 28px;
-  font-weight: 800;
-  letter-spacing: -0.04em;
-  line-height: 1.1;
-}
-
-.text-title {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.03em;
-  line-height: 1.2;
-}
-
-.text-section {
-  font-size: 18px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
+.chip-inactive {
+  background: rgba(255,255,255,0.7);
+  color: #64748B;
+  border: 1px solid rgba(0,0,0,0.08);
 }
 
 .text-label {
@@ -196,65 +134,11 @@ body {
   color: #94A3B8;
 }
 
-/* ─── Pill / Chip ────────────────────────────────────────────── */
-.chip {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  padding: 6px 14px;
-  border-radius: 9999px;
-  font-size: 13px;
-  font-weight: 600;
-  letter-spacing: -0.01em;
-  transition: all 0.15s ease;
-  -webkit-tap-highlight-color: transparent;
-}
+::-webkit-scrollbar { display: none; }
+* { scrollbar-width: none; }
+::selection { background: rgba(13,115,119,0.15); }
+a, button { -webkit-tap-highlight-color: transparent; }
 
-.chip-active {
-  background: var(--brand-teal);
-  color: white;
-  box-shadow: 0 2px 8px rgba(13,115,119,0.3);
-}
-
-.chip-inactive {
-  background: rgba(255,255,255,0.7);
-  color: #64748B;
-  border: 1px solid rgba(0,0,0,0.08);
-}
-
-/* ─── Scrollbar ──────────────────────────────────────────────── */
-::-webkit-scrollbar {
-  display: none;
-}
-
-* {
-  scrollbar-width: none;
-}
-
-/* ─── Selection ──────────────────────────────────────────────── */
-::selection {
-  background: rgba(13, 115, 119, 0.2);
-}
-
-/* ─── Tap Highlight ──────────────────────────────────────────── */
-a, button {
-  -webkit-tap-highlight-color: transparent;
-}
-
-/* ─── PWA — förhindra swipe-navigation och overscroll ───────── */
-html {
-  overscroll-behavior: none;
-  height: 100%;
-  width: 100%;
-}
-
-body {
-  overscroll-behavior-x: none;
-  -webkit-overflow-scrolling: touch;
-}
-
-/* Scrollning sker bara inuti main */
-main {
-  -webkit-overflow-scrolling: touch;
-  overscroll-behavior-y: contain;
+@keyframes spin {
+  to { transform: rotate(360deg); }
 }

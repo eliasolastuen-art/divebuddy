@@ -213,7 +213,7 @@ export default function TrainingQuickSheet({
 
         {/* Action buttons */}
         <div style={{
-          padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)',
+          padding: '16px 20px calc(var(--safe-bottom) + 24px)',
           borderTop: '1px solid rgba(0,0,0,0.06)',
           display: 'flex', gap: 10, flexShrink: 0,
           background: 'var(--glass-bg-strong)',
