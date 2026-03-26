@@ -217,6 +217,8 @@ export default function TrainingQuickSheet({
           borderTop: '1px solid rgba(0,0,0,0.06)',
           display: 'flex', gap: 10, flexShrink: 0,
           background: 'var(--glass-bg-strong)',
+          backdropFilter: 'blur(12px)',
+          WebkitBackdropFilter: 'blur(12px)',
         }}>
           <button
             onClick={onDuplicate}

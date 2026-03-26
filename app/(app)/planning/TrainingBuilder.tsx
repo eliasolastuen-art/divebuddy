@@ -676,7 +676,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           </div>
         )}
 
-        <div style={{ padding: '20px 16px 120px', maxWidth: 520, margin: '0 auto' }}>
+        <div style={{ padding: '20px 16px calc(env(safe-area-inset-bottom, 0px) + 40px)', maxWidth: 520, margin: '0 auto' }}>
 
           {/* Session info */}
           <div className="glass-card" style={{ padding: '20px 18px', marginBottom: 16 }}>
