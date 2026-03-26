@@ -1176,7 +1176,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px 48px', maxWidth: 520, margin: '0 auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Spara mall</div>
@@ -1336,7 +1336,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       {showSaveTrainingSheet && (
         <>
           <div onClick={() => !savingTraining && setShowSaveTrainingSheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 400 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px 48px', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Spara träning som mall</div>
             <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>{blocks.length} block · {blocks.reduce((s, b) => s + b.items.length, 0)} övningar</div>

@@ -5,6 +5,7 @@ import HamburgerMenu from '@/components/nav/HamburgerMenu'
 import { UserProvider, useUser } from '@/lib/context/user'
 import { Menu } from 'lucide-react'
 import { useState } from 'react'
+import { usePathname } from 'next/navigation'
 
 function RoleSwitcher() {
   const { roles, activeRole, setActiveRole } = useUser()
@@ -46,6 +47,15 @@ function RoleSwitcher() {
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const pathname = usePathname()
+
+  // Group sub-routes and athlete routes have their own layouts
+  const isGroupSubRoute = /^\/groups\/[^/]+/.test(pathname)
+  const isAthleteRoute = pathname.startsWith('/athlete')
+
+  if (isGroupSubRoute || isAthleteRoute) {
+    return <>{children}</>
+  }
 
   return (
     <div style={{
@@ -105,7 +115,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
         style={{
           flex: 1,
           overflowY: 'auto',
-          paddingBottom: 200,
+          paddingBottom: 'var(--content-bottom-padding)',
         }}
       >
         {children}

@@ -95,7 +95,7 @@ export default function TrainingQuickSheet({
           position: 'fixed', inset: 0,
           background: 'rgba(15,23,42,0.45)',
           backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
-          zIndex: 200,
+          zIndex: 1000,
         }}
       />
 
@@ -104,7 +104,7 @@ export default function TrainingQuickSheet({
         className="glass-sheet"
         style={{
           position: 'fixed', bottom: 0, left: 0, right: 0,
-          zIndex: 201,
+          zIndex: 1001,
           maxHeight: '80vh',
           display: 'flex', flexDirection: 'column',
           padding: 0,
@@ -213,7 +213,7 @@ export default function TrainingQuickSheet({
 
         {/* Action buttons */}
         <div style={{
-          padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 16px)',
+          padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 24px)',
           borderTop: '1px solid rgba(0,0,0,0.06)',
           display: 'flex', gap: 10, flexShrink: 0,
           background: 'var(--glass-bg-strong)',

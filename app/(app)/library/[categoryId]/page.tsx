@@ -586,7 +586,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
         onClick={() => { setShowCreate(true); setCreateType('folder'); setCreateName('') }}
         style={{
           position: 'fixed',
-          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 88px)',
+          bottom: 'calc(env(safe-area-inset-bottom, 0px) + 96px)',
           right: 20,
           width: 56, height: 56,
           borderRadius: 18,
@@ -603,10 +603,10 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
       {/* ── Create sheet ─────────────────────────────────────────────────────── */}
       {showCreate && (
         <>
-          <div onClick={() => setShowCreate(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 300 }} />
+          <div onClick={() => setShowCreate(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000 }} />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 400, borderRadius: '24px 24px 0 0', padding: '24px 20px 48px', maxWidth: 520, margin: '0 auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
 
@@ -664,8 +664,8 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
       {/* ── Edit block category sheet ────────────────────────────────────────── */}
       {showEditBlockCat && blockCatInfo && (
         <>
-          <div onClick={() => { setShowEditBlockCat(false); setConfirmDeleteBc(false) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 300 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 400, borderRadius: '24px 24px 0 0', padding: '24px 20px 48px', maxWidth: 520, margin: '0 auto' }}>
+          <div onClick={() => { setShowEditBlockCat(false); setConfirmDeleteBc(false) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>

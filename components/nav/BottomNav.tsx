@@ -20,7 +20,7 @@ export default function BottomNav() {
       bottom: 0,
       left: 0,
       right: 0,
-      zIndex: 999,
+      zIndex: 990,
       display: 'flex',
       justifyContent: 'center',
       padding: `8px 16px calc(env(safe-area-inset-bottom, 0px) + 8px)`,

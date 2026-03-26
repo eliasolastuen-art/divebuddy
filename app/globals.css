@@ -15,6 +15,9 @@
 
   --surface-bg: #EEF2F7;
   --surface-card: rgba(255, 255, 255, 0.85);
+
+  --nav-height: 80px;
+  --content-bottom-padding: calc(env(safe-area-inset-bottom, 0px) + 96px);
 }
 
 /* ─── Base ───────────────────────────────────────────────────── */
