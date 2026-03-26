@@ -249,11 +249,7 @@ html {
 }
 
 body {
-  overscroll-behavior: none;
-  overflow: hidden;
-  height: 100%;
-  width: 100%;
-  position: fixed;
+  overscroll-behavior-x: none;
   -webkit-overflow-scrolling: touch;
 }
 

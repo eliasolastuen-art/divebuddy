@@ -38,7 +38,7 @@ export default function RootLayout({
       </head>
       <body
         className={geist.className}
-        style={{ overflow: 'hidden', height: '100%', position: 'fixed', width: '100%' }}
+        
       >
         {children}
         <ServiceWorkerRegistration />
