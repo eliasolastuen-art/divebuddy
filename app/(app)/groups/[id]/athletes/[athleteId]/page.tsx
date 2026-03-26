@@ -73,7 +73,7 @@ export default function AthleteProfilePage() {
 
     if (!a) { setLoading(false); return }
 
-    const groupData = a.groups as { name: string; color: string } | null
+    const groupData = a.groups as unknown as { name: string; color: string } | null
     setAthlete({
       id: a.id, name: a.name, email: a.email, active: a.active,
       group_id: a.group_id, club_id: a.club_id,
