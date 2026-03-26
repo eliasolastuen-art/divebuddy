@@ -51,7 +51,7 @@ interface Block {
   category: BlockCategory
   name: string
   notes: string
-  block_type: 'standard' | 'test'
+  block_type: 'standard' | 'test' | 'competition_athlete' | 'competition_exercise'
   items: BlockItem[]
 }
 
@@ -239,7 +239,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         category: b.category,
         name: b.name,
         notes: b.notes || '',
-        block_type: b.block_type === 'test' ? 'test' : 'standard',
+        block_type: (['standard', 'test', 'competition_athlete', 'competition_exercise'] as const).includes(b.block_type) ? b.block_type : 'standard',
         items: (b.items || []).map((item: any) => ({
           id: item.id,
           library_item_id: item.library_item_id,
@@ -805,12 +805,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     <ChevronDown size={14} strokeWidth={2.5} color="white" style={{ transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.18s ease' }} />
                   </button>
 
-                  <span style={{ fontSize: 18 }}>{block.block_type === 'test' ? '📊' : cat.emoji}</span>
+                  <span style={{ fontSize: 18 }}>{block.block_type === 'test' ? '📊' : block.block_type === 'competition_athlete' ? '🏆' : block.block_type === 'competition_exercise' ? '📋' : cat.emoji}</span>
                   <input value={block.name} onChange={e => updateBlock(block.id, 'name', e.target.value)} style={{ fontSize: 15, fontWeight: 700, color: 'white', background: 'transparent', border: 'none', outline: 'none', flex: 1 }} />
 
-                  {/* Test badge */}
-                  {block.block_type === 'test' && (
-                    <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.2)', borderRadius: 6, padding: '2px 6px', letterSpacing: '0.06em', flexShrink: 0 }}>TEST</span>
+                  {/* Test/competition badge */}
+                  {(block.block_type === 'test' || block.block_type === 'competition_athlete' || block.block_type === 'competition_exercise') && (
+                    <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.2)', borderRadius: 6, padding: '2px 6px', letterSpacing: '0.06em', flexShrink: 0 }}>
+                      {block.block_type === 'test' ? 'TEST' : 'TÄVLING'}
+                    </span>
                   )}
 
                   {/* Item count when collapsed */}
@@ -840,7 +842,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 {!collapsed && <div style={{ padding: '14px 16px' }}>
                   {block.items.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '10px 0', color: '#94A3B8', fontSize: 13 }}>
-                      {block.block_type === 'test' ? '📊 Poäng registreras per atlet under passet' : 'Inga övningar ännu'}
+                      {block.block_type === 'test'
+                        ? '📊 Poäng registreras per atlet under passet'
+                        : block.block_type === 'competition_athlete'
+                        ? '🏆 Resultat registreras per atlet under tävlingen'
+                        : block.block_type === 'competition_exercise'
+                        ? '📋 Resultat registreras per övning under tävlingen'
+                        : 'Inga övningar ännu'}
                     </div>
                   )}
 
@@ -1010,6 +1018,44 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 <div style={{ fontSize: 11, color: '#94A3B8' }}>Poäng per atlet</div>
               </div>
             </button>
+            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
+              <button
+                onClick={() => {
+                  setBlocks(b => [...b, {
+                    id: genId(), category: 'tavling',
+                    name: 'Tävling – Per person',
+                    notes: '', block_type: 'competition_athlete', items: [],
+                  }])
+                  setShowBlockPicker(false)
+                }}
+                style={{
+                  flex: 1, padding: '11px 14px', borderRadius: 14,
+                  border: '1.5px solid rgba(99,102,241,0.3)',
+                  background: 'rgba(99,102,241,0.06)',
+                  fontSize: 12, fontWeight: 700, color: '#6366F1', cursor: 'pointer',
+                }}
+              >
+                🏆 Per person
+              </button>
+              <button
+                onClick={() => {
+                  setBlocks(b => [...b, {
+                    id: genId(), category: 'tavling',
+                    name: 'Tävling – Per övning',
+                    notes: '', block_type: 'competition_exercise', items: [],
+                  }])
+                  setShowBlockPicker(false)
+                }}
+                style={{
+                  flex: 1, padding: '11px 14px', borderRadius: 14,
+                  border: '1.5px solid rgba(99,102,241,0.3)',
+                  background: 'rgba(99,102,241,0.06)',
+                  fontSize: 12, fontWeight: 700, color: '#6366F1', cursor: 'pointer',
+                }}
+              >
+                📋 Per övning
+              </button>
+            </div>
           </div>
         </div>
 

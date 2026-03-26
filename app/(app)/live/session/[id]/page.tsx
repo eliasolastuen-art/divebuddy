@@ -4,6 +4,9 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Timer, Star } from 'lucide-react'
 import AthleteLogging from './AthleteLogging'
+import CompetitionAthleteBlock from './CompetitionAthleteBlock'
+import CompetitionExerciseBlock from './CompetitionExerciseBlock'
+import AddDiveSheet from './AddDiveSheet'
 import { useUser } from '@/lib/context/user'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -21,6 +24,7 @@ interface SessionBlock {
   name: string
   category: string
   sort_order: number
+  block_type: string
   items: SessionItem[]
 }
 
@@ -69,6 +73,9 @@ export default function LiveSessionPage() {
   const [activeTimer, setActiveTimer] = useState<{ itemId: string; remaining: number } | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
 
+  const [addDiveTarget, setAddDiveTarget] = useState<{ athleteId: string; athleteName: string } | null>(null)
+  const [refreshKey, setRefreshKey] = useState(0)
+
   // ── Scoring state ────────────────────────────────────────────────────────────
   const [athletes, setAthletes] = useState<AthleteRow[]>([])
   const [scoringItem, setScoringItem] = useState<SessionItem | null>(null)
@@ -115,7 +122,7 @@ export default function LiveSessionPage() {
         supabase
           .from('training_blocks')
           .select(`
-            id, name, category, sort_order,
+            id, name, category, sort_order, block_type,
             training_block_items(
               id, custom_name, reps, sets, duration_seconds, sort_order,
               library_item:library_items(name)
@@ -135,6 +142,7 @@ export default function LiveSessionPage() {
           name: b.name,
           category: b.category,
           sort_order: b.sort_order,
+          block_type: b.block_type ?? 'standard',
           items: (b.training_block_items || [])
             .sort((a: any, b2: any) => a.sort_order - b2.sort_order)
             .map((it: any) => ({
@@ -344,6 +352,50 @@ export default function LiveSessionPage() {
           </div>
         ) : (
           blocks.map(block => {
+            if (block.block_type === 'competition_athlete') {
+              return (
+                <div key={block.id} style={{ marginBottom: 16 }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 800, color: '#6366F1',
+                    textTransform: 'uppercase', letterSpacing: '0.08em',
+                    marginBottom: 8, paddingLeft: 2,
+                  }}>
+                    {block.name}
+                  </div>
+                  <CompetitionAthleteBlock
+                    key={refreshKey}
+                    block={block}
+                    athletes={athletes}
+                    sessionId={sid}
+                    onAddDive={(athleteId: string, athleteName: string) =>
+                      setAddDiveTarget({ athleteId, athleteName })
+                    }
+                  />
+                </div>
+              )
+            }
+
+            if (block.block_type === 'competition_exercise') {
+              return (
+                <div key={block.id} style={{ marginBottom: 16 }}>
+                  <div style={{
+                    fontSize: 11, fontWeight: 800, color: '#6366F1',
+                    textTransform: 'uppercase', letterSpacing: '0.08em',
+                    marginBottom: 8, paddingLeft: 2,
+                  }}>
+                    {block.name}
+                  </div>
+                  <CompetitionExerciseBlock
+                    block={block}
+                    items={block.items}
+                    athletes={athletes}
+                    savedScores={savedScores}
+                    onScore={openScoreSheet}
+                  />
+                </div>
+              )
+            }
+
             const color = BLOCK_COLORS[block.category] ?? '#64748B'
             return (
               <div key={block.id} style={{ marginBottom: 16 }}>
@@ -525,6 +577,25 @@ export default function LiveSessionPage() {
             </button>
           </div>
         </div>
+      )}
+
+      {/* ── Add dive sheet ───────────────────────────────────────────────────── */}
+      {addDiveTarget && (
+        <>
+          <div
+            onClick={() => setAddDiveTarget(null)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 300 }}
+          />
+          <AddDiveSheet
+            athleteId={addDiveTarget.athleteId}
+            athleteName={addDiveTarget.athleteName}
+            sessionId={sid}
+            onClose={() => {
+              setAddDiveTarget(null)
+              setRefreshKey(k => k + 1)
+            }}
+          />
+        </>
       )}
 
       {/* ── Scoring bottom sheet ─────────────────────────────────────────────── */}
