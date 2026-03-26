@@ -240,3 +240,25 @@ body {
 a, button {
   -webkit-tap-highlight-color: transparent;
 }
+
+/* ─── PWA — förhindra swipe-navigation och overscroll ───────── */
+html {
+  overscroll-behavior: none;
+  height: 100%;
+  width: 100%;
+}
+
+body {
+  overscroll-behavior: none;
+  overflow: hidden;
+  height: 100%;
+  width: 100%;
+  position: fixed;
+  -webkit-overflow-scrolling: touch;
+}
+
+/* Scrollning sker bara inuti main */
+main {
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+}
