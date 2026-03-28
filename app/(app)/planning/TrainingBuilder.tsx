@@ -7,6 +7,7 @@ import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSen
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
 import { useUser } from '@/lib/context/user'
+import AthleteBlockEditor from './AthleteBlockEditor'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -44,6 +45,7 @@ interface BlockItem {
   notes: string
   isFromLibrary: boolean
   libraryItem?: any
+  assigned_athlete_id?: string | null
 }
 
 interface Block {
@@ -51,8 +53,10 @@ interface Block {
   category: BlockCategory
   name: string
   notes: string
-  block_type: 'standard' | 'test' | 'competition_athlete' | 'competition_exercise'
+  block_type: 'standard' | 'test' | 'athlete'
+  savedId?: string
   items: BlockItem[]
+  selectedAthleteIds?: string[]
 }
 
 interface PickerItem {
@@ -173,6 +177,17 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
   const [savingTraining, setSavingTraining]               = useState(false)
   const [trainingSaved, setTrainingSaved]                 = useState(false)
 
+  // Group athletes (for athlete blocks)
+  const [groupAthletes, setGroupAthletes] = useState<{ id: string; name: string }[]>([])
+
+  // Athlete picker for creating athlete block
+  const [showAthletePicker, setShowAthletePicker] = useState(false)
+  const [athletePickerSelected, setAthletePickerSelected] = useState<Set<string>>(new Set())
+
+  // When library picker is open for an athlete block item
+  const [pickerForAthleteId, setPickerForAthleteId] = useState<string | null>(null)
+
+
   // DnD sensors for block reorder
   const blockSensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 6 } }),
@@ -186,6 +201,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
     const newIdx = blocks.findIndex(b => b.id === over.id)
     setBlocks(prev => arrayMove(prev, oldIdx, newIdx))
   }
+
+  // Load athletes for selected group (used by athlete blocks)
+  useEffect(() => {
+    if (!groupId || !profile?.club_id) { setGroupAthletes([]); return }
+    supabase.from('athletes').select('id, name')
+      .eq('group_id', groupId).order('name')
+      .then(({ data }) => setGroupAthletes(data ?? []))
+  }, [groupId])  // eslint-disable-line react-hooks/exhaustive-deps
 
   // ── Load initial data ──────────────────────────────────────────────────────
 
@@ -234,13 +257,11 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       setStatus(existingTraining.status === 'published' ? 'published' : 'draft')
     }
     if (existingBlocks && existingBlocks.length > 0) {
-      setBlocks(existingBlocks.map(b => ({
-        id: b.id,
-        category: b.category,
-        name: b.name,
-        notes: b.notes || '',
-        block_type: (['standard', 'test', 'competition_athlete', 'competition_exercise'] as const).includes(b.block_type) ? b.block_type : 'standard',
-        items: (b.items || []).map((item: any) => ({
+      setBlocks(existingBlocks.map(b => {
+        const blockType = (['standard', 'test', 'athlete'] as const).includes(b.block_type)
+          ? b.block_type as 'standard' | 'test' | 'athlete'
+          : 'standard' as const
+        const mappedItems = (b.items || []).map((item: any) => ({
           id: item.id,
           library_item_id: item.library_item_id,
           custom_name: item.custom_name || item.library_item?.name || '',
@@ -251,8 +272,23 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           notes: item.notes || '',
           isFromLibrary: !!item.library_item_id,
           libraryItem: item.library_item,
+          assigned_athlete_id: item.assigned_athlete_id ?? null,
         }))
-      })))
+        // Derive selectedAthleteIds from items for athlete blocks
+        const athleteIds = blockType === 'athlete'
+          ? Array.from(new Set(mappedItems.map((i: any) => i.assigned_athlete_id).filter(Boolean))) as string[]
+          : undefined
+        return {
+          id: b.id,
+          category: b.category,
+          name: b.name,
+          notes: b.notes || '',
+          block_type: blockType,
+          savedId: b.id as string,
+          items: mappedItems,
+          selectedAthleteIds: athleteIds,
+        }
+      }))
     }
   }, [])
 
@@ -310,6 +346,34 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
   const addTestBlock = () => {
     setBlocks(b => [...b, { id: genId(), category: 'tavling', name: 'Testblock', notes: '', block_type: 'test', items: [] }])
     setShowBlockPicker(false)
+  }
+
+  const addAthleteBlock = () => {
+    if (groupAthletes.length === 0) {
+      // No group selected or no athletes — add empty block
+      setBlocks(b => [...b, { id: genId(), category: 'vatten' as BlockCategory, name: 'Individuella hopp', notes: '', block_type: 'athlete', items: [] }])
+      setShowBlockPicker(false)
+      return
+    }
+    // Show athlete picker
+    setAthletePickerSelected(new Set(groupAthletes.map(a => a.id)))
+    setShowAthletePicker(true)
+    setShowBlockPicker(false)
+  }
+
+  const confirmAthleteBlock = () => {
+    const selected = groupAthletes.filter(a => athletePickerSelected.has(a.id))
+    setBlocks(b => [...b, {
+      id: genId(),
+      category: 'vatten' as BlockCategory,
+      name: 'Individuella hopp',
+      notes: '',
+      block_type: 'athlete' as const,
+      items: [],
+      selectedAthleteIds: selected.map(a => a.id),
+    }])
+    setShowAthletePicker(false)
+    setAthletePickerSelected(new Set())
   }
 
   const addBlockFromTemplate = (template: BlockTemplate) => {
@@ -429,6 +493,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
   const addItemFromLibrary = (blockId: string, item: PickerItem) => {
     const newId = genId()
+    const athleteId = pickerForAthleteId
     setBlocks(b => b.map(block => block.id !== blockId ? block : {
       ...block,
       items: [...block.items, {
@@ -442,10 +507,17 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         notes: '',
         isFromLibrary: true,
         libraryItem: { id: item.id, name: item.name, dd: item.dd, type: item.type },
+        ...(athleteId ? { assigned_athlete_id: athleteId } : {}),
       }]
     }))
-    setEditingItemId(newId)
-    setPickerBlockId(null)
+    if (athleteId) {
+      // For athlete blocks, don't open edit mode — just close picker
+      setPickerBlockId(null)
+      setPickerForAthleteId(null)
+    } else {
+      setEditingItemId(newId)
+      setPickerBlockId(null)
+    }
   }
 
   const addCustomItem = (blockId: string) => {
@@ -595,9 +667,10 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       trainingId = training.id
     }
 
+    const savedIdUpdates: Record<string, string> = {}
     for (let i = 0; i < blocks.length; i++) {
       const block = blocks[i]
-      const { data: savedBlock } = await supabase.from('training_blocks').insert({
+      const { data: savedBlock, error: blockError } = await supabase.from('training_blocks').insert({
         training_id: trainingId,
         category: block.category,
         name: block.name,
@@ -606,10 +679,15 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         block_type: block.block_type,
       }).select().single()
 
+      if (blockError) {
+        console.error('Block insert error:', blockError.message, block.name, block.block_type)
+      }
+
       if (savedBlock) {
+        savedIdUpdates[block.id] = savedBlock.id
         for (let j = 0; j < block.items.length; j++) {
           const item = block.items[j]
-          await supabase.from('training_block_items').insert({
+          const { error: itemError } = await supabase.from('training_block_items').insert({
             block_id: savedBlock.id,
             library_item_id: item.library_item_id || null,
             custom_name: item.isFromLibrary ? null : item.custom_name || null,
@@ -619,11 +697,18 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             duration_seconds: item.duration_seconds ?? null,
             notes: item.notes || null,
             sort_order: j,
+            assigned_athlete_id: item.assigned_athlete_id ?? null,
           })
+          if (itemError) {
+            console.error('Item insert error:', itemError, 'item:', item.custom_name)
+          }
         }
       }
     }
 
+    if (Object.keys(savedIdUpdates).length > 0) {
+      setBlocks(prev => prev.map(b => savedIdUpdates[b.id] ? { ...b, savedId: savedIdUpdates[b.id] } : b))
+    }
     setSaving(false)
     onSaved()
   }
@@ -805,13 +890,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     <ChevronDown size={14} strokeWidth={2.5} color="white" style={{ transform: collapsed ? 'rotate(-90deg)' : 'none', transition: 'transform 0.18s ease' }} />
                   </button>
 
-                  <span style={{ fontSize: 18 }}>{block.block_type === 'test' ? '📊' : block.block_type === 'competition_athlete' ? '🏆' : block.block_type === 'competition_exercise' ? '📋' : cat.emoji}</span>
+                  <span style={{ fontSize: 18 }}>{block.block_type === 'test' ? '📊' : block.block_type === 'athlete' ? '🏊' : cat.emoji}</span>
                   <input value={block.name} onChange={e => updateBlock(block.id, 'name', e.target.value)} style={{ fontSize: 15, fontWeight: 700, color: 'white', background: 'transparent', border: 'none', outline: 'none', flex: 1 }} />
 
                   {/* Test/competition badge */}
-                  {(block.block_type === 'test' || block.block_type === 'competition_athlete' || block.block_type === 'competition_exercise') && (
+                  {(block.block_type === 'test' || block.block_type === 'athlete') && (
                     <span style={{ fontSize: 10, fontWeight: 800, color: 'rgba(255,255,255,0.85)', background: 'rgba(255,255,255,0.2)', borderRadius: 6, padding: '2px 6px', letterSpacing: '0.06em', flexShrink: 0 }}>
-                      {block.block_type === 'test' ? 'TEST' : 'TÄVLING'}
+                      {block.block_type === 'test' ? 'TEST' : 'ATLET'}
                     </span>
                   )}
 
@@ -840,19 +925,31 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 </div>
 
                 {!collapsed && <div style={{ padding: '14px 16px' }}>
-                  {block.items.length === 0 && (
+                  {block.block_type === 'athlete' ? (
+                    <AthleteBlockEditor
+                      items={block.items}
+                      athletes={block.selectedAthleteIds
+                        ? groupAthletes.filter(a => block.selectedAthleteIds!.includes(a.id))
+                        : groupAthletes}
+                      onChange={(items: BlockItem[]) => setBlocks(prev => prev.map(b => b.id === block.id ? { ...b, items } : b))}
+                      onOpenPicker={(athleteId: string) => {
+                        setPickerForAthleteId(athleteId)
+                        setPickerBlockId(block.id)
+                        setPickerBlockCategory(block.category)
+                        setPickerSearch('')
+                        setPickerCategory('all')
+                      }}
+                    />
+                  ) : null}
+                  {block.block_type !== 'athlete' && block.items.length === 0 && (
                     <div style={{ textAlign: 'center', padding: '10px 0', color: '#94A3B8', fontSize: 13 }}>
                       {block.block_type === 'test'
                         ? '📊 Poäng registreras per atlet under passet'
-                        : block.block_type === 'competition_athlete'
-                        ? '🏆 Resultat registreras per atlet under tävlingen'
-                        : block.block_type === 'competition_exercise'
-                        ? '📋 Resultat registreras per övning under tävlingen'
                         : 'Inga övningar ännu'}
                     </div>
                   )}
 
-                  {block.items.map((item, ii) => {
+                  {block.block_type !== 'athlete' && block.items.map((item, ii) => {
                     const isEditing = editingItemId === item.id
                     const durStr = item.duration_seconds != null
                       ? `${Math.floor(item.duration_seconds / 60)}:${String(item.duration_seconds % 60).padStart(2, '0')}`
@@ -977,15 +1074,15 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     </div>
                   )})}
 
-                  {/* Add exercise row */}
-                  <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
+                  {/* Add exercise row — hidden for athlete blocks (managed by editor) */}
+                  {block.block_type !== 'athlete' && <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
                     <button onClick={() => { setPickerBlockId(block.id); setPickerSearch(''); setPickerCategory('all') }} style={{ flex: 1, padding: '11px', borderRadius: 12, border: '1.5px dashed rgba(13,115,119,0.4)', background: 'rgba(13,115,119,0.06)', fontSize: 13, fontWeight: 600, color: '#0D7377', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <Search size={13} /> Från bibliotek
                     </button>
                     <button onClick={() => addCustomItem(block.id)} style={{ flex: 1, padding: '11px', borderRadius: 12, border: '1.5px dashed rgba(0,0,0,0.1)', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <Plus size={13} /> Egen övning
                     </button>
-                  </div>
+                  </div>}
                 </div>}
               </div>
               )}
@@ -1018,44 +1115,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 <div style={{ fontSize: 11, color: '#94A3B8' }}>Poäng per atlet</div>
               </div>
             </button>
-            <div style={{ display: 'flex', gap: 8, marginTop: 4 }}>
-              <button
-                onClick={() => {
-                  setBlocks(b => [...b, {
-                    id: genId(), category: 'tavling',
-                    name: 'Tävling – Per person',
-                    notes: '', block_type: 'competition_athlete', items: [],
-                  }])
-                  setShowBlockPicker(false)
-                }}
-                style={{
-                  flex: 1, padding: '11px 14px', borderRadius: 14,
-                  border: '1.5px solid rgba(99,102,241,0.3)',
-                  background: 'rgba(99,102,241,0.06)',
-                  fontSize: 12, fontWeight: 700, color: '#6366F1', cursor: 'pointer',
-                }}
-              >
-                🏆 Per person
-              </button>
-              <button
-                onClick={() => {
-                  setBlocks(b => [...b, {
-                    id: genId(), category: 'tavling',
-                    name: 'Tävling – Per övning',
-                    notes: '', block_type: 'competition_exercise', items: [],
-                  }])
-                  setShowBlockPicker(false)
-                }}
-                style={{
-                  flex: 1, padding: '11px 14px', borderRadius: 14,
-                  border: '1.5px solid rgba(99,102,241,0.3)',
-                  background: 'rgba(99,102,241,0.06)',
-                  fontSize: 12, fontWeight: 700, color: '#6366F1', cursor: 'pointer',
-                }}
-              >
-                📋 Per övning
-              </button>
-            </div>
+            <button onClick={addAthleteBlock} style={{ width: '100%', marginTop: 4, padding: '11px 14px', borderRadius: 14, border: '1.5px solid rgba(13,115,119,0.3)', background: 'rgba(13,115,119,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+              <span style={{ fontSize: 18 }}>🏊</span>
+              <div style={{ textAlign: 'left' }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#0D7377' }}>Atlet-block</div>
+                <div style={{ fontSize: 11, color: '#94A3B8' }}>Individuella hopp per atlet</div>
+              </div>
+            </button>
           </div>
         </div>
 
@@ -1091,6 +1157,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     <div style={{ textAlign: 'left' }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#6366F1' }}>Testblock</div>
                       <div style={{ fontSize: 11, color: '#94A3B8' }}>Poäng per atlet under passet</div>
+                    </div>
+                  </button>
+                  <button onClick={addAthleteBlock} style={{ width: '100%', marginTop: 8, padding: '14px', borderRadius: 18, border: '1.5px solid rgba(13,115,119,0.3)', background: 'rgba(13,115,119,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                    <span style={{ fontSize: 22 }}>🏊</span>
+                    <div style={{ textAlign: 'left' }}>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0D7377' }}>Atlet-block</div>
+                      <div style={{ fontSize: 11, color: '#94A3B8' }}>Individuella hopp per atlet</div>
                     </div>
                   </button>
                 </>
@@ -1130,6 +1203,83 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           </>
         )}
 
+        {/* ── Athlete picker for athlete block ───────────────────────────── */}
+        {showAthletePicker && (
+          <>
+            <div onClick={() => setShowAthletePicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
+            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 24px)', maxHeight: '70vh', overflowY: 'auto' }}>
+              <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 16px' }} />
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', marginBottom: 4, textAlign: 'center' }}>Välj atleter</h3>
+              <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16, textAlign: 'center' }}>Vilka atleter ska ha individuella hopp?</p>
+
+              {groupAthletes.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '20px', color: '#94A3B8', fontSize: 13 }}>
+                  Välj en grupp först för att se atleter
+                </div>
+              ) : (
+                <>
+                  {/* Select all / none */}
+                  <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
+                    <button
+                      onClick={() => setAthletePickerSelected(new Set(groupAthletes.map(a => a.id)))}
+                      style={{ flex: 1, padding: '8px', borderRadius: 10, border: '1px solid rgba(13,115,119,0.2)', background: 'rgba(13,115,119,0.04)', fontSize: 12, fontWeight: 600, color: '#0D7377', cursor: 'pointer' }}
+                    >
+                      Välj alla
+                    </button>
+                    <button
+                      onClick={() => setAthletePickerSelected(new Set())}
+                      style={{ flex: 1, padding: '8px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', fontSize: 12, fontWeight: 600, color: '#64748B', cursor: 'pointer' }}
+                    >
+                      Avmarkera alla
+                    </button>
+                  </div>
+
+                  {/* Athlete chips */}
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 20 }}>
+                    {groupAthletes.map(a => {
+                      const sel = athletePickerSelected.has(a.id)
+                      return (
+                        <button
+                          key={a.id}
+                          onClick={() => setAthletePickerSelected(prev => {
+                            const next = new Set(prev)
+                            sel ? next.delete(a.id) : next.add(a.id)
+                            return next
+                          })}
+                          style={{
+                            padding: '9px 16px', borderRadius: 9999, border: 'none', cursor: 'pointer',
+                            fontSize: 14, fontWeight: 700,
+                            background: sel ? '#0D7377' : 'rgba(0,0,0,0.06)',
+                            color: sel ? 'white' : '#64748B',
+                            transition: 'all 0.15s',
+                          }}
+                        >
+                          {a.name}
+                        </button>
+                      )
+                    })}
+                  </div>
+
+                  {/* Confirm */}
+                  <button
+                    onClick={confirmAthleteBlock}
+                    disabled={athletePickerSelected.size === 0}
+                    className="btn-primary"
+                    style={{
+                      width: '100%', padding: '14px', fontSize: 15, fontWeight: 800,
+                      borderRadius: 16,
+                      opacity: athletePickerSelected.size === 0 ? 0.5 : 1,
+                      cursor: athletePickerSelected.size === 0 ? 'default' : 'pointer',
+                    }}
+                  >
+                    Skapa atlet-block ({athletePickerSelected.size} atleter)
+                  </button>
+                </>
+              )}
+            </div>
+          </>
+        )}
+
         {/* ── Library picker — full screen ──────────────────────────────── */}
         {pickerBlockId && (
           <div style={{
@@ -1144,7 +1294,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 {pickerBlockCategory !== 'all' ? `${CAT_BY_ID[pickerBlockCategory as BlockCategory]?.emoji ?? ''} ${CAT_BY_ID[pickerBlockCategory as BlockCategory]?.label ?? 'Övningar'}` : 'Alla övningar'}
               </span>
               <button
-                onClick={() => setPickerBlockId(null)}
+                onClick={() => { setPickerBlockId(null); setPickerForAthleteId(null) }}
                 style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 14, fontWeight: 700, color: '#64748B', cursor: 'pointer' }}
               >
                 Klar

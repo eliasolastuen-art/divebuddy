@@ -24,6 +24,7 @@ interface TrainingRow {
   group_id?: string
   purpose?: string
   purpose_type?: string
+  notes?: string
   groups?: { name: string; color: string } | null
 }
 
@@ -383,6 +384,13 @@ function SwipeCard({
               </span>
             </div>
           )}
+
+          {/* Notes preview */}
+          {training.notes && (
+            <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+              {training.notes}
+            </div>
+          )}
         </div>
 
         <ChevronRight size={15} color="#CBD5E1" strokeWidth={2.5} style={{ flexShrink: 0 }} />
@@ -437,7 +445,7 @@ export default function PlanningListView() {
       supabase.from('planning_folders').select('*').order('sort_order'),
       supabase
         .from('trainings')
-        .select('id, title, status, training_type, scheduled_date, folder_id, group_id, purpose, purpose_type, groups(name, color)')
+        .select('id, title, status, training_type, scheduled_date, folder_id, group_id, purpose, purpose_type, notes, groups(name, color)')
         .eq('club_id', profile?.club_id ?? '')
         .order('scheduled_date', { ascending: true, nullsFirst: false })
         .order('created_at', { ascending: false }),
@@ -489,12 +497,19 @@ export default function PlanningListView() {
 
   const handleDuplicate = async (t: TrainingRow) => {
     const supabase = createClient()
+    // Schedule +7 days if source has a date
+    const nextWeekDate = t.scheduled_date
+      ? new Date(new Date(t.scheduled_date + 'T12:00:00').getTime() + 7 * 86400000)
+          .toISOString().split('T')[0]
+      : null
+    const nextWeekNum = nextWeekDate ? getISOWeekNumber(new Date(nextWeekDate + 'T12:00:00')) : null
+    const suffix = nextWeekNum ? ` (v.${nextWeekNum})` : ' (kopia)'
     const { data: newT } = await supabase.from('trainings').insert({
       club_id:        profile?.club_id,
-      title:          t.title + ' (kopia)',
+      title:          t.title + suffix,
       folder_id:      t.folder_id || null,
       group_id:       t.group_id  || null,
-      scheduled_date: null,
+      scheduled_date: nextWeekDate,
       status:         'draft',
       training_type:  t.training_type || 'training',
     }).select().single()
@@ -521,6 +536,7 @@ export default function PlanningListView() {
                   block_id: nb.id, library_item_id: it.library_item_id,
                   custom_name: it.custom_name, sets: it.sets, reps: it.reps,
                   duration_seconds: it.duration_seconds, notes: it.notes, sort_order: j,
+                  assigned_athlete_id: it.assigned_athlete_id ?? null,
                 })
               }
             }

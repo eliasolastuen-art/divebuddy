@@ -4,8 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Timer, Star } from 'lucide-react'
 import AthleteLogging from './AthleteLogging'
-import CompetitionAthleteBlock from './CompetitionAthleteBlock'
-import CompetitionExerciseBlock from './CompetitionExerciseBlock'
+import AthleteBlockLive from './AthleteBlockLive'
 import AddDiveSheet from './AddDiveSheet'
 import { useUser } from '@/lib/context/user'
 
@@ -17,6 +16,7 @@ interface SessionItem {
   reps?: number
   sets?: number
   duration_seconds?: number
+  assigned_athlete_id?: string | null
 }
 
 interface SessionBlock {
@@ -124,7 +124,7 @@ export default function LiveSessionPage() {
           .select(`
             id, name, category, sort_order, block_type,
             training_block_items(
-              id, custom_name, reps, sets, duration_seconds, sort_order,
+              id, custom_name, reps, sets, duration_seconds, sort_order, assigned_athlete_id,
               library_item:library_items(name)
             )
           `)
@@ -151,6 +151,7 @@ export default function LiveSessionPage() {
               reps: it.reps ?? undefined,
               sets: it.sets ?? undefined,
               duration_seconds: it.duration_seconds ?? undefined,
+              assigned_athlete_id: it.assigned_athlete_id ?? null,
             })),
         })))
       }
@@ -227,7 +228,9 @@ export default function LiveSessionPage() {
 
   const openScoreSheet = (item: SessionItem) => {
     const existing = savedScores[item.id] ?? []
-    const preSelected = new Set(existing.map(s => s.athleteId))
+    const preSelected = item.assigned_athlete_id
+      ? new Set([item.assigned_athlete_id])
+      : new Set(existing.map(s => s.athleteId))
     const preInputs: Record<string, string> = {}
     existing.forEach(s => { preInputs[s.athleteId] = String(s.score) })
     setScoringItem(item)
@@ -352,42 +355,18 @@ export default function LiveSessionPage() {
           </div>
         ) : (
           blocks.map(block => {
-            if (block.block_type === 'competition_athlete') {
+            if (block.block_type === 'athlete') {
               return (
                 <div key={block.id} style={{ marginBottom: 16 }}>
                   <div style={{
-                    fontSize: 11, fontWeight: 800, color: '#6366F1',
+                    fontSize: 11, fontWeight: 800, color: '#0D7377',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginBottom: 8, paddingLeft: 2,
                   }}>
                     {block.name}
                   </div>
-                  <CompetitionAthleteBlock
-                    key={refreshKey}
+                  <AthleteBlockLive
                     block={block}
-                    athletes={athletes}
-                    sessionId={sid}
-                    onAddDive={(athleteId: string, athleteName: string) =>
-                      setAddDiveTarget({ athleteId, athleteName })
-                    }
-                  />
-                </div>
-              )
-            }
-
-            if (block.block_type === 'competition_exercise') {
-              return (
-                <div key={block.id} style={{ marginBottom: 16 }}>
-                  <div style={{
-                    fontSize: 11, fontWeight: 800, color: '#6366F1',
-                    textTransform: 'uppercase', letterSpacing: '0.08em',
-                    marginBottom: 8, paddingLeft: 2,
-                  }}>
-                    {block.name}
-                  </div>
-                  <CompetitionExerciseBlock
-                    block={block}
-                    items={block.items}
                     athletes={athletes}
                     savedScores={savedScores}
                     onScore={openScoreSheet}
@@ -631,32 +610,39 @@ export default function LiveSessionPage() {
               </div>
             </div>
 
-            {/* Athlete chips */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-                Välj utövare
+            {/* Athlete chips — hidden for athlete-block items (athlete is pre-assigned) */}
+            {!scoringItem.assigned_athlete_id && (
+              <div style={{ marginBottom: 20 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+                  Välj utövare
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
+                  {athletes.map(athlete => {
+                    const isSelected = selectedAthletes.has(athlete.id)
+                    return (
+                      <button
+                        key={athlete.id}
+                        onClick={() => toggleAthlete(athlete.id)}
+                        style={{
+                          padding: '8px 16px', borderRadius: 9999, border: 'none', cursor: 'pointer',
+                          fontSize: 14, fontWeight: 700,
+                          background: isSelected ? '#0D7377' : 'rgba(0,0,0,0.06)',
+                          color: isSelected ? 'white' : '#64748B',
+                          transition: 'all 0.15s',
+                        }}
+                      >
+                        {athlete.name}
+                      </button>
+                    )
+                  })}
+                </div>
               </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {athletes.map(athlete => {
-                  const isSelected = selectedAthletes.has(athlete.id)
-                  return (
-                    <button
-                      key={athlete.id}
-                      onClick={() => toggleAthlete(athlete.id)}
-                      style={{
-                        padding: '8px 16px', borderRadius: 9999, border: 'none', cursor: 'pointer',
-                        fontSize: 14, fontWeight: 700,
-                        background: isSelected ? '#0D7377' : 'rgba(0,0,0,0.06)',
-                        color: isSelected ? 'white' : '#64748B',
-                        transition: 'all 0.15s',
-                      }}
-                    >
-                      {athlete.name}
-                    </button>
-                  )
-                })}
+            )}
+            {scoringItem.assigned_athlete_id && (
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 20 }}>
+                {athletes.find(a => a.id === scoringItem.assigned_athlete_id)?.name}
               </div>
-            </div>
+            )}
 
             {/* Score inputs for selected athletes */}
             {selectedAthletes.size > 0 && (
