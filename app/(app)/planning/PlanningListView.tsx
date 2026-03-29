@@ -6,11 +6,12 @@ import { useUser } from '@/lib/context/user'
 import { getISOWeekNumber } from '@/lib/utils/week'
 import {
   Plus, FolderPlus, ChevronRight, FileText, X,
-  Clock, Users, Copy, Trash2, ChevronDown, Pencil,
+  Clock, Users, Copy, Trash2, ChevronDown, Pencil, Calendar,
 } from 'lucide-react'
 import type { PlanningFolder } from '@/types'
 import TrainingBuilder from './TrainingBuilder'
 import TrainingQuickSheet from './TrainingQuickSheet'
+import PeriodBuilder from './PeriodBuilder'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -433,6 +434,7 @@ export default function PlanningListView() {
   const [editingFolder,   setEditingFolder]   = useState<PlanningFolder | null>(null)
   const [editFolderName,  setEditFolderName]  = useState('')
   const [editFolderColor, setEditFolderColor] = useState(FOLDER_COLORS[0])
+  const [showPeriod,      setShowPeriod]      = useState(false)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -632,6 +634,17 @@ export default function PlanningListView() {
         >
           <Plus size={15} strokeWidth={2.5} />
           Nytt pass
+        </button>
+        <button
+          onClick={() => setShowPeriod(true)}
+          style={{
+            padding: '12px 14px', fontSize: 13, cursor: 'pointer', borderRadius: 14,
+            display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+            background: 'rgba(13,115,119,0.08)', border: 'none', color: '#0D7377', fontWeight: 700,
+          }}
+        >
+          <Calendar size={14} strokeWidth={2.5} />
+          Periodisering
         </button>
       </div>
 
@@ -999,6 +1012,11 @@ export default function PlanningListView() {
           onClose={() => { setShowBuilder(false); setEditTraining(null); setExistingBlocks([]) }}
           onSaved={() => { setShowBuilder(false); setEditTraining(null); setExistingBlocks([]); load() }}
         />
+      )}
+
+      {/* ── Period builder ─────────────────────────────────────────────────── */}
+      {showPeriod && (
+        <PeriodBuilder onClose={() => { setShowPeriod(false); load() }} />
       )}
     </div>
   )

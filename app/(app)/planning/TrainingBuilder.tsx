@@ -2,7 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { PlanningFolder, BlockCategory } from '@/types'
-import { X, Check, Search, ChevronUp, ChevronDown, Plus, Trash2, Bookmark, LayoutList, GripVertical } from 'lucide-react'
+import { X, Check, Search, ChevronUp, ChevronDown, Plus, Trash2, Bookmark, LayoutList, GripVertical, Copy } from 'lucide-react'
 import { DndContext, DragEndEvent, PointerSensor, TouchSensor, useSensor, useSensors, closestCenter } from '@dnd-kit/core'
 import { SortableContext, useSortable, verticalListSortingStrategy, arrayMove } from '@dnd-kit/sortable'
 import { CSS } from '@dnd-kit/utilities'
@@ -186,6 +186,9 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
   // When library picker is open for an athlete block item
   const [pickerForAthleteId, setPickerForAthleteId] = useState<string | null>(null)
+
+  // Copy item between blocks
+  const [copyingItemId, setCopyingItemId] = useState<string | null>(null)
 
 
   // DnD sensors for block reorder
@@ -540,6 +543,17 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
     setBlocks(b => b.map(block => block.id !== blockId ? block : {
       ...block, items: block.items.filter(i => i.id !== itemId)
     }))
+
+  const copyItemToBlock = (sourceBlockId: string, itemId: string, targetBlockId: string) => {
+    setBlocks(b => {
+      const sourceBlock = b.find(bl => bl.id === sourceBlockId)
+      const item = sourceBlock?.items.find(i => i.id === itemId)
+      if (!item) return b
+      const copy = { ...item, id: genId(), assigned_athlete_id: undefined }
+      return b.map(bl => bl.id === targetBlockId ? { ...bl, items: [...bl.items, copy] } : bl)
+    })
+    setCopyingItemId(null)
+  }
 
   const moveItem = (blockId: string, i: number, dir: -1 | 1) => {
     setBlocks(b => b.map(block => {
@@ -1039,7 +1053,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
                       ) : (
                         /* ── Collapsed view ── */
-                        <div style={{ display: 'flex', alignItems: 'flex-start' }}>
+                        <><div style={{ display: 'flex', alignItems: 'flex-start' }}>
                           <button
                             onClick={() => setEditingItemId(item.id)}
                             style={{ flex: 1, textAlign: 'left', background: 'none', border: 'none', cursor: 'pointer', padding: '9px 12px' }}
@@ -1065,11 +1079,33 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                             <button onClick={() => moveItem(block.id, ii, 1)} disabled={ii === block.items.length - 1} style={{ background: 'none', border: 'none', cursor: ii === block.items.length - 1 ? 'default' : 'pointer', opacity: ii === block.items.length - 1 ? 0.2 : 0.45, padding: 3, display: 'flex' }}>
                               <ChevronDown size={12} color="#64748B" strokeWidth={2.5} />
                             </button>
+                            <button onClick={() => setCopyingItemId(copyingItemId === item.id ? null : item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, display: 'flex', opacity: 0.45 }}>
+                              <Copy size={12} color="#64748B" strokeWidth={2} />
+                            </button>
                             <button onClick={() => removeItem(block.id, item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, display: 'flex' }}>
                               <Trash2 size={12} color="#CBD5E1" strokeWidth={2} />
                             </button>
                           </div>
                         </div>
+                        {/* Copy target picker */}
+                        {copyingItemId === item.id && blocks.filter(b2 => b2.id !== block.id && b2.block_type !== 'athlete').length > 0 && (
+                          <div style={{ display: 'flex', gap: 6, padding: '4px 12px 8px', flexWrap: 'wrap' }}>
+                            <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600, alignSelf: 'center' }}>Kopiera till:</span>
+                            {blocks.filter(b2 => b2.id !== block.id && b2.block_type !== 'athlete').map(b2 => {
+                              const targetCat = CAT_BY_ID[b2.category as BlockCategory]
+                              return (
+                                <button
+                                  key={b2.id}
+                                  onClick={() => copyItemToBlock(block.id, item.id, b2.id)}
+                                  style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.03)', fontSize: 12, fontWeight: 600, color: targetCat?.color ?? '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                >
+                                  {targetCat?.emoji ?? '📋'} {b2.name}
+                                </button>
+                              )
+                            })}
+                          </div>
+                        )}
+                        </>
                       )}
                     </div>
                   )})}

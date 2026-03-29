@@ -3,7 +3,7 @@
 
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Waves, ChevronRight, TrendingUp, Award } from 'lucide-react'
+import { Waves, ChevronRight, TrendingUp, Award, Calendar, Clock } from 'lucide-react'
 import { useUser } from '@/lib/context/user'
 import { createClient } from '@/lib/supabase/client'
 
@@ -30,6 +30,13 @@ interface TodayDive {
   status: 'pending' | 'done'
 }
 
+interface UpcomingTraining {
+  id: string
+  title: string
+  scheduled_date: string
+  purpose: string | null
+}
+
 export default function AthletePage() {
   const { profile, roles, loading } = useUser()
   const router = useRouter()
@@ -37,6 +44,7 @@ export default function AthletePage() {
   const [todayDives, setTodayDives] = useState<TodayDive[]>([])
   const [recentSessions, setRecentSessions] = useState<RecentSession[]>([])
   const [totalDives, setTotalDives] = useState(0)
+  const [upcomingTrainings, setUpcomingTrainings] = useState<UpcomingTraining[]>([])
   const [dataLoading, setDataLoading] = useState(true)
 
   useEffect(() => {
@@ -86,6 +94,8 @@ export default function AthletePage() {
 
       if (athleteData.group_id) {
         const today = new Date().toISOString().split('T')[0]
+
+        // Today's active dives
         const { data: activeSessions } = await supabase
           .from('live_sessions')
           .select('id')
@@ -104,8 +114,23 @@ export default function AthletePage() {
 
           setTodayDives((dives ?? []) as TodayDive[])
         }
+
+        // Upcoming published trainings
+        const { data: upcoming } = await supabase
+          .from('trainings')
+          .select('id, title, scheduled_date, purpose')
+          .eq('group_id', athleteData.group_id)
+          .eq('status', 'published')
+          .gte('scheduled_date', today)
+          .order('scheduled_date')
+          .limit(5)
+
+        if (upcoming) {
+          setUpcomingTrainings(upcoming as UpcomingTraining[])
+        }
       }
 
+      // Recent completed sessions
       const { data: sessions } = await supabase
         .from('live_sessions')
         .select('id, started_at, group_id')
@@ -229,11 +254,51 @@ export default function AthletePage() {
         </div>
       )}
 
+      {/* Upcoming trainings */}
+      {upcomingTrainings.length > 0 && (
+        <div className="glass-card" style={{ padding: '16px 18px', marginBottom: 20 }}>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+            Kommande pass
+          </div>
+          {upcomingTrainings.map((t, i) => (
+            <div key={t.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '10px 0', borderBottom: i < upcomingTrainings.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
+              <div style={{ width: 36, height: 36, borderRadius: 10, background: `${groupColor}14`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                <Calendar size={16} color={groupColor} strokeWidth={2} />
+              </div>
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                  {t.title}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 2 }}>
+                  <span style={{ fontSize: 12, color: '#64748B', display: 'flex', alignItems: 'center', gap: 3 }}>
+                    <Clock size={10} strokeWidth={2} />
+                    {new Date(t.scheduled_date + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
+                  </span>
+                  {t.purpose && (
+                    <span style={{ fontSize: 11, color: '#94A3B8' }}>
+                      {t.purpose}
+                    </span>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
       {/* Recent sessions */}
       {recentSessions.length > 0 && (
         <div className="glass-card" style={{ padding: '16px 18px' }}>
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
-            Senaste pass
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+              Senaste pass
+            </div>
+            <button
+              onClick={() => router.push('/athlete/dagbok')}
+              style={{ fontSize: 12, fontWeight: 600, color: groupColor, background: 'none', border: 'none', cursor: 'pointer' }}
+            >
+              Se alla
+            </button>
           </div>
           {recentSessions.map((session, i) => (
             <div key={session.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0', borderBottom: i < recentSessions.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none' }}>
