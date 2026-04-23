@@ -3,40 +3,81 @@
 import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
-import { Play, CalendarDays, ChevronRight, Target, Zap } from 'lucide-react'
+import { Plus } from 'lucide-react'
 import { useUser } from '@/lib/context/user'
 import { createClient } from '@/lib/supabase/client'
 
-const season = [
-  { label: "Pre-season", short: "Pre" },
-  { label: "Technique", short: "Tech" },
-  { label: "Comp prep", short: "Prep" },
-  { label: "Competition", short: "Comp" },
-  { label: "Recovery", short: "Rec" },
-]
-const activePhase = 2
+// ── Types ─────────────────────────────────────────────────────
+interface Group {
+  id: string
+  name: string
+  color: string
+}
 
-const days = [
-  { label: "M" }, { label: "T" }, { label: "W" },
-  { label: "T" }, { label: "F" }, { label: "S" }, { label: "S" },
-]
-const today = 2 // Wednesday = index 2
+interface Session {
+  id: string
+  title: string
+  status: string
+  start_time: string | null
+  group_id: string | null
+  groups: Array<{ name: string; color: string }> | null
+}
 
-const weekFocus = ["Entries", "Competition simulation", "3m consistency"]
+// ── Helpers ───────────────────────────────────────────────────
+function getISOWeek(d: Date): number {
+  const date = new Date(d)
+  date.setHours(0, 0, 0, 0)
+  date.setDate(date.getDate() + 3 - (date.getDay() + 6) % 7)
+  const week1 = new Date(date.getFullYear(), 0, 4)
+  return 1 + Math.round(((date.getTime() - week1.getTime()) / 86400000 - 3 + (week1.getDay() + 6) % 7) / 7)
+}
 
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'God morgon'
+  if (h < 18) return 'God dag'
+  return 'God kväll'
+}
+
+function initials(name: string | null): string {
+  if (!name) return '?'
+  const parts = name.trim().split(' ')
+  if (parts.length === 1) return parts[0][0].toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+function darkenHex(hex: string, amt = 0.25): string {
+  const r = parseInt(hex.slice(1, 3), 16)
+  const g = parseInt(hex.slice(3, 5), 16)
+  const b = parseInt(hex.slice(5, 7), 16)
+  return `rgb(${Math.round(r * (1 - amt))},${Math.round(g * (1 - amt))},${Math.round(b * (1 - amt))})`
+}
+
+// ── Status config ─────────────────────────────────────────────
+const statusConfig: Record<string, { label: string; dot: string; pill: string; text: string }> = {
+  draft:     { label: 'Utkast',     dot: '#94A3B8', pill: 'rgba(148,163,184,0.15)', text: '#64748B' },
+  published: { label: 'Publicerat', dot: '#22C55E', pill: 'rgba(34,197,94,0.12)',   text: '#16A34A' },
+  completed: { label: 'Genomfört', dot: '#0D7377', pill: 'rgba(13,115,119,0.12)',  text: '#0D7377' },
+  active:    { label: 'Live',       dot: '#F97316', pill: 'rgba(249,115,22,0.12)',  text: '#EA580C' },
+}
+
+// ── Component ─────────────────────────────────────────────────
 export default function DashboardPage() {
   const { profile, activeRole, loading } = useUser()
   const [clubName, setClubName] = useState<string | null>(null)
+  const [groups, setGroups] = useState<Group[]>([])
+  const [athleteCounts, setAthleteCounts] = useState<Record<string, number>>({})
+  const [totalAthletes, setTotalAthletes] = useState(0)
+  const [todaySessions, setTodaySessions] = useState<Session[]>([])
+  const [totalSessions, setTotalSessions] = useState(0)
   const router = useRouter()
 
-  // Atleter redirectas till sin egna sida
   useEffect(() => {
     if (loading) return
-    if (activeRole === 'athlete') {
-      router.replace('/athlete')
-    }
+    if (activeRole === 'athlete') router.replace('/athlete')
   }, [activeRole, loading, router])
 
+  // Existing: club name
   useEffect(() => {
     if (!profile?.club_id) return
     createClient()
@@ -47,249 +88,253 @@ export default function DashboardPage() {
       .then(({ data }) => { if (data) setClubName(data.name) })
   }, [profile?.club_id])
 
-  const roleLabels: Record<string, string> = {
-    admin: 'Admin',
-    coach: 'Coach',
-    athlete: 'Atlet',
-  }
-  const roleLabel = activeRole ? roleLabels[activeRole] ?? activeRole : null
+  // New: groups, athletes, sessions
+  useEffect(() => {
+    if (!profile?.club_id) return
+    const supabase = createClient()
+    const todayStr = new Date().toISOString().split('T')[0]
 
-  const greeting = activeRole
-    ? activeRole.charAt(0).toUpperCase() + activeRole.slice(1)
-    : 'Coach'
+    Promise.all([
+      supabase.from('groups').select('id, name, color').eq('club_id', profile.club_id).order('sort_order'),
+      supabase.from('athletes').select('group_id').eq('club_id', profile.club_id).eq('active', true),
+      supabase.from('trainings')
+        .select('id, title, status, start_time, group_id, groups(name, color)')
+        .eq('club_id', profile.club_id)
+        .eq('scheduled_date', todayStr),
+      supabase.from('trainings').select('id', { count: 'exact', head: true }).eq('club_id', profile.club_id),
+    ]).then(([g, a, t, c]) => {
+      if (g.data) setGroups(g.data)
+      if (a.data) {
+        const counts: Record<string, number> = {}
+        a.data.forEach(({ group_id }) => {
+          if (group_id) counts[group_id] = (counts[group_id] || 0) + 1
+        })
+        setAthleteCounts(counts)
+        setTotalAthletes(a.data.length)
+      }
+      if (t.data) setTodaySessions(t.data as Session[])
+      if (c.count != null) setTotalSessions(c.count)
+    })
+  }, [profile?.club_id])
+
+  const weekNum = getISOWeek(new Date())
+  const firstName = profile?.full_name?.split(' ')[0] ?? 'Coach'
+
+  const statPills = [
+    { value: totalAthletes, label: 'Atleter' },
+    { value: groups.length,  label: 'Grupper' },
+    { value: todaySessions.length, label: 'Idag' },
+    { value: `V.${weekNum}`, label: 'Vecka' },
+  ]
 
   return (
-    <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 16, maxWidth: 520, margin: '0 auto' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
 
-      {/* ── Hero Card ─────────────────────────────────────────── */}
+      {/* ── Hero Header ──────────────────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(145deg, #0D7377 0%, #0a5c60 50%, #074c4e 100%)',
-        borderRadius: 24,
-        padding: '24px 22px',
+        background: 'linear-gradient(160deg, #0D7377 0%, #064d50 100%)',
+        padding: '20px 20px 28px',
         position: 'relative',
         overflow: 'hidden',
-        boxShadow: '0 8px 32px rgba(13,115,119,0.3), 0 2px 8px rgba(0,0,0,0.1)',
       }}>
         {/* Decorative circles */}
-        <div style={{ position: 'absolute', top: -30, right: -30, width: 120, height: 120, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
-        <div style={{ position: 'absolute', bottom: -20, right: 40, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: -50, right: -50, width: 180, height: 180, borderRadius: '50%', background: 'rgba(255,255,255,0.06)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -40, left: -30, width: 140, height: 140, borderRadius: '50%', background: 'rgba(255,255,255,0.04)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', top: 30, right: 80, width: 70, height: 70, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' }} />
 
         <div style={{ position: 'relative' }}>
-          {clubName && (
-            <p style={{ fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.5)', letterSpacing: '0.08em', textTransform: 'uppercase', marginBottom: 6 }}>
-              {clubName}
-            </p>
-          )}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
-            <p style={{ fontSize: 13, fontWeight: 600, color: 'rgba(255,255,255,0.65)', letterSpacing: '0.04em', textTransform: 'uppercase', margin: 0 }}>
-              Good morning
-            </p>
-            {roleLabel && (
-              <span style={{
-                fontSize: 11, fontWeight: 700, color: 'rgba(255,255,255,0.9)',
-                background: 'rgba(255,255,255,0.15)',
-                border: '1px solid rgba(255,255,255,0.2)',
-                borderRadius: 6, padding: '2px 8px',
-                letterSpacing: '0.04em', textTransform: 'uppercase',
-              }}>
-                {roleLabel}
+          {/* Top bar */}
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
+            <span style={{ fontSize: 18, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>
+              DiveBuddy
+            </span>
+            <div style={{
+              width: 38, height: 38, borderRadius: '50%',
+              background: 'rgba(255,255,255,0.2)',
+              border: '2px solid rgba(255,255,255,0.35)',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}>
+              <span style={{ fontSize: 14, fontWeight: 800, color: 'white' }}>
+                {initials(profile?.full_name ?? null)}
               </span>
+            </div>
+          </div>
+
+          {/* Greeting */}
+          <p style={{ fontSize: 13, color: 'rgba(255,255,255,0.6)', fontWeight: 500, margin: '0 0 4px' }}>
+            {getGreeting()},
+          </p>
+          <h1 style={{ fontSize: 30, fontWeight: 900, color: 'white', letterSpacing: '-0.04em', lineHeight: 1.05, margin: '0 0 24px' }}>
+            {firstName}
+          </h1>
+
+          {/* Stats pills */}
+          <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
+            {statPills.map(({ value, label }) => (
+              <div key={label} style={{
+                flexShrink: 0,
+                background: 'rgba(255,255,255,0.12)',
+                border: '1px solid rgba(255,255,255,0.18)',
+                borderRadius: 999,
+                padding: '6px 14px',
+                display: 'flex', alignItems: 'center', gap: 6,
+              }}>
+                <span style={{ fontSize: 15, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>{value}</span>
+                <span style={{ fontSize: 12, fontWeight: 500, color: 'rgba(255,255,255,0.6)' }}>{label}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* ── Content ──────────────────────────────────────────────────── */}
+      <div style={{ padding: '20px 16px', display: 'flex', flexDirection: 'column', gap: 24, maxWidth: 520, width: '100%', margin: '0 auto' }}>
+
+        {/* ── AI Nudge Card ──────────────────────────────────────── */}
+        <div
+          onClick={() => router.push('/ai')}
+          style={{
+            background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+            borderRadius: 18,
+            padding: '16px 18px',
+            display: 'flex', alignItems: 'center', gap: 14,
+            cursor: 'pointer',
+            boxShadow: '0 4px 16px rgba(13,115,119,0.25)',
+          }}
+        >
+          <div style={{
+            width: 44, height: 44, borderRadius: 13, flexShrink: 0,
+            background: 'rgba(255,255,255,0.15)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+          }}>
+            <span style={{ fontSize: 20 }}>✦</span>
+          </div>
+          <div style={{ flex: 1 }}>
+            <p style={{ fontSize: 14, fontWeight: 800, color: 'white', letterSpacing: '-0.02em', margin: '0 0 2px' }}>
+              AI Assistent
+            </p>
+            <p style={{ fontSize: 12, color: 'rgba(255,255,255,0.65)', fontWeight: 500, margin: 0 }}>
+              Analyserar din säsong...
+            </p>
+          </div>
+          <span style={{ fontSize: 22, color: 'rgba(255,255,255,0.55)', fontWeight: 300, lineHeight: 1 }}>›</span>
+        </div>
+
+        {/* ── Groups ─────────────────────────────────────────────── */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Grupper</span>
+            <Link href="/groups" style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8', textDecoration: 'none' }}>
+              Alla →
+            </Link>
+          </div>
+          <div style={{
+            display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4,
+            marginLeft: -16, marginRight: -16, paddingLeft: 16, paddingRight: 16,
+          }}>
+            {groups.map(group => (
+              <Link key={group.id} href={`/groups/${group.id}`} style={{ textDecoration: 'none', flexShrink: 0 }}>
+                <div style={{
+                  minWidth: 120, borderRadius: 18,
+                  background: `linear-gradient(160deg, ${group.color} 0%, ${darkenHex(group.color)} 100%)`,
+                  padding: '18px 14px 14px',
+                  display: 'flex', flexDirection: 'column', gap: 2,
+                  boxShadow: `0 4px 16px ${group.color}40`,
+                }}>
+                  <span style={{ fontSize: 28, fontWeight: 900, color: 'white', letterSpacing: '-0.04em', lineHeight: 1 }}>
+                    {athleteCounts[group.id] ?? 0}
+                  </span>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>Atleter</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: 'white', letterSpacing: '-0.01em', marginTop: 8 }}>
+                    {group.name}
+                  </span>
+                </div>
+              </Link>
+            ))}
+            <Link href="/groups?new=1" style={{ textDecoration: 'none', flexShrink: 0 }}>
+              <div style={{
+                minWidth: 100, height: '100%', minHeight: 110, borderRadius: 18,
+                background: 'rgba(0,0,0,0.03)',
+                border: '1.5px dashed rgba(0,0,0,0.12)',
+                padding: '14px',
+                display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
+              }}>
+                <Plus size={20} color="#94A3B8" strokeWidth={2} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', textAlign: 'center' }}>Ny grupp</span>
+              </div>
+            </Link>
+          </div>
+        </div>
+
+        {/* ── Today's Sessions ────────────────────────────────────── */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Idag</span>
+            <Link href="/planning" style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8', textDecoration: 'none' }}>
+              Alla →
+            </Link>
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            {todaySessions.length === 0 ? (
+              <div className="glass-card" style={{ padding: '16px 18px' }}>
+                <p style={{ fontSize: 14, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                  Inga pass schemalagda idag
+                </p>
+              </div>
+            ) : (
+              todaySessions.map(session => {
+                const sc = statusConfig[session.status] ?? statusConfig.draft
+                return (
+                  <div key={session.id} className="glass-card" style={{
+                    padding: '14px 16px',
+                    display: 'flex', alignItems: 'center', gap: 12,
+                  }}>
+                    <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{
+                        fontSize: 14, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em',
+                        margin: '0 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
+                      }}>
+                        {session.title}
+                      </p>
+                      <p style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                        {session.groups?.[0]?.name ?? '—'}{session.start_time ? ` · ${session.start_time.slice(0, 5)}` : ''}
+                      </p>
+                    </div>
+                    <div style={{ background: sc.pill, borderRadius: 999, padding: '4px 10px', flexShrink: 0 }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: sc.text }}>{sc.label}</span>
+                    </div>
+                  </div>
+                )
+              })
             )}
           </div>
-          <h1 style={{ fontSize: 28, fontWeight: 800, color: 'white', letterSpacing: '-0.04em', lineHeight: 1.1, marginBottom: 2 }}>
-            {greeting} 👋
-          </h1>
-          <p style={{ fontSize: 14, color: 'rgba(255,255,255,0.6)', fontWeight: 500, marginBottom: 20 }}>
-            {new Date().toLocaleDateString('en-SE', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
-          </p>
+        </div>
 
-          {/* Quick action buttons */}
-          <div style={{ display: 'flex', gap: 10 }}>
-            <Link href="/live" style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: 'rgba(255,255,255,0.18)',
-              backdropFilter: 'blur(8px)',
-              border: '1px solid rgba(255,255,255,0.25)',
-              borderRadius: 9999,
-              padding: '9px 18px',
-              textDecoration: 'none',
-              color: 'white',
-              fontSize: 14, fontWeight: 700, letterSpacing: '-0.01em',
-            }}>
-              <Play size={14} fill="white" color="white" />
-              Start
-            </Link>
-            <Link href="/planning" style={{
-              display: 'flex', alignItems: 'center', gap: 7,
-              background: 'rgba(255,255,255,0.1)',
-              border: '1px solid rgba(255,255,255,0.15)',
-              borderRadius: 9999,
-              padding: '9px 18px',
-              textDecoration: 'none',
-              color: 'rgba(255,255,255,0.85)',
-              fontSize: 14, fontWeight: 600, letterSpacing: '-0.01em',
-            }}>
-              <CalendarDays size={14} color="rgba(255,255,255,0.85)" />
-              Plan
-            </Link>
+        {/* ── Quick Stats ─────────────────────────────────────────── */}
+        <div>
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Statistik</span>
+          </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
+            <div className="glass-card" style={{ padding: '18px 16px' }}>
+              <p style={{ fontSize: 32, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.04em', margin: '0 0 2px', lineHeight: 1 }}>
+                {totalSessions}
+              </p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#64748B', margin: '0 0 8px' }}>Pass denna säsong</p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8' }}>↑ Bra jobbat</p>
+            </div>
+            <div className="glass-card" style={{ padding: '18px 16px' }}>
+              <p style={{ fontSize: 32, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.04em', margin: '0 0 2px', lineHeight: 1 }}>
+                2.6
+              </p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#64748B', margin: '0 0 8px' }}>Snitt DD</p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8' }}>↑ +0.3 sedan förra månaden</p>
+            </div>
           </div>
         </div>
+
       </div>
-
-      {/* ── Season Progress ───────────────────────────────────── */}
-      <div className="glass-card" style={{ padding: '18px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
-            Season Progress
-          </h2>
-          <span style={{
-            fontSize: 12, fontWeight: 700, color: '#0D7377',
-            background: 'rgba(13,115,119,0.1)', borderRadius: 8, padding: '3px 10px',
-          }}>
-            {season[activePhase].label}
-          </span>
-        </div>
-
-        {/* Progress bar */}
-        <div style={{ position: 'relative', marginBottom: 12 }}>
-          <div style={{
-            height: 6, borderRadius: 9999,
-            background: 'rgba(0,0,0,0.06)',
-          }} />
-          <div style={{
-            position: 'absolute', top: 0, left: 0, height: 6, borderRadius: 9999,
-            width: `${((activePhase + 1) / season.length) * 100}%`,
-            background: 'linear-gradient(90deg, #0D7377, #26a0a0)',
-            boxShadow: '0 0 8px rgba(13,115,119,0.4)',
-            transition: 'width 0.4s ease',
-          }} />
-        </div>
-
-        {/* Phase labels */}
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {season.map((phase, i) => (
-            <div key={phase.label} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-              <div style={{
-                width: 8, height: 8, borderRadius: '50%',
-                background: i <= activePhase ? '#0D7377' : '#E2E8F0',
-                boxShadow: i === activePhase ? '0 0 0 3px rgba(13,115,119,0.2)' : 'none',
-                transition: 'all 0.2s ease',
-              }} />
-              <span style={{
-                fontSize: 10, fontWeight: i === activePhase ? 700 : 500,
-                color: i === activePhase ? '#0D7377' : '#94A3B8',
-                letterSpacing: '0.01em',
-              }}>
-                {phase.short}
-              </span>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── 2-col grid ────────────────────────────────────────── */}
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-
-        {/* Next Events */}
-        <div className="glass-card" style={{ padding: '16px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(13,115,119,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Zap size={14} color="#0D7377" strokeWidth={2.5} />
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>Events</span>
-          </div>
-          <p style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, lineHeight: 1.4 }}>
-            No upcoming competitions
-          </p>
-        </div>
-
-        {/* Week Focus */}
-        <div className="glass-card" style={{ padding: '16px 16px' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-            <div style={{ width: 28, height: 28, borderRadius: 9, background: 'rgba(13,115,119,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <Target size={14} color="#0D7377" strokeWidth={2.5} />
-            </div>
-            <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>Focus</span>
-          </div>
-          <ul style={{ margin: 0, padding: 0, listStyle: 'none', display: 'flex', flexDirection: 'column', gap: 5 }}>
-            {weekFocus.map(f => (
-              <li key={f} style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#0D7377', flexShrink: 0 }} />
-                <span style={{ fontSize: 12, color: '#475569', fontWeight: 500 }}>{f}</span>
-              </li>
-            ))}
-          </ul>
-        </div>
-      </div>
-
-      {/* ── Week Planner ──────────────────────────────────────── */}
-      <div className="glass-card" style={{ padding: '18px 20px' }}>
-        <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em', marginBottom: 16 }}>
-          Week Planner
-        </h2>
-        <div style={{ display: 'flex', justifyContent: 'space-between' }}>
-          {days.map((day, i) => (
-            <div key={i} style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
-              <span style={{
-                fontSize: 11, fontWeight: 600,
-                color: i === today ? '#0D7377' : '#94A3B8',
-                letterSpacing: '0.02em',
-              }}>
-                {day.label}
-              </span>
-              <div style={{
-                width: i === today ? 32 : 10,
-                height: i === today ? 32 : 10,
-                borderRadius: i === today ? 11 : '50%',
-                background: i === today
-                  ? 'linear-gradient(135deg, #0D7377, #0a5c60)'
-                  : 'rgba(0,0,0,0.07)',
-                display: 'flex', alignItems: 'center', justifyContent: 'center',
-                boxShadow: i === today ? '0 2px 8px rgba(13,115,119,0.3)' : 'none',
-                transition: 'all 0.2s ease',
-              }}>
-                {i === today && (
-                  <span style={{ fontSize: 12, fontWeight: 700, color: 'white' }}>T</span>
-                )}
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-
-      {/* ── Today ────────────────────────────────────────────── */}
-      <div className="glass-card" style={{ padding: '18px 20px' }}>
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
-          <h2 style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.02em' }}>
-            Today
-          </h2>
-          <Link href="/planning" style={{ display: 'flex', alignItems: 'center', gap: 2, textDecoration: 'none', color: '#0D7377', fontSize: 13, fontWeight: 600 }}>
-            View all <ChevronRight size={14} />
-          </Link>
-        </div>
-        <p style={{ fontSize: 14, color: '#94A3B8', fontWeight: 500, marginBottom: 18 }}>
-          No sessions scheduled
-        </p>
-        <div style={{ display: 'flex', gap: 10 }}>
-          <Link
-            href="/live"
-            className="btn-primary"
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '12px 0', textDecoration: 'none', fontSize: 14 }}
-          >
-            <Play size={15} fill="white" color="white" />
-            Start Training
-          </Link>
-          <Link
-            href="/planning"
-            className="btn-secondary"
-            style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7, padding: '12px 0', textDecoration: 'none', fontSize: 14 }}
-          >
-            <CalendarDays size={15} color="#0F172A" />
-            Plan Session
-          </Link>
-        </div>
-      </div>
-
     </div>
   )
 }
