@@ -40,6 +40,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
     name: '', code: '', group_name: '', notes: '', category_id: '',
   })
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState<string | null>(null)
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false)
   const [deleting, setDeleting] = useState(false)
 
@@ -51,7 +52,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
         code: exercise.code ?? '',
         group_name: exercise.group_name ?? '',
         notes: exercise.notes ?? '',
-        category_id: exercise.category_id,
+        category_id: exercise.category_id || initialCategoryId ?? categories[0]?.id ?? '',
       })
     } else {
       setForm({
@@ -71,6 +72,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
     if (!form.name.trim()) return
     console.log('Saving exercise:', form)
     setSaving(true)
+    setSaveError(null)
 
     const payload = {
       name: form.name.trim(),
@@ -84,12 +86,21 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
       const { error } = await supabase.from('library_items').update(payload).eq('id', exercise.id)
       if (error) console.error('Update failed:', error)
     } else {
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: profile } = await supabase
+        .from('profiles').select('club_id').eq('id', user!.id).single()
       const { error } = await supabase.from('library_items').insert({
         ...payload,
+        club_id: profile?.club_id,
         type: 'custom',
         archived: false,
       })
-      if (error) console.error('Insert failed:', error)
+      if (error) {
+        console.error('Insert failed:', error)
+        setSaveError(error.message)
+        setSaving(false)
+        return
+      }
     }
 
     setSaving(false)
@@ -231,6 +242,12 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
         >
           {saving ? 'Saving…' : 'Save'}
         </button>
+
+        {saveError && (
+          <p style={{ fontSize: 13, fontWeight: 600, color: '#DC2626', marginTop: 8, marginBottom: 4 }}>
+            {saveError}
+          </p>
+        )}
 
         {exercise && !showDeleteConfirm && (
           <button

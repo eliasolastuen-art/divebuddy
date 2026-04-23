@@ -682,42 +682,53 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
     }
 
     const savedIdUpdates: Record<string, string> = {}
-    for (let i = 0; i < blocks.length; i++) {
-      const block = blocks[i]
-      const { data: savedBlock, error: blockError } = await supabase.from('training_blocks').insert({
-        training_id: trainingId,
-        category: block.category,
-        name: block.name,
-        notes: block.notes || null,
-        sort_order: i,
-        block_type: block.block_type,
-      }).select().single()
+    try {
+      for (let i = 0; i < blocks.length; i++) {
+        const block = blocks[i]
+        console.log('Inserting block:', block.name, block.block_type, 'index:', i)
+        const { data: savedBlock, error: blockError } = await supabase.from('training_blocks').insert({
+          training_id: trainingId,
+          category: block.category,
+          name: block.name,
+          notes: block.notes || null,
+          sort_order: i,
+          block_type: block.block_type,
+        }).select().single()
 
-      if (blockError) {
-        console.error('Block insert error:', blockError.message, block.name, block.block_type)
-      }
+        if (blockError) {
+          console.error('Block insert error:', blockError, block.name, block.block_type)
+          throw new Error(blockError.message)
+        }
 
-      if (savedBlock) {
-        savedIdUpdates[block.id] = savedBlock.id
-        for (let j = 0; j < block.items.length; j++) {
-          const item = block.items[j]
-          const { error: itemError } = await supabase.from('training_block_items').insert({
-            block_id: savedBlock.id,
-            library_item_id: item.library_item_id || null,
-            custom_name: item.isFromLibrary ? null : item.custom_name || null,
-            sets: item.sets || null,
-            reps: item.reps || null,
-            height: item.height || null,
-            duration_seconds: item.duration_seconds ?? null,
-            notes: item.notes || null,
-            sort_order: j,
-            assigned_athlete_id: item.assigned_athlete_id ?? null,
-          })
-          if (itemError) {
-            console.error('Item insert error:', itemError, 'item:', item.custom_name)
+        if (savedBlock) {
+          savedIdUpdates[block.id] = savedBlock.id
+          for (let j = 0; j < block.items.length; j++) {
+            const item = block.items[j]
+            console.log('Inserting item:', item.custom_name || item.library_item_id, 'block:', block.name, 'index:', j)
+            const { error: itemError } = await supabase.from('training_block_items').insert({
+              block_id: savedBlock.id,
+              library_item_id: item.library_item_id || null,
+              custom_name: item.isFromLibrary ? null : item.custom_name || null,
+              sets: item.sets || null,
+              reps: item.reps || null,
+              height: item.height || null,
+              duration_seconds: item.duration_seconds ?? null,
+              notes: item.notes || null,
+              sort_order: j,
+              assigned_athlete_id: item.assigned_athlete_id ?? null,
+            })
+            if (itemError) {
+              console.error('Item insert error:', itemError, 'item:', item.custom_name)
+              throw new Error(itemError.message)
+            }
           }
         }
       }
+    } catch (err) {
+      console.error('Block save failed:', err)
+      setSaveError(err instanceof Error ? err.message : 'Kunde inte spara block — försök igen')
+      setSaving(false)
+      return
     }
 
     if (Object.keys(savedIdUpdates).length > 0) {
