@@ -31,6 +31,7 @@ export default function LiveWeekView() {
       .from('trainings')
       .select('id, title, status, training_type, scheduled_date, group_id, groups(name, color)')
       .eq('club_id', profile.club_id)
+      .neq('status', 'completed')
       .gte('scheduled_date', toDateString(monday))
       .lte('scheduled_date', toDateString(sunday))
       .order('scheduled_date')

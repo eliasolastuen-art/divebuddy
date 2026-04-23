@@ -1,5 +1,6 @@
 {
     "claudeCode.useTerminal": false,
     "claudeCode.allowDangerouslySkipPermissions": false,
-    "claudeCode.hideOnboarding": false
+    "claudeCode.hideOnboarding": false,
+    "css.lint.unknownAtRules": "ignore"
 }

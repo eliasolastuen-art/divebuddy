@@ -38,7 +38,7 @@ interface UpcomingTraining {
 }
 
 export default function AthletePage() {
-  const { profile, roles, loading } = useUser()
+  const { profile, activeRole, loading } = useUser()
   const router = useRouter()
   const [athlete, setAthlete] = useState<AthleteRecord | null>(null)
   const [todayDives, setTodayDives] = useState<TodayDive[]>([])
@@ -49,10 +49,10 @@ export default function AthletePage() {
 
   useEffect(() => {
     if (loading) return
-    if (roles.includes('coach') || roles.includes('admin')) {
+    if (activeRole !== 'athlete') {
       router.replace('/dashboard')
     }
-  }, [roles, loading, router])
+  }, [activeRole, loading, router])
 
   useEffect(() => {
     if (!profile?.id || loading) return

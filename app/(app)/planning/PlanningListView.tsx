@@ -394,7 +394,20 @@ function SwipeCard({
           )}
         </div>
 
-        <ChevronRight size={15} color="#CBD5E1" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+        <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
+          <button
+            onClick={e => { e.stopPropagation(); onDelete() }}
+            style={{
+              width: 30, height: 30, borderRadius: 9,
+              background: 'rgba(220,38,38,0.08)',
+              border: 'none', cursor: 'pointer',
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+            }}
+          >
+            <Trash2 size={14} color="#DC2626" strokeWidth={2} />
+          </button>
+          <ChevronRight size={15} color="#CBD5E1" strokeWidth={2.5} />
+        </div>
       </div>
     </div>
   )

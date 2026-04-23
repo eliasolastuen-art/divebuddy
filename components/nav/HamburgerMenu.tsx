@@ -20,7 +20,7 @@ interface Group {
 
 export default function HamburgerMenu({ open, onClose }: Props) {
   const router = useRouter()
-  const { roles, profile } = useUser()
+  const { roles, activeRole, profile } = useUser()
   const [groups, setGroups] = useState<Group[]>([])
   const [visible, setVisible] = useState(false)
 
@@ -127,7 +127,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 12px', position: 'relative' }}>
 
           {/* Atlet-vy: förenklad meny */}
-          {!roles.includes('coach') && !roles.includes('admin') ? (
+          {activeRole === 'athlete' ? (
             <div className="glass-card" style={{ padding: 6 }}>
               {[
                 { href: '/athlete', label: 'Min sida', Icon: Waves },

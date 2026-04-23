@@ -25,17 +25,17 @@ const today = 2 // Wednesday = index 2
 const weekFocus = ["Entries", "Competition simulation", "3m consistency"]
 
 export default function DashboardPage() {
-  const { profile, activeRole, roles, loading } = useUser()
+  const { profile, activeRole, loading } = useUser()
   const [clubName, setClubName] = useState<string | null>(null)
   const router = useRouter()
 
-  // Atleter utan coach/admin-roll redirectas till sin egna sida
+  // Atleter redirectas till sin egna sida
   useEffect(() => {
     if (loading) return
-    if (roles.length > 0 && !roles.includes('coach') && !roles.includes('admin')) {
+    if (activeRole === 'athlete') {
       router.replace('/athlete')
     }
-  }, [roles, loading, router])
+  }, [activeRole, loading, router])
 
   useEffect(() => {
     if (!profile?.club_id) return

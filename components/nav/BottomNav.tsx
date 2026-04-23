@@ -53,9 +53,9 @@ export default function BottomNav() {
               }}
             >
               <div style={{
-                width: 32, height: 32,
-                borderRadius: 10,
-                background: active ? 'rgba(13,115,119,0.12)' : 'transparent',
+                width: 48, height: 28,
+                borderRadius: 999,
+                background: active ? 'rgba(13,115,119,0.1)' : 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.15s',
               }}>

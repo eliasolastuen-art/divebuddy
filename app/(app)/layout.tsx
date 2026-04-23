@@ -2,52 +2,27 @@
 
 import BottomNav from '@/components/nav/BottomNav'
 import HamburgerMenu from '@/components/nav/HamburgerMenu'
+import RoleSwitcher from '@/components/nav/RoleSwitcher'
 import { UserProvider, useUser } from '@/lib/context/user'
 import { Menu } from 'lucide-react'
-import { useState } from 'react'
-import { usePathname } from 'next/navigation'
-
-function RoleSwitcher() {
-  const { roles, activeRole, setActiveRole } = useUser()
-
-  const switchable = roles.filter(r => r !== 'admin')
-  if (switchable.length < 2) return null
-
-  return (
-    <div style={{
-      display: 'flex',
-      background: 'rgba(0,0,0,0.06)',
-      borderRadius: 20,
-      padding: 3,
-    }}>
-      {switchable.map(role => (
-        <button
-          key={role}
-          onClick={() => setActiveRole(role)}
-          style={{
-            padding: '4px 12px',
-            borderRadius: 16,
-            border: 'none',
-            fontSize: 12,
-            fontWeight: 700,
-            cursor: 'pointer',
-            textTransform: 'capitalize',
-            transition: 'all 0.18s ease',
-            background: activeRole === role ? 'white' : 'transparent',
-            color: activeRole === role ? '#0D7377' : '#94A3B8',
-            boxShadow: activeRole === role ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
-          }}
-        >
-          {role}
-        </button>
-      ))}
-    </div>
-  )
-}
+import { useEffect, useState } from 'react'
+import { usePathname, useRouter } from 'next/navigation'
 
 function AppShell({ children }: { children: React.ReactNode }) {
   const [menuOpen, setMenuOpen] = useState(false)
   const pathname = usePathname()
+  const router = useRouter()
+  const { activeRole, loading } = useUser()
+
+  // Auto-navigate when role switches
+  useEffect(() => {
+    if (loading || !activeRole) return
+    if (activeRole === 'athlete' && !pathname.startsWith('/athlete')) {
+      router.replace('/athlete')
+    } else if (activeRole !== 'athlete' && pathname.startsWith('/athlete')) {
+      router.replace('/dashboard')
+    }
+  }, [activeRole])
 
   // Group sub-routes and athlete routes have their own layouts
   const isGroupSubRoute = /^\/groups\/[^/]+/.test(pathname)
@@ -105,12 +80,16 @@ function AppShell({ children }: { children: React.ReactNode }) {
       <HamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Content — scrolls freely, never hidden behind nav */}
-      <main style={{
-        flex: 1,
-        overflowY: 'auto',
-        overflowX: 'hidden',
-        paddingBottom: 'var(--content-bottom)',
-      }}>
+      <main
+        key={pathname}
+        className="page-enter"
+        style={{
+          flex: 1,
+          overflowY: 'auto',
+          overflowX: 'hidden',
+          paddingBottom: 'var(--content-bottom)',
+        }}
+      >
         {children}
       </main>
 

@@ -1,8 +1,11 @@
 'use client'
 
+import { useState } from 'react'
 import { usePathname } from 'next/navigation'
 import Link from 'next/link'
-import { Home, BookOpen, Target, MessageCircle } from 'lucide-react'
+import { Home, BookOpen, Target, MessageCircle, Menu } from 'lucide-react'
+import RoleSwitcher from '@/components/nav/RoleSwitcher'
+import HamburgerMenu from '@/components/nav/HamburgerMenu'
 
 const tabs = [
   { href: '/athlete', label: 'Hem', Icon: Home },
@@ -13,6 +16,7 @@ const tabs = [
 
 export default function AthleteLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <div style={{
@@ -32,16 +36,34 @@ export default function AthleteLayout({ children }: { children: React.ReactNode 
       }}>
         <div className="glass-nav" style={{
           height: '100%',
-          padding: '0 20px',
+          padding: '0 16px',
           display: 'flex',
           alignItems: 'center',
+          justifyContent: 'space-between',
           borderBottom: '1px solid rgba(0,0,0,0.06)',
         }}>
+          <button
+            onClick={() => setMenuOpen(true)}
+            style={{
+              width: 40, height: 40,
+              display: 'flex', alignItems: 'center', justifyContent: 'center',
+              background: 'rgba(255,255,255,0.7)',
+              border: '1px solid rgba(0,0,0,0.08)',
+              borderRadius: 12,
+              cursor: 'pointer',
+            }}
+            aria-label="Open menu"
+          >
+            <Menu size={18} color="#1E293B" strokeWidth={2.2} />
+          </button>
+          <RoleSwitcher />
           <span style={{ fontSize: 18, fontWeight: 800, color: '#0D7377', letterSpacing: '-0.02em' }}>
             DiveBuddy
           </span>
         </div>
       </header>
+
+      <HamburgerMenu open={menuOpen} onClose={() => setMenuOpen(false)} />
 
       {/* Content — scrolls freely */}
       <main style={{
