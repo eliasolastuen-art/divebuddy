@@ -2,9 +2,10 @@
 
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
-import { ArrowLeft, Pencil, Trash2, X, UserPlus, Waves, Award } from 'lucide-react'
+import { ArrowLeft, Pencil, Trash2, X, UserPlus, Lock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/context/user'
+import BottomNav from '@/components/nav/BottomNav'
 
 interface AthleteDetail {
   id: string
@@ -17,48 +18,56 @@ interface AthleteDetail {
   group_color: string | null
 }
 
-interface SessionSummary {
+interface LibraryDive {
   id: string
-  started_at: string
-  dive_count: number
-}
-
-interface DiveEntry {
-  id: string
-  dive_code: string | null
-  dive_name: string | null
+  name: string
+  code: string | null
+  group_name: string | null
   dd: number | null
-  status: 'pending' | 'done'
-  coach_feedback: string | null
+  description: string | null
 }
 
-const GROUP_COLORS = ['#0D7377','#D4A017','#6366F1','#EC4899','#10B981','#F97316','#3B82F6','#8B5CF6']
+type Tab = 'progress' | 'hopp' | 'notes'
 
-export default function AthleteProfilePage() {
+const BAR_HEIGHTS = [40, 60, 45, 75, 55, 80, 35, 90]
+const BAR_LABELS = ['v10', 'v11', 'v12', 'v13', 'v14', 'v15', 'v16', 'v17']
+
+const HARDCODED_NOTES = [
+  { date: '15 apr 2026', text: 'Bra progression i bakåt-rotation. Fokus nästa pass på entry.' },
+  { date: '8 apr 2026', text: 'Arbetar på DD 3.2-nivå. Ser ut att nå målet till tävling.' },
+]
+
+const SEASON_GOALS = [
+  { label: 'DD-snitt 2.8', pct: 85, color: '#0D7377' },
+  { label: 'Tävlingshopp klart', pct: 66, color: '#F59E0B' },
+]
+
+export default function Athlete360Page() {
   const params = useParams()
   const router = useRouter()
-  const { profile } = useUser()
   const athleteId = params.athleteId as string
   const groupId = params.id as string
 
   const [athlete, setAthlete] = useState<AthleteDetail | null>(null)
-  const [sessions, setSessions] = useState<SessionSummary[]>([])
-  const [selectedSession, setSelectedSession] = useState<string | null>(null)
-  const [dives, setDives] = useState<DiveEntry[]>([])
-  const [totalDives, setTotalDives] = useState(0)
+  const [totalSessions, setTotalSessions] = useState(0)
+  const [snittDD, setSnittDD] = useState<string>('—')
+  const [uniqueDives, setUniqueDives] = useState(0)
+  const [libraryDives, setLibraryDives] = useState<LibraryDive[]>([])
+  const [tab, setTab] = useState<Tab>('progress')
   const [loading, setLoading] = useState(true)
 
-  // Edit sheet state
+  // Note sheet
+  const [showNoteSheet, setShowNoteSheet] = useState(false)
+  const [noteText, setNoteText] = useState('')
+
+  // Edit sheet (preserved from prior page)
   const [showEdit, setShowEdit] = useState(false)
   const [editName, setEditName] = useState('')
   const [editEmail, setEditEmail] = useState('')
   const [editActive, setEditActive] = useState(true)
   const [confirmDelete, setConfirmDelete] = useState(false)
   const [saving, setSaving] = useState(false)
-
-  // Invite state
   const [inviteEmail, setInviteEmail] = useState('')
-  const [inviteRole] = useState<'athlete'>('athlete')
   const [inviteSending, setInviteSending] = useState(false)
   const [inviteMessage, setInviteMessage] = useState<{ type: 'error' | 'success'; text: string } | null>(null)
 
@@ -74,14 +83,15 @@ export default function AthleteProfilePage() {
     if (!a) { setLoading(false); return }
 
     const groupData = a.groups as unknown as { name: string; color: string } | null
-    setAthlete({
+    const athleteDetail: AthleteDetail = {
       id: a.id, name: a.name, email: a.email, active: a.active,
       group_id: a.group_id, club_id: a.club_id,
       group_name: groupData?.name ?? null,
       group_color: groupData?.color ?? null,
-    })
+    }
+    setAthlete(athleteDetail)
 
-    // Hämta sessioner där atleten deltog
+    // Sessions
     const { data: sessionAthletes } = await supabase
       .from('live_session_athletes')
       .select('session_id')
@@ -89,49 +99,38 @@ export default function AthleteProfilePage() {
 
     if (sessionAthletes?.length) {
       const sessionIds = sessionAthletes.map(s => s.session_id)
+      setTotalSessions(sessionIds.length)
 
-      const { data: sessionData } = await supabase
-        .from('live_sessions')
-        .select('id, started_at')
-        .in('id', sessionIds)
-        .order('started_at', { ascending: false })
-        .limit(20)
-
-      const { data: allDives } = await supabase
+      const { data: diveData } = await supabase
         .from('live_dive_log')
-        .select('session_id')
+        .select('session_id, dive_code, dd')
         .eq('athlete_id', athleteId)
         .in('session_id', sessionIds)
 
-      const countMap: Record<string, number> = {}
-      allDives?.forEach(d => { countMap[d.session_id] = (countMap[d.session_id] ?? 0) + 1 })
-
-      const summaries = (sessionData ?? []).map(s => ({
-        id: s.id,
-        started_at: s.started_at,
-        dive_count: countMap[s.id] ?? 0,
-      }))
-      setSessions(summaries)
-      setTotalDives(allDives?.length ?? 0)
-
-      // Ladda hopp för senaste sessionen automatiskt
-      if (summaries.length > 0) {
-        setSelectedSession(summaries[0].id)
-        loadDives(summaries[0].id)
+      if (diveData?.length) {
+        const ddValues = diveData.filter(d => d.dd != null).map(d => d.dd as number)
+        if (ddValues.length > 0) {
+          const avg = ddValues.reduce((s, v) => s + v, 0) / ddValues.length
+          setSnittDD(avg.toFixed(1))
+        }
+        const codes = new Set(diveData.map(d => d.dive_code).filter(Boolean))
+        setUniqueDives(codes.size)
       }
     }
 
-    setLoading(false)
-  }
+    // Library dives for this club
+    if (a.club_id) {
+      const { data: libData } = await supabase
+        .from('library_items')
+        .select('id, name, code, group_name, dd, description')
+        .eq('club_id', a.club_id)
+        .eq('type', 'dive')
+        .eq('archived', false)
+        .order('name')
+      setLibraryDives((libData ?? []) as LibraryDive[])
+    }
 
-  const loadDives = async (sessionId: string) => {
-    const { data } = await supabase
-      .from('live_dive_log')
-      .select('id, dive_code, dive_name, dd, status, coach_feedback')
-      .eq('athlete_id', athleteId)
-      .eq('session_id', sessionId)
-      .order('created_at', { ascending: true })
-    setDives((data ?? []) as DiveEntry[])
+    setLoading(false)
   }
 
   useEffect(() => { load() }, [athleteId])
@@ -175,7 +174,7 @@ export default function AthleteProfilePage() {
     const res = await fetch('/api/invite', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: inviteEmail.trim(), roles: [inviteRole], clubId: athlete.club_id }),
+      body: JSON.stringify({ email: inviteEmail.trim(), roles: ['athlete'], clubId: athlete.club_id }),
     })
     const result = await res.json()
     setInviteMessage(
@@ -185,9 +184,6 @@ export default function AthleteProfilePage() {
     )
     setInviteSending(false)
   }
-
-  const formatDate = (iso: string) =>
-    new Date(iso).toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' })
 
   if (loading) return (
     <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
@@ -199,172 +195,318 @@ export default function AthleteProfilePage() {
     <div style={{ textAlign: 'center', padding: 60, color: '#94A3B8' }}>Atleten hittades inte</div>
   )
 
-  const groupColor = athlete.group_color || '#0D7377'
+  const teal = '#0D7377'
+  const initial = athlete.name.charAt(0).toUpperCase()
+
+  const STATS = [
+    { value: totalSessions, label: 'Pass' },
+    { value: snittDD, label: 'Snitt DD' },
+    { value: uniqueDives || '—', label: 'Unika hopp' },
+    { value: '—', label: 'Trend' },
+  ]
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 100 }}>
+    <div style={{ minHeight: '100dvh', display: 'flex', flexDirection: 'column', background: 'var(--surface-bg)' }}>
 
-      {/* Header */}
-      <div style={{ padding: '16px 16px 0', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
-        <button
-          onClick={() => router.back()}
-          style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-        >
-          <ArrowLeft size={18} color="#0F172A" strokeWidth={2.5} />
-        </button>
+      {/* ── Dark Header ── */}
+      <div style={{
+        background: 'linear-gradient(160deg, #0F172A, #1e293b)',
+        padding: '20px 20px 24px',
+        paddingTop: 'max(20px, var(--safe-top))',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Decorative circles */}
+        <div style={{ position: 'absolute', top: -40, right: -40, width: 160, height: 160, borderRadius: '50%', background: 'rgba(255,255,255,0.03)', pointerEvents: 'none' }} />
+        <div style={{ position: 'absolute', bottom: -30, left: -20, width: 120, height: 120, borderRadius: '50%', background: 'rgba(13,115,119,0.08)', pointerEvents: 'none' }} />
 
-        <div style={{ display: 'flex', alignItems: 'center', gap: 12, flex: 1 }}>
-          <div style={{ width: 48, height: 48, borderRadius: 16, background: `${groupColor}18`, border: `2px solid ${groupColor}30`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-            <span style={{ fontSize: 20, fontWeight: 800, color: groupColor }}>{athlete.name.charAt(0).toUpperCase()}</span>
-          </div>
-          <div style={{ flex: 1 }}>
-            <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', lineHeight: 1.1 }}>{athlete.name}</h1>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 4 }}>
-              {athlete.group_name && (
-                <span style={{ fontSize: 12, fontWeight: 600, color: groupColor, background: `${groupColor}12`, padding: '2px 8px', borderRadius: 6 }}>
-                  {athlete.group_name}
-                </span>
-              )}
-              <span style={{ fontSize: 11, fontWeight: 700, padding: '2px 8px', borderRadius: 6, background: athlete.active ? 'rgba(13,115,119,0.1)' : 'rgba(0,0,0,0.05)', color: athlete.active ? '#0D7377' : '#94A3B8' }}>
-                {athlete.active ? 'Aktiv' : 'Inaktiv'}
-              </span>
-            </div>
-          </div>
+        {/* Row 1: back + edit */}
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20, position: 'relative' }}>
+          <button
+            onClick={() => router.back()}
+            style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+          >
+            <ArrowLeft size={17} color="white" strokeWidth={2.5} />
+          </button>
           <button
             onClick={openEdit}
-            style={{ width: 36, height: 36, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           >
-            <Pencil size={15} color="#64748B" strokeWidth={2} />
+            <Pencil size={15} color="rgba(255,255,255,0.8)" strokeWidth={2} />
           </button>
         </div>
-      </div>
 
-      <div style={{ padding: '0 16px', display: 'flex', flexDirection: 'column', gap: 14 }}>
-
-        {/* Statistik */}
-        <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
-          <div className="glass-card" style={{ padding: '16px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Waves size={15} color="#0D7377" />
-              <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Hopp</span>
-            </div>
-            <p style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>{totalDives}</p>
-            <p style={{ fontSize: 12, color: '#64748B' }}>totalt loggade</p>
+        {/* Row 2: avatar + name + badge */}
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20, position: 'relative' }}>
+          <div style={{
+            width: 54, height: 54, borderRadius: '50%', flexShrink: 0,
+            background: 'linear-gradient(135deg, #0D7377, #064d50)',
+            border: '2.5px solid rgba(13,115,119,0.6)',
+            display: 'flex', alignItems: 'center', justifyContent: 'center',
+            boxShadow: '0 4px 16px rgba(13,115,119,0.4)',
+          }}>
+            <span style={{ fontSize: 22, fontWeight: 900, color: 'white' }}>{initial}</span>
           </div>
-          <div className="glass-card" style={{ padding: '16px 18px' }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-              <Award size={15} color="#0D7377" />
-              <span style={{ fontSize: 11, color: '#64748B', fontWeight: 700, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Pass</span>
+          <div>
+            <div style={{ fontSize: 22, fontWeight: 900, color: 'white', letterSpacing: '-0.04em', lineHeight: 1.15 }}>
+              {athlete.name}
             </div>
-            <p style={{ fontSize: 28, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>{sessions.length}</p>
-            <p style={{ fontSize: 12, color: '#64748B' }}>deltagit</p>
+            {athlete.group_name && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginTop: 5 }}>
+                <div style={{ width: 8, height: 8, borderRadius: '50%', background: teal, flexShrink: 0 }} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: 'rgba(255,255,255,0.7)' }}>
+                  {athlete.group_name} · {athlete.active ? 'Aktiv' : 'Inaktiv'}
+                </span>
+              </div>
+            )}
           </div>
         </div>
 
-        {/* Pass-historik */}
-        {sessions.length > 0 && (
-          <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 18px 10px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>Pass</h2>
+        {/* Row 3: 4 stat cards */}
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(4, 1fr)', gap: 8, position: 'relative' }}>
+          {STATS.map(({ value, label }) => (
+            <div key={label} style={{
+              background: 'rgba(255,255,255,0.07)',
+              borderRadius: 14,
+              padding: '10px 8px',
+              textAlign: 'center',
+              border: '1px solid rgba(255,255,255,0.06)',
+            }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>{value}</div>
+              <div style={{ fontSize: 10, fontWeight: 600, color: 'rgba(255,255,255,0.5)', marginTop: 2, letterSpacing: '0.02em' }}>{label}</div>
             </div>
-            {sessions.map((session, i) => (
-              <button
-                key={session.id}
-                onClick={() => {
-                  setSelectedSession(session.id)
-                  loadDives(session.id)
-                }}
-                style={{
-                  width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                  padding: '12px 18px', border: 'none', cursor: 'pointer', textAlign: 'left',
-                  borderBottom: i < sessions.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
-                  background: selectedSession === session.id ? 'rgba(13,115,119,0.05)' : 'transparent',
-                }}
-              >
-                <div>
-                  <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', textTransform: 'capitalize' }}>
-                    {formatDate(session.started_at)}
-                  </p>
-                </div>
-                <span style={{
-                  fontSize: 13, fontWeight: 700, color: '#0D7377',
-                  background: 'rgba(13,115,119,0.08)', borderRadius: 8, padding: '2px 10px',
-                }}>
-                  {session.dive_count} hopp
-                </span>
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Hopp i valt pass */}
-        {selectedSession && dives.length > 0 && (
-          <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-            <div style={{ padding: '14px 18px 10px', borderBottom: '1px solid rgba(0,0,0,0.05)' }}>
-              <h2 style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>
-                Hopp — {formatDate(sessions.find(s => s.id === selectedSession)?.started_at ?? '')}
-              </h2>
-            </div>
-            {dives.map((dive, i) => (
-              <div
-                key={dive.id}
-                style={{
-                  display: 'flex', alignItems: 'flex-start', gap: 12,
-                  padding: '12px 18px',
-                  borderBottom: i < dives.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
-                  background: dive.status === 'done' ? 'rgba(13,115,119,0.02)' : 'transparent',
-                }}
-              >
-                <div style={{
-                  width: 22, height: 22, borderRadius: '50%', flexShrink: 0, marginTop: 2,
-                  background: dive.status === 'done' ? '#0D7377' : 'rgba(0,0,0,0.08)',
-                  display: 'flex', alignItems: 'center', justifyContent: 'center',
-                }}>
-                  {dive.status === 'done' && (
-                    <svg width="10" height="8" viewBox="0 0 10 8" fill="none">
-                      <path d="M1 4L3.5 6.5L9 1" stroke="white" strokeWidth="1.5" strokeLinecap="round"/>
-                    </svg>
-                  )}
-                </div>
-                <div style={{ flex: 1 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>
-                      {dive.dive_code ?? '—'}
-                    </span>
-                    {dive.dive_name && (
-                      <span style={{ fontSize: 13, color: '#64748B' }}>{dive.dive_name}</span>
-                    )}
-                    {dive.dd && (
-                      <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', marginLeft: 'auto' }}>
-                        DD {dive.dd}
-                      </span>
-                    )}
-                  </div>
-                  {dive.coach_feedback && (
-                    <p style={{ fontSize: 12, color: '#64748B', marginTop: 4, fontStyle: 'italic' }}>
-                      {dive.coach_feedback}
-                    </p>
-                  )}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        {sessions.length === 0 && (
-          <div className="glass-card" style={{ padding: 32, textAlign: 'center' }}>
-            <Waves size={32} color="rgba(13,115,119,0.3)" style={{ margin: '0 auto 12px' }} />
-            <p style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', marginBottom: 6 }}>Inga pass ännu</p>
-            <p style={{ fontSize: 13, color: '#64748B' }}>Pass och hopp visas här när atleten deltar i träning.</p>
-          </div>
-        )}
+          ))}
+        </div>
       </div>
 
-      {/* ── Edit sheet ─────────────────────────────────────────────────────────── */}
+      {/* ── Tab Bar ── */}
+      <div style={{
+        background: 'white',
+        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        display: 'flex',
+        padding: '6px 16px',
+        gap: 4,
+        position: 'sticky',
+        top: 0,
+        zIndex: 10,
+      }}>
+        {(['progress', 'hopp', 'notes'] as Tab[]).map((t) => {
+          const labels: Record<Tab, string> = { progress: 'Progress', hopp: 'Hopp', notes: 'Notes' }
+          const active = tab === t
+          return (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              style={{
+                flex: 1,
+                padding: '8px 4px',
+                borderRadius: 10,
+                border: 'none',
+                cursor: 'pointer',
+                fontSize: 14,
+                fontWeight: active ? 700 : 500,
+                color: active ? teal : '#94A3B8',
+                background: active ? 'rgba(13,115,119,0.08)' : 'transparent',
+                transition: 'all 0.15s ease',
+              }}
+            >
+              {labels[t]}
+            </button>
+          )
+        })}
+      </div>
+
+      {/* ── Tab Content ── */}
+      <div style={{ flex: 1, padding: '16px 16px 0' }}>
+
+        {/* PROGRESS TAB */}
+        {tab === 'progress' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+
+            {/* Bar chart card */}
+            <div className="glass-card" style={{ padding: '20px 20px 16px' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 16 }}>Framsteg</div>
+              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 6, height: 100 }}>
+                {BAR_HEIGHTS.map((h, i) => (
+                  <div key={i} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 6 }}>
+                    <div style={{
+                      width: '100%',
+                      height: h,
+                      borderRadius: '6px 6px 2px 2px',
+                      background: i === BAR_HEIGHTS.length - 1
+                        ? '#EF4444'
+                        : `linear-gradient(180deg, ${teal} 0%, #064d50 100%)`,
+                      opacity: i === BAR_HEIGHTS.length - 1 ? 0.85 : 1,
+                    }} />
+                    <div style={{ fontSize: 9, color: '#94A3B8', fontWeight: 600, letterSpacing: '0.01em' }}>
+                      {BAR_LABELS[i]}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            {/* Season goals card */}
+            <div className="glass-card" style={{ padding: 20 }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 16 }}>Säsongsmål</div>
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+                {SEASON_GOALS.map(({ label, pct, color }) => (
+                  <div key={label}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 8 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>{label}</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color }}>{pct}%</span>
+                    </div>
+                    <div style={{ height: 6, borderRadius: 3, background: `${color}18`, overflow: 'hidden' }}>
+                      <div style={{ height: '100%', width: `${pct}%`, borderRadius: 3, background: color, transition: 'width 0.6s ease' }} />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* HOPP TAB */}
+        {tab === 'hopp' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {libraryDives.length > 0 ? (
+              <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
+                {libraryDives.map((dive, i) => (
+                  <div
+                    key={dive.id}
+                    style={{
+                      display: 'flex', alignItems: 'center', gap: 12,
+                      padding: '14px 16px',
+                      borderBottom: i < libraryDives.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                    }}
+                  >
+                    {/* Code badge */}
+                    <div style={{
+                      width: 36, height: 36, borderRadius: 10, flexShrink: 0,
+                      background: 'rgba(13,115,119,0.1)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    }}>
+                      <span style={{ fontSize: 10, fontWeight: 700, color: teal, textAlign: 'center', lineHeight: 1.2 }}>
+                        {dive.code ?? dive.group_name?.slice(0, 3) ?? '—'}
+                      </span>
+                    </div>
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                        {dive.name}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                        {dive.dd != null ? `DD ${dive.dd}` : 'DD —'}
+                        {dive.group_name ? ` · ${dive.group_name}` : ''}
+                      </div>
+                    </div>
+                    {/* Score placeholder */}
+                    <span style={{ fontSize: 16, fontWeight: 700, color: '#94A3B8', flexShrink: 0 }}>—</span>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <div className="glass-card" style={{ padding: 40, textAlign: 'center' }}>
+                <p style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', marginBottom: 6 }}>Inga hopp registrerade än</p>
+                <p style={{ fontSize: 13, color: '#94A3B8' }}>Hopp från klubbens bibliotek visas här.</p>
+              </div>
+            )}
+
+            {/* Add dive CTA */}
+            <button style={{
+              width: '100%', padding: '16px', borderRadius: 18,
+              background: 'transparent',
+              border: `1.5px dashed rgba(13,115,119,0.4)`,
+              cursor: 'pointer', color: teal, fontSize: 14, fontWeight: 700,
+              opacity: 0.7,
+            }}>
+              + Lägg till hopp
+            </button>
+          </div>
+        )}
+
+        {/* NOTES TAB */}
+        {tab === 'notes' && (
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
+            {HARDCODED_NOTES.map((note, i) => (
+              <div
+                key={i}
+                className="glass-card"
+                style={{ padding: '16px 18px', background: 'rgba(13,115,119,0.03)', cursor: 'default' }}
+              >
+                <div style={{ display: 'flex', alignItems: 'center', gap: 6, marginBottom: 10 }}>
+                  <Lock size={13} color={teal} strokeWidth={2.2} />
+                  <span style={{ fontSize: 12, fontWeight: 700, color: teal, flex: 1 }}>Coach-notering</span>
+                  <span style={{ fontSize: 11, color: '#94A3B8' }}>{note.date}</span>
+                </div>
+                <p style={{ fontSize: 14, color: '#0F172A', fontStyle: 'italic', lineHeight: 1.55, margin: 0 }}>
+                  "{note.text}"
+                </p>
+              </div>
+            ))}
+
+            {/* New note CTA */}
+            <button
+              onClick={() => { setNoteText(''); setShowNoteSheet(true) }}
+              style={{
+                width: '100%', padding: '16px', borderRadius: 18,
+                background: 'transparent',
+                border: `1.5px dashed rgba(13,115,119,0.4)`,
+                cursor: 'pointer', color: teal, fontSize: 14, fontWeight: 700,
+                opacity: 0.7,
+              }}
+            >
+              + Ny notering
+            </button>
+          </div>
+        )}
+
+        <div style={{ height: 100 }} />
+      </div>
+
+      <BottomNav />
+
+      {/* ── Note Sheet ── */}
+      {showNoteSheet && (
+        <>
+          <div
+            onClick={() => setShowNoteSheet(false)}
+            style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }}
+          />
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(var(--safe-bottom, 0px) + 24px)' }}>
+            <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
+              <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Ny notering</h2>
+              <button onClick={() => setShowNoteSheet(false)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <X size={15} color="#64748B" strokeWidth={2.5} />
+              </button>
+            </div>
+            <textarea
+              value={noteText}
+              onChange={e => setNoteText(e.target.value)}
+              placeholder="Skriv din notering här..."
+              rows={4}
+              className="glass-input"
+              style={{ width: '100%', padding: '12px 14px', fontSize: 14, marginBottom: 14, resize: 'none', boxSizing: 'border-box' }}
+              autoFocus
+            />
+            <button
+              onClick={() => { console.log('Coach note:', noteText); setShowNoteSheet(false) }}
+              disabled={!noteText.trim()}
+              className="btn-primary"
+              style={{ width: '100%', padding: 14, fontSize: 15, opacity: noteText.trim() ? 1 : 0.4 }}
+            >
+              Spara
+            </button>
+          </div>
+        </>
+      )}
+
+      {/* ── Edit Sheet ── */}
       {showEdit && (
         <>
           <div onClick={() => setShowEdit(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(var(--safe-bottom) + 24px)' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(var(--safe-bottom, 0px) + 24px)' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
               <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Redigera atlet</h2>
@@ -374,26 +516,26 @@ export default function AthleteProfilePage() {
             </div>
             <input value={editName} onChange={e => setEditName(e.target.value)} placeholder="Namn *" className="glass-input" style={{ width: '100%', padding: '12px 14px', fontSize: 15, marginBottom: 10 }} autoFocus />
             <input value={editEmail} onChange={e => setEditEmail(e.target.value)} placeholder="E-post (valfritt)" className="glass-input" style={{ width: '100%', padding: '12px 14px', fontSize: 15, marginBottom: 16 }} />
-            <div style={{ marginBottom: 20 }}>
+            <div style={{ marginBottom: 16 }}>
               <button
-                onClick={() => setEditActive(a => !a)}
-                style={{ padding: '9px 18px', borderRadius: 9999, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: editActive ? 'rgba(13,115,119,0.1)' : 'rgba(0,0,0,0.06)', color: editActive ? '#0D7377' : '#94A3B8', transition: 'all 0.15s ease' }}
+                onClick={() => setEditActive(v => !v)}
+                style={{ padding: '9px 18px', borderRadius: 9999, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: editActive ? 'rgba(13,115,119,0.1)' : 'rgba(0,0,0,0.06)', color: editActive ? teal : '#94A3B8', transition: 'all 0.15s ease' }}
               >
                 {editActive ? 'Aktiv' : 'Inaktiv'}
               </button>
             </div>
-            <button onClick={saveAthlete} disabled={saving || !editName.trim()} className="btn-primary" style={{ width: '100%', padding: '14px', fontSize: 15, cursor: 'pointer', opacity: editName.trim() ? 1 : 0.4, marginBottom: 10 }}>
+            <button onClick={saveAthlete} disabled={saving || !editName.trim()} className="btn-primary" style={{ width: '100%', padding: 14, fontSize: 15, opacity: editName.trim() ? 1 : 0.4, marginBottom: 10 }}>
               {saving ? 'Sparar...' : 'Spara ändringar'}
             </button>
 
-            {/* Bjud in till appen */}
-            <div style={{ margin: '14px 0', padding: '16px', background: 'rgba(13,115,119,0.05)', borderRadius: 14, border: '1px solid rgba(13,115,119,0.1)' }}>
+            {/* Invite */}
+            <div style={{ margin: '10px 0', padding: 16, background: 'rgba(13,115,119,0.05)', borderRadius: 14, border: '1px solid rgba(13,115,119,0.1)' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
-                <UserPlus size={15} color="#0D7377" strokeWidth={2.2} />
-                <span style={{ fontSize: 13, fontWeight: 700, color: '#0D7377' }}>Bjud in till appen</span>
+                <UserPlus size={15} color={teal} strokeWidth={2.2} />
+                <span style={{ fontSize: 13, fontWeight: 700, color: teal }}>Bjud in till appen</span>
               </div>
               {inviteMessage && (
-                <div style={{ padding: '8px 12px', borderRadius: 8, marginBottom: 10, fontSize: 12, fontWeight: 500, background: inviteMessage.type === 'error' ? 'rgba(239,68,68,0.08)' : 'rgba(13,115,119,0.08)', color: inviteMessage.type === 'error' ? '#DC2626' : '#0D7377' }}>
+                <div style={{ padding: '8px 12px', borderRadius: 8, marginBottom: 10, fontSize: 12, fontWeight: 500, background: inviteMessage.type === 'error' ? 'rgba(239,68,68,0.08)' : 'rgba(13,115,119,0.08)', color: inviteMessage.type === 'error' ? '#DC2626' : teal }}>
                   {inviteMessage.text}
                 </div>
               )}
@@ -409,15 +551,15 @@ export default function AthleteProfilePage() {
             </div>
 
             {!confirmDelete ? (
-              <button onClick={() => setConfirmDelete(true)} style={{ width: '100%', padding: '13px', fontSize: 14, fontWeight: 700, cursor: 'pointer', borderRadius: 14, background: 'rgba(220,38,38,0.08)', border: 'none', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+              <button onClick={() => setConfirmDelete(true)} style={{ width: '100%', padding: 13, fontSize: 14, fontWeight: 700, cursor: 'pointer', borderRadius: 14, background: 'rgba(220,38,38,0.08)', border: 'none', color: '#DC2626', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                 <Trash2 size={14} strokeWidth={2.5} /> Ta bort atlet
               </button>
             ) : (
               <div style={{ background: 'rgba(220,38,38,0.07)', borderRadius: 14, padding: '14px 16px' }}>
                 <p style={{ fontSize: 14, fontWeight: 600, color: '#DC2626', marginBottom: 12, textAlign: 'center' }}>Ta bort {athlete.name}?</p>
                 <div style={{ display: 'flex', gap: 8 }}>
-                  <button onClick={() => setConfirmDelete(false)} style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Avbryt</button>
-                  <button onClick={deleteAthlete} disabled={saving} style={{ flex: 1, padding: '11px', borderRadius: 12, background: '#DC2626', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: 'white' }}>
+                  <button onClick={() => setConfirmDelete(false)} style={{ flex: 1, padding: 11, borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Avbryt</button>
+                  <button onClick={deleteAthlete} disabled={saving} style={{ flex: 1, padding: 11, borderRadius: 12, background: '#DC2626', border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: 'white' }}>
                     {saving ? 'Tar bort...' : 'Ta bort'}
                   </button>
                 </div>

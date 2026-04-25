@@ -52,7 +52,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
         code: exercise.code ?? '',
         group_name: exercise.group_name ?? '',
         notes: exercise.notes ?? '',
-        category_id: exercise.category_id || initialCategoryId ?? categories[0]?.id ?? '',
+        category_id: exercise.category_id || (initialCategoryId ?? categories[0]?.id ?? ''),
       })
     } else {
       setForm({
