@@ -3,7 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ChevronLeft, Plus, Pencil, Trash2, X, Check, Search, MoreHorizontal } from 'lucide-react'
+import { ChevronLeft, Plus, Pencil, Trash2, X, Check, MoreHorizontal } from 'lucide-react'
 import ExerciseModal, { type ExerciseData } from '@/components/ExerciseModal'
 import type { BlockCategoryRecord } from '@/types'
 
@@ -13,6 +13,9 @@ const PRESET_COLORS = [
   '#F97316', '#6366F1', '#0EA5E9', '#EC4899',
 ]
 const EMOJI_SUGGESTIONS = ['💧', '🏃', '💪', '🧘', '🔥', '🏆', '🤸', '⚡', '🎯', '🌊', '🏋️', '🤽']
+
+const HEIGHT_TAGS = ['1m', '3m', '5m', '7.5m', '10m']
+const HEIGHT_OPTIONS = ['Alla höjder', ...HEIGHT_TAGS]
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -28,6 +31,7 @@ interface ExerciseRow {
   name: string
   code: string | null
   group_name: string | null
+  dd: number | null
   notes: string | null
   tags: string[]
   category_id: string
@@ -37,6 +41,14 @@ interface TemplateCard {
   id: string
   name: string
   item_count: number
+}
+
+interface TrainingRow {
+  id: string
+  title: string
+  scheduled_date: string | null
+  group_id: string | null
+  group_name: string | null
 }
 
 // ─── FolderView ───────────────────────────────────────────────────────────────
@@ -76,6 +88,14 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
   // Exercise modal
   const [showExModal, setShowExModal]   = useState(false)
   const [selectedEx, setSelectedEx]     = useState<ExerciseData | null>(null)
+
+  // Group / height filters + quick-add
+  const [activeGroup, setActiveGroup]           = useState('Alla')
+  const [activeHeight, setActiveHeight]         = useState('Alla höjder')
+  const [showQuickAdd, setShowQuickAdd]         = useState(false)
+  const [quickAddExercise, setQuickAddExercise] = useState<ExerciseRow | null>(null)
+  const [trainings, setTrainings]               = useState<TrainingRow[]>([])
+  const [quickAddConfirmId, setQuickAddConfirmId] = useState<string | null>(null)
 
   // Edit block category sheet (from the ... menu)
   const [showEditBlockCat, setShowEditBlockCat] = useState(false)
@@ -163,7 +183,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
       const [subFoldersRes, exRes, allCatsRes] = await Promise.all([
         supabase.from('categories').select('id, name, sort_order').eq('parent_id', categoryId).order('sort_order'),
         supabase.from('library_items')
-          .select('id, name, code, group_name, description, tags, category_id')
+          .select('id, name, code, group_name, dd, description, tags, category_id')
           .eq('category_id', categoryId).eq('archived', false)
           .order('code').order('group_name').order('name'),
         supabase.from('categories').select('id, name').eq('block_category', cat.block_category ?? '').order('sort_order'),
@@ -192,8 +212,8 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
       })))
       setExercises((exRes.data || []).map((e: any) => ({
         id: e.id, name: e.name, code: e.code ?? null,
-        group_name: e.group_name ?? null, notes: e.description ?? null,
-        tags: e.tags ?? [], category_id: e.category_id,
+        group_name: e.group_name ?? null, dd: e.dd ?? null,
+        notes: e.description ?? null, tags: e.tags ?? [], category_id: e.category_id,
       })))
       setAllCategories(allCatsRes.data || [])
 
@@ -287,24 +307,40 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
     router.push('/library')
   }
 
+  const openQuickAdd = async (ex: ExerciseRow) => {
+    setQuickAddExercise(ex)
+    setQuickAddConfirmId(null)
+    if (trainings.length === 0) {
+      const { data: tData } = await supabase
+        .from('trainings')
+        .select('id, title, scheduled_date, group_id')
+        .or('status.eq.draft,status.eq.published')
+        .order('scheduled_date', { ascending: false })
+        .limit(20)
+      setTrainings((tData || []).map((t: any) => ({
+        id: t.id, title: t.title,
+        scheduled_date: t.scheduled_date ?? null,
+        group_id: t.group_id ?? null,
+        group_name: null,
+      })))
+    }
+    setShowQuickAdd(true)
+  }
+
   // ─── Derived ─────────────────────────────────────────────────────────────────
 
-  const allTags = Array.from(new Set(exercises.flatMap(e => e.tags))).sort()
   const accentColor = blockCatInfo?.color ?? '#0D7377'
   const accentEmoji = blockCatInfo?.emoji ?? '📁'
   const accentName  = blockCatInfo?.name ?? (blockType ?? '')
 
-  const filteredFolders = search.trim()
-    ? folders.filter(f => f.name.toLowerCase().includes(search.toLowerCase()))
-    : folders
+  const codeGroups = Array.from(new Set(exercises.map(e => e.group_name).filter(Boolean) as string[])).sort()
+  const isWaterCat = blockType === 'vatten' || blockCat === 'vatten'
+
+  const filteredFolders = folders
 
   const filteredExercises = exercises.filter(ex => {
-    if (search.trim()) {
-      const q = search.toLowerCase()
-      const code = ex.code && ex.group_name ? `${ex.code}${ex.group_name}` : ex.code ?? ''
-      if (!ex.name.toLowerCase().includes(q) && !code.toLowerCase().includes(q) && !(ex.notes?.toLowerCase().includes(q))) return false
-    }
-    if (activeTag && !ex.tags.includes(activeTag)) return false
+    if (activeGroup !== 'Alla' && ex.group_name !== activeGroup) return false
+    if (activeHeight !== 'Alla höjder' && !ex.tags.includes(activeHeight)) return false
     return true
   })
 
@@ -372,42 +408,52 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
         </div>
       </div>
 
-      {/* ── Search + tag chips ───────────────────────────────────────────────── */}
-      <div style={{ padding: '12px 16px 8px', background: 'white', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 0 rgba(0,0,0,0.06)' }}>
-        <div style={{ position: 'relative' }}>
-          <Search size={14} color="#94A3B8" strokeWidth={2} style={{ position: 'absolute', left: 13, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-          <input
-            value={search}
-            onChange={e => setSearch(e.target.value)}
-            placeholder="Sök i mappen..."
-            className="glass-input"
-            style={{ width: '100%', padding: '10px 36px', fontSize: 14 }}
-          />
-          {search && (
-            <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 11, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}>
-              <X size={13} color="#94A3B8" strokeWidth={2.5} />
-            </button>
+      {/* ── Filter bar ── */}
+      {!loading && (codeGroups.length > 0 || isWaterCat) && (
+        <div style={{ background: 'white', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 0 rgba(0,0,0,0.06)' }}>
+          {codeGroups.length > 0 && (
+            <div style={{ display: 'flex', overflowX: 'auto', padding: '0 16px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+              {['Alla', ...codeGroups].map(g => (
+                <button
+                  key={g}
+                  onClick={() => setActiveGroup(g)}
+                  style={{
+                    flexShrink: 0, padding: '12px 14px 10px',
+                    background: 'none', border: 'none',
+                    borderBottom: activeGroup === g ? `2.5px solid ${accentColor}` : '2.5px solid transparent',
+                    fontSize: 13, fontWeight: activeGroup === g ? 700 : 500,
+                    color: activeGroup === g ? accentColor : '#94A3B8', cursor: 'pointer',
+                  }}
+                >
+                  {g === 'Alla' ? 'Alla' : `Grupp ${g}`}
+                </button>
+              ))}
+            </div>
+          )}
+          {isWaterCat && (
+            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '8px 16px 10px' }}>
+              {HEIGHT_OPTIONS.map(h => (
+                <button
+                  key={h}
+                  onClick={() => setActiveHeight(activeHeight === h ? 'Alla höjder' : h)}
+                  style={{
+                    flexShrink: 0, padding: '5px 13px', borderRadius: 20, border: 'none', cursor: 'pointer',
+                    fontSize: 12, fontWeight: 700,
+                    background: activeHeight === h ? accentColor : 'rgba(0,0,0,0.06)',
+                    color: activeHeight === h ? 'white' : '#64748B',
+                    transition: 'all 0.15s',
+                  }}
+                >
+                  {h}
+                </button>
+              ))}
+            </div>
           )}
         </div>
-
-        {/* Tag chips */}
-        {!loading && allTags.length > 0 && !search && (
-          <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingTop: 8, paddingBottom: 2 }}>
-            {allTags.map(tag => (
-              <button
-                key={tag}
-                onClick={() => setActiveTag(activeTag === tag ? null : tag)}
-                style={{ flexShrink: 0, padding: '4px 12px', borderRadius: 20, border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, background: activeTag === tag ? accentColor : 'rgba(0,0,0,0.06)', color: activeTag === tag ? 'white' : '#64748B', transition: 'all 0.15s' }}
-              >
-                {tag}
-              </button>
-            ))}
-          </div>
-        )}
-      </div>
+      )}
 
       {/* ── Content ─────────────────────────────────────────────────────────── */}
-      <div style={{ padding: '12px 16px 140px' }}>
+      <div style={{ padding: '12px 16px calc(90px + env(safe-area-inset-bottom, 0px) + 16px)' }}>
         {loading ? (
           <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8' }}>Laddar...</div>
         ) : (
@@ -436,10 +482,10 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <div style={{ fontSize: 36, marginBottom: 12 }}>📁</div>
                 <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
-                  {search || activeTag ? 'Inga resultat' : 'Tom mapp'}
+                  {activeGroup !== 'Alla' || activeHeight !== 'Alla höjder' ? 'Inga resultat' : 'Tom mapp'}
                 </p>
                 <p style={{ fontSize: 13, color: '#94A3B8' }}>
-                  {search || activeTag ? 'Prova ett annat sökord' : 'Tryck + för att skapa en mapp eller övning'}
+                  {activeGroup !== 'Alla' || activeHeight !== 'Alla höjder' ? 'Prova ett annat filter' : 'Tryck + för att skapa en mapp eller övning'}
                 </p>
               </div>
             )}
@@ -543,25 +589,46 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                   const codeLabel = ex.code && ex.group_name ? `${ex.code}${ex.group_name}` : ex.code ?? ''
                   return (
                     <div key={ex.id}>
-                      {i > 0 && <div style={{ height: 1, background: 'rgba(0,0,0,0.05)', marginLeft: 56 }} />}
-                      <button
-                        onClick={() => { setSelectedEx(ex as ExerciseData); setShowExModal(true) }}
-                        style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
-                      >
-                        <div style={{ width: 36, height: 36, borderRadius: 11, background: `${accentColor}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: accentColor }} />
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          {codeLabel && (
-                            <div style={{ fontSize: 11, fontWeight: 700, color: accentColor, letterSpacing: '0.05em', marginBottom: 1 }}>{codeLabel}</div>
-                          )}
-                          <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{ex.name}</div>
-                          {ex.notes && (
-                            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{ex.notes}</div>
+                      {i > 0 && <div style={{ height: 1, background: 'rgba(0,0,0,0.05)', marginLeft: 64 }} />}
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px' }}>
+                        {/* Code badge */}
+                        <div
+                          onClick={() => { setSelectedEx(ex as ExerciseData); setShowExModal(true) }}
+                          style={{ width: 36, height: 36, borderRadius: 10, background: `${accentColor}12`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, cursor: 'pointer' }}
+                        >
+                          {codeLabel ? (
+                            <span style={{ fontSize: 9, fontWeight: 700, color: accentColor, letterSpacing: '0.02em', textAlign: 'center', lineHeight: 1.3 }}>{codeLabel}</span>
+                          ) : (
+                            <div style={{ width: 8, height: 8, borderRadius: '50%', background: accentColor }} />
                           )}
                         </div>
-                        <ChevronLeft size={14} color="#CBD5E1" strokeWidth={2.5} style={{ flexShrink: 0, transform: 'rotate(180deg)' }} />
-                      </button>
+                        {/* Name + meta */}
+                        <div
+                          style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
+                          onClick={() => { setSelectedEx(ex as ExerciseData); setShowExModal(true) }}
+                        >
+                          <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{ex.name}</div>
+                          {(ex.dd != null || ex.tags.length > 0) && (
+                            <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
+                              {ex.dd != null && (
+                                <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', background: 'rgba(0,0,0,0.05)', borderRadius: 6, padding: '2px 7px' }}>
+                                  DD {ex.dd.toFixed(1)}
+                                </span>
+                              )}
+                              {ex.tags.slice(0, 3).map(t => (
+                                <span key={t} style={{ fontSize: 10, fontWeight: 600, color: '#94A3B8', background: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: '2px 7px' }}>{t}</span>
+                              ))}
+                            </div>
+                          )}
+                        </div>
+                        {/* Quick-add button */}
+                        <button
+                          onClick={() => openQuickAdd(ex)}
+                          style={{ width: 32, height: 32, borderRadius: '50%', border: `1.5px solid ${accentColor}30`, background: `${accentColor}08`, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
+                        >
+                          <Plus size={14} color={accentColor} strokeWidth={2.5} />
+                        </button>
+                      </div>
                     </div>
                   )
                 })}
@@ -569,7 +636,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
             )}
 
             {/* Quick-add folder at bottom */}
-            {!search && !activeTag && (
+            {activeGroup === 'Alla' && activeHeight === 'Alla höjder' && (
               <button
                 onClick={() => { setShowCreate(true); setCreateType('folder'); setCreateName('') }}
                 style={{ width: '100%', padding: '12px 16px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
@@ -583,13 +650,22 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
 
       {/* ── FAB ──────────────────────────────────────────────────────────────── */}
       <button
-        onClick={() => { setShowCreate(true); setCreateType('folder'); setCreateName('') }}
+        onClick={() => {
+          if (categoryId) {
+            setSelectedEx(null)
+            setShowExModal(true)
+          } else {
+            setShowCreate(true)
+            setCreateType('folder')
+            setCreateName('')
+          }
+        }}
         style={{
           position: 'fixed',
-          bottom: 'calc(var(--safe-bottom) + 96px)',
+          bottom: 'calc(90px + env(safe-area-inset-bottom, 0px))',
           right: 20,
-          width: 56, height: 56,
-          borderRadius: 18,
+          width: 52, height: 52,
+          borderRadius: '50%',
           background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
           border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
@@ -597,7 +673,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
           zIndex: 50,
         }}
       >
-        <Plus size={24} color="white" strokeWidth={2.5} />
+        <Plus size={22} color="white" strokeWidth={2.5} />
       </button>
 
       {/* ── Create sheet ─────────────────────────────────────────────────────── */}
@@ -646,6 +722,61 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                   {creating ? 'Skapar...' : 'Skapa mapp'}
                 </button>
               </>
+            )}
+          </div>
+        </>
+      )}
+
+      {/* ── Quick-add sheet ── */}
+      {showQuickAdd && quickAddExercise && (
+        <>
+          <div onClick={() => setShowQuickAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000 }} />
+          <div
+            className="glass-sheet"
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto', maxHeight: '80vh', overflowY: 'auto' }}
+          >
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
+              Lägg till i pass
+            </h3>
+            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>
+              {quickAddExercise.name}
+            </p>
+
+            {trainings.length === 0 ? (
+              <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', padding: '20px 0' }}>
+                Inga pass hittades
+              </p>
+            ) : (
+              <div className="glass-card" style={{ borderRadius: 16, overflow: 'hidden' }}>
+                {trainings.map((tr, i) => (
+                  <div key={tr.id}>
+                    {i > 0 && <div style={{ height: 1, background: 'rgba(0,0,0,0.05)', marginLeft: 16 }} />}
+                    <button
+                      onClick={() => setQuickAddConfirmId(quickAddConfirmId === tr.id ? null : tr.id)}
+                      style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+                    >
+                      <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{tr.title}</div>
+                        {tr.scheduled_date && (
+                          <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                            {new Date(tr.scheduled_date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
+                          </div>
+                        )}
+                      </div>
+                      {quickAddConfirmId === tr.id ? (
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', background: accentColor, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Check size={14} color="white" strokeWidth={2.5} />
+                        </div>
+                      ) : (
+                        <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                          <Plus size={13} color="#94A3B8" strokeWidth={2.5} />
+                        </div>
+                      )}
+                    </button>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         </>
