@@ -63,7 +63,31 @@ interface CategoryOption {
   name: string
 }
 
+interface TrainingTemplate {
+  id: string
+  name: string
+  group_id: string | null
+  created_at: string
+  blocks: { id: string; name: string; category: string | null }[]
+}
+
+interface FullBlockTemplate {
+  id: string
+  name: string
+  category: string | null
+  group_id: string | null
+  created_at: string
+  itemCount: number
+}
+
 type ActiveTab = 'utforska' | 'passmallar' | 'övningar'
+
+function daysAgo(dateStr: string): string {
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000)
+  if (days === 0) return 'Idag'
+  if (days === 1) return 'Igår'
+  return `${days} dagar sedan`
+}
 
 export default function LibraryPage() {
   const router = useRouter()
@@ -98,14 +122,19 @@ export default function LibraryPage() {
   const [newCatColor, setNewCatColor] = useState(TEAL)
   const [creatingCat, setCreatingCat] = useState(false)
 
+  const [trainingTemplates, setTrainingTemplates] = useState<TrainingTemplate[]>([])
+  const [fullBlockTemplates, setFullBlockTemplates] = useState<FullBlockTemplate[]>([])
+
   const loadData = async () => {
-    const [blockCatsRes, catsRes, itemsRes, groupsRes, tmplRes, tmplCountRes] = await Promise.all([
+    const [blockCatsRes, catsRes, itemsRes, groupsRes, tmplRes, tmplCountRes, trainingTmplRes, fullBlockTmplRes] = await Promise.all([
       supabase.from('block_categories').select('*').order('sort_order'),
       supabase.from('categories').select('id, name, block_category'),
       supabase.from('library_items').select('id, name, code, group_name, dd, description, tags, category_id, categories(name)').eq('archived', false),
       supabase.from('groups').select('id, name, color').order('name'),
       supabase.from('block_templates').select('id, name, category, group_id').order('created_at', { ascending: false }).limit(8),
       supabase.from('block_templates').select('group_id, id').not('group_id', 'is', null),
+      supabase.from('training_templates').select('id, name, group_id, created_at, training_template_blocks(id, name, category)').order('created_at', { ascending: false }),
+      supabase.from('block_templates').select('id, name, category, group_id, created_at, block_template_items(id)').order('created_at', { ascending: false }),
     ])
 
     const blockCats: BlockCategoryRecord[] = blockCatsRes.data || []
@@ -162,6 +191,27 @@ export default function LibraryPage() {
         .filter((t: any) => !t.group_id)
         .slice(0, 6)
         .map((t: any) => ({ id: t.id, name: t.name, category: t.category }))
+    )
+
+    setTrainingTemplates(
+      (trainingTmplRes.data || []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        group_id: t.group_id,
+        created_at: t.created_at,
+        blocks: (t.training_template_blocks || []).map((b: any) => ({ id: b.id, name: b.name, category: b.category })),
+      }))
+    )
+
+    setFullBlockTemplates(
+      (fullBlockTmplRes.data || []).map((t: any) => ({
+        id: t.id,
+        name: t.name,
+        category: t.category,
+        group_id: t.group_id,
+        created_at: t.created_at,
+        itemCount: (t.block_template_items || []).length,
+      }))
     )
 
     setLoading(false)
@@ -475,57 +525,151 @@ export default function LibraryPage() {
             {/* ─── PASSMALLAR ─── */}
             {activeTab === 'passmallar' && (
               <div>
-                {groups.length > 0 && (
-                  <div style={{ marginBottom: 28 }}>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Grupper</div>
-                    <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
-                      {groups.map(group => (
-                        <button
-                          key={group.id}
-                          onClick={() => router.push(`/library/groups/${group.id}`)}
-                          className="glass-card"
-                          style={{ flexShrink: 0, padding: '14px 18px', borderRadius: 18, border: 'none', cursor: 'pointer', textAlign: 'left', minWidth: 120, borderLeft: `4px solid ${group.color ?? TEAL}` }}
+
+                {/* AI strip */}
+                <button
+                  onClick={() => setShowAISheet(true)}
+                  style={{
+                    width: '100%', background: 'linear-gradient(135deg, #0D7377 0%, #064d50 100%)',
+                    borderRadius: 18, padding: '16px 18px', border: 'none', cursor: 'pointer',
+                    display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, textAlign: 'left',
+                    boxShadow: '0 4px 20px rgba(13,115,119,0.25)',
+                  }}
+                >
+                  <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                    <span style={{ fontSize: 18 }}>✦</span>
+                  </div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: 'white', letterSpacing: '-0.02em' }}>Skapa passmall med AI</div>
+                    <div style={{ fontSize: 12, color: 'rgba(255,255,255,0.7)', marginTop: 2 }}>Beskriv upplägg så bygger AI mallen</div>
+                  </div>
+                  <ChevronRight size={20} color="rgba(255,255,255,0.7)" strokeWidth={2.5} />
+                </button>
+
+                {/* Träningsmallar section */}
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
+                  Träningsmallar
+                </div>
+
+                {trainingTemplates.length === 0 ? (
+                  <div style={{ padding: '20px 16px', borderRadius: 16, background: 'white', border: '0.5px solid rgba(0,0,0,0.08)', textAlign: 'center', marginBottom: 24 }}>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Inga mallar än</p>
+                    <p style={{ fontSize: 12, color: '#94A3B8' }}>Skapa ditt första pass i Planning och spara som mall</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
+                    {trainingTemplates.map(tmpl => {
+                      const visibleBlocks = tmpl.blocks.slice(0, 4)
+                      const overflow = tmpl.blocks.length - 4
+                      return (
+                        <div
+                          key={tmpl.id}
+                          style={{ background: 'white', borderRadius: 16, border: '0.5px solid rgba(0,0,0,0.08)', padding: 14 }}
                         >
-                          <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>{group.name}</div>
-                          <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>
-                            {group.templateCount === 0 ? 'Inga mallar' : `${group.templateCount} mall${group.templateCount !== 1 ? 'ar' : ''}`}
+                          {/* Top row */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{tmpl.name}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: TEAL, background: 'rgba(13,115,119,0.1)', padding: '3px 9px', borderRadius: 20 }}>
+                              {tmpl.blocks.length} block
+                            </span>
                           </div>
+
+                          {/* Block pills */}
+                          {tmpl.blocks.length > 0 && (
+                            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
+                              {visibleBlocks.map(block => {
+                                const cat = blockStats.find(b => b.id === block.category)
+                                const color = cat?.color ?? '#64748B'
+                                return (
+                                  <span
+                                    key={block.id}
+                                    style={{
+                                      fontSize: 11, fontWeight: 600,
+                                      color, background: `${color}14`,
+                                      padding: '4px 10px', borderRadius: 20,
+                                      whiteSpace: 'nowrap',
+                                    }}
+                                  >
+                                    {block.name}
+                                  </span>
+                                )
+                              })}
+                              {overflow > 0 && (
+                                <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '4px 8px' }}>
+                                  +{overflow} till
+                                </span>
+                              )}
+                            </div>
+                          )}
+
+                          {/* Footer */}
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
+                            <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>Skapad {daysAgo(tmpl.created_at)}</span>
+                            <button
+                              onClick={() => router.push(`/planning?templateId=${tmpl.id}`)}
+                              style={{ fontSize: 12, fontWeight: 700, color: TEAL, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
+                            >
+                              Använd →
+                            </button>
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                )}
+
+                {/* Blockmallar section */}
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12, marginTop: 4 }}>
+                  Blockmallar
+                </div>
+
+                {fullBlockTemplates.length === 0 ? (
+                  <div style={{ padding: '16px', borderRadius: 14, background: 'white', border: '0.5px solid rgba(0,0,0,0.08)', textAlign: 'center', marginBottom: 20 }}>
+                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Inga blockmallar än</p>
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
+                    {fullBlockTemplates.map(tmpl => {
+                      const cat = blockStats.find(b => b.id === tmpl.category)
+                      const dotColor = cat?.color ?? '#94A3B8'
+                      return (
+                        <button
+                          key={tmpl.id}
+                          onClick={() => router.push(`/library/blocks/${tmpl.id}`)}
+                          style={{
+                            display: 'flex', alignItems: 'center', gap: 10,
+                            padding: '12px 14px', borderRadius: 14,
+                            background: 'white', border: '0.5px solid rgba(0,0,0,0.08)',
+                            cursor: 'pointer', textAlign: 'left',
+                          }}
+                        >
+                          <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
+                          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            {tmpl.name}
+                          </span>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', background: 'rgba(0,0,0,0.05)', padding: '3px 9px', borderRadius: 20, flexShrink: 0 }}>
+                            {tmpl.itemCount} övningar
+                          </span>
                         </button>
-                      ))}
-                    </div>
+                      )
+                    })}
                   </div>
                 )}
 
-                {recentTemplates.length > 0 && (
-                  <div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>Senaste mallar</div>
-                    <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
-                      {recentTemplates.map(tmpl => {
-                        const cat = blockStats.find(b => b.id === tmpl.category)
-                        const color = cat?.color ?? '#64748B'
-                        const emoji = cat?.emoji ?? '📋'
-                        return (
-                          <button
-                            key={tmpl.id}
-                            onClick={() => router.push(`/library/blocks/${tmpl.id}`)}
-                            className="glass-card"
-                            style={{ flexShrink: 0, padding: '12px 16px', borderRadius: 16, border: 'none', cursor: 'pointer', textAlign: 'left', minWidth: 130, maxWidth: 180, borderTop: `3px solid ${color}` }}
-                          >
-                            <div style={{ fontSize: 18, marginBottom: 6 }}>{emoji}</div>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{tmpl.name}</div>
-                          </button>
-                        )
-                      })}
-                    </div>
+                {/* Save as template CTA */}
+                <button
+                  onClick={() => router.push('/planning')}
+                  style={{
+                    width: '100%', padding: '16px 16px 12px', borderRadius: 18,
+                    background: 'transparent', border: `1.5px dashed rgba(13,115,119,0.4)`,
+                    cursor: 'pointer', textAlign: 'center',
+                  }}
+                >
+                  <div style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>+ Spara nuvarande pass som mall</div>
+                  <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 5, fontWeight: 500 }}>
+                    Bygg ett pass i Planning och tryck "Spara som mall"
                   </div>
-                )}
-
-                {groups.length === 0 && recentTemplates.length === 0 && (
-                  <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                    <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga passmallar än</p>
-                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Skapa ditt första pass i Planning-fliken</p>
-                  </div>
-                )}
+                </button>
               </div>
             )}
 
