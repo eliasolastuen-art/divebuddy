@@ -90,6 +90,10 @@ export default function AdminPage() {
   const [fetchError, setFetchError] = useState<string | null>(null)
   const [toast, setToast]           = useState<{ type: 'success' | 'error'; text: string } | null>(null)
 
+  // Athlete invite state
+  const [inviteSending, setInviteSending] = useState<string | null>(null)
+  const [sentInvites, setSentInvites]     = useState<Set<string>>(new Set())
+
   // Athlete linking sheet
   const [linkAthlete, setLinkAthlete]               = useState<AthleteRow | null>(null)
   const [linkProfileId, setLinkProfileId]           = useState<string | null>(null)
@@ -297,6 +301,43 @@ export default function AdminPage() {
     } else {
       showToast('success', `Roll borttagen`)
       fetchAll()
+    }
+  }
+
+  // ── Athlete invite ────────────────────────────────────────
+  async function sendAthleteInvite(athlete: AthleteRow) {
+    if (!athlete.email) return
+    setInviteSending(athlete.id)
+    const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
+    try {
+      const res = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-invite`,
+        {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': `Bearer ${session?.access_token}`,
+          },
+          body: JSON.stringify({
+            athlete_id:   athlete.id,
+            email:        athlete.email,
+            athlete_name: athlete.name,
+            club_name:    (profile as any)?.club_name ?? 'klubben',
+            invited_by:   profile?.full_name ?? 'Din tränare',
+          }),
+        }
+      )
+      if (res.ok) {
+        setSentInvites(prev => new Set(prev).add(athlete.id))
+        showToast('success', `Inbjudan skickad till ${athlete.email}!`)
+      } else {
+        showToast('error', 'Kunde inte skicka — försök igen')
+      }
+    } catch {
+      showToast('error', 'Kunde inte skicka — försök igen')
+    } finally {
+      setInviteSending(null)
     }
   }
 
@@ -518,7 +559,7 @@ export default function AdminPage() {
                       </div>
                     </div>
 
-                    {/* Right: status */}
+                    {/* Right: status + invite */}
                     {hasProfile ? (
                       <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
                         <CheckCircle size={14} color="#16A34A" strokeWidth={2.5} />
@@ -530,16 +571,44 @@ export default function AdminPage() {
                           <AlertCircle size={13} color="#D97706" strokeWidth={2} />
                           <span style={{ fontSize: 11, fontWeight: 600, color: '#D97706' }}>Ej kopplad</span>
                         </div>
-                        <button
-                          onClick={() => openLinkSheet(athlete)}
-                          style={{
-                            background: 'rgba(13,115,119,0.08)', color: '#0D7377',
-                            border: 'none', borderRadius: 8, padding: '4px 10px',
-                            fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                          }}
-                        >
-                          Koppla →
-                        </button>
+                        <div style={{ display: 'flex', gap: 5 }}>
+                          {athlete.email && (
+                            sentInvites.has(athlete.id) ? (
+                              <span style={{
+                                fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 8,
+                                background: 'rgba(148,163,184,0.1)', color: '#94A3B8',
+                              }}>
+                                Skickad ✓
+                              </span>
+                            ) : (
+                              <button
+                                onClick={() => sendAthleteInvite(athlete)}
+                                disabled={inviteSending === athlete.id}
+                                style={{
+                                  display: 'flex', alignItems: 'center', gap: 4,
+                                  background: 'rgba(13,115,119,0.08)', color: '#0D7377',
+                                  border: 'none', borderRadius: 8, padding: '4px 9px',
+                                  fontSize: 11, fontWeight: 700,
+                                  cursor: inviteSending === athlete.id ? 'not-allowed' : 'pointer',
+                                  opacity: inviteSending === athlete.id ? 0.6 : 1,
+                                }}
+                              >
+                                <Send size={11} strokeWidth={2.2} />
+                                {inviteSending === athlete.id ? '...' : 'Bjud in'}
+                              </button>
+                            )
+                          )}
+                          <button
+                            onClick={() => openLinkSheet(athlete)}
+                            style={{
+                              background: 'rgba(13,115,119,0.08)', color: '#0D7377',
+                              border: 'none', borderRadius: 8, padding: '4px 9px',
+                              fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                            }}
+                          >
+                            Koppla →
+                          </button>
+                        </div>
                       </div>
                     )}
                   </div>
