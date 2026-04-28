@@ -229,7 +229,7 @@ export default function AthletePage() {
   const activeIndex = 2
 
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', paddingBottom: 'env(safe-area-inset-bottom, 0px)' }}>
 
       {/* ── Hero Header ──────────────────────────────────────────── */}
       <div style={{

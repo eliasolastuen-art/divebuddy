@@ -140,7 +140,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
           right: 0,
           zIndex: 9999, // ✅ FIX
           padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 120px)', // ✅ FIX
-          maxHeight: '94vh',
+          maxHeight: '94dvh',
           overflowY: 'auto'
         }}
       >

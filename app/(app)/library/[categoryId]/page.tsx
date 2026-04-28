@@ -361,7 +361,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
   const displayTitle = blockType ? (blockCatInfo?.name ?? '') : subFolderName
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', minHeight: '100vh' }}>
+    <div style={{ maxWidth: 520, margin: '0 auto', minHeight: '100dvh' }}>
 
       {/* ── Spotify playlist header ──────────────────────────────────────────── */}
       <div style={{

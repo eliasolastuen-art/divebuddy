@@ -752,7 +752,9 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         {/* Top bar */}
         <div className="glass-nav" style={{
           position: 'sticky', top: 0, zIndex: 10,
-          padding: '0 16px', height: 56,
+          padding: '0 16px',
+          paddingTop: 'env(safe-area-inset-top, 0px)',
+          height: 'calc(56px + env(safe-area-inset-top, 0px))',
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
           borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
           borderBottom: '1px solid rgba(0,0,0,0.06)',
@@ -1176,7 +1178,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         {showBlockPicker && (
           <>
             <div onClick={() => setShowBlockPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
-            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 24px)', maxHeight: '85vh', overflowY: 'auto' }}>
+            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 24px)', maxHeight: '85dvh', overflowY: 'auto' }}>
               <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
 
               {/* Tabs */}
@@ -1254,7 +1256,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         {showAthletePicker && (
           <>
             <div onClick={() => setShowAthletePicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
-            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 24px)', maxHeight: '70vh', overflowY: 'auto' }}>
+            <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 24px)', maxHeight: '70dvh', overflowY: 'auto' }}>
               <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 16px' }} />
               <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', marginBottom: 4, textAlign: 'center' }}>Välj atleter</h3>
               <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16, textAlign: 'center' }}>Vilka atleter ska ha individuella hopp?</p>

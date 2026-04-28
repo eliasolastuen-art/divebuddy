@@ -321,7 +321,7 @@ export default function GroupDashboardPage() {
           </div>
         </div>
 
-        <div style={{ height: 100 }} />
+        <div style={{ height: 'calc(env(safe-area-inset-bottom, 0px) + 24px)' }} />
       </div>
 
       {/* ── Invite Sheet ── */}

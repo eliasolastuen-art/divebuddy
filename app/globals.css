@@ -164,11 +164,20 @@ a, button { -webkit-tap-highlight-color: transparent; }
 }
 
 .safe-bottom {
-  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 16px);
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
 }
 .fab-bottom {
-  bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 16px);
+  bottom: calc(72px + env(safe-area-inset-bottom, 0px) + 16px);
 }
 .sheet-bottom {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 24px);
+}
+.safe-top {
+  padding-top: env(safe-area-inset-top, 0px);
+}
+.fab-position {
+  bottom: calc(76px + env(safe-area-inset-bottom, 16px)) !important;
+}
+.sheet-safe {
+  padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
 }

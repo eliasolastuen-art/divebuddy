@@ -43,7 +43,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       {/* Header — fixed height, never overlaps content */}
       <header style={{
         flexShrink: 0,
-        height: 'var(--header-height)',
+        height: 'var(--content-top)',
         paddingTop: 'var(--safe-top)',
         zIndex: 40,
         position: 'relative',
