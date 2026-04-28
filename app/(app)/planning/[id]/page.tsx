@@ -139,7 +139,7 @@ export default function TrainingDetailPage() {
 
   return (
     <>
-      <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 100 }}>
+      <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px) + 24px)' }}>
 
         {/* ── Header ───────────────────────────────────────────────────────── */}
         <div style={{

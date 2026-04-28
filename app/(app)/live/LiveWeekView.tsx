@@ -47,7 +47,7 @@ export default function LiveWeekView() {
   useEffect(() => { load() }, [weekOffset, profile?.id])
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 100 }}>
+    <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px) + 24px)' }}>
 
       {/* Header */}
       <div style={{ padding: '20px 16px 20px' }}>

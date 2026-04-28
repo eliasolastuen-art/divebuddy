@@ -162,3 +162,13 @@ a, button { -webkit-tap-highlight-color: transparent; }
 @keyframes spin {
   to { transform: rotate(360deg); }
 }
+
+.safe-bottom {
+  padding-bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+.fab-bottom {
+  bottom: calc(80px + env(safe-area-inset-bottom, 0px) + 16px);
+}
+.sheet-bottom {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 24px);
+}

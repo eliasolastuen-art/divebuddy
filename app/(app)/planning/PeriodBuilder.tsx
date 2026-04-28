@@ -627,7 +627,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001,
             background: 'white', borderRadius: '24px 24px 0 0',
-            padding: '24px 20px', paddingBottom: 40,
+            padding: '24px 20px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
             boxShadow: '0 -8px 40px rgba(0,0,0,0.15)',
           }}>
             <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', marginBottom: 4 }}>
