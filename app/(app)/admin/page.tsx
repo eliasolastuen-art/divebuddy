@@ -1,317 +1,208 @@
 'use client'
 
-import { useEffect, useState } from 'react'
+import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/lib/context/user'
 import { createClient } from '@/lib/supabase/client'
-import { removeMemberFromClub, deleteInvite } from '@/lib/actions/adminActions'
-import {
-  Mail, Send, Shield, Trash2, Clock,
-  CheckCircle, AlertCircle, Plus, X, Check,
-} from 'lucide-react'
+import { Lock, Mail, X, Check, Download } from 'lucide-react'
 
-// ── Constants ──────────────────────────────────────────────────
-const ROLE_LABEL: Record<string, string> = {
-  admin:   'Admin',
-  coach:   'Tränare',
-  athlete: 'Atlet',
-}
-
-const ROLE_COLOR: Record<string, { bg: string; color: string }> = {
-  admin:   { bg: 'rgba(147,51,234,0.12)',  color: '#9333EA' },
-  coach:   { bg: 'rgba(13,115,119,0.10)',  color: '#0D7377' },
-  athlete: { bg: 'rgba(245,158,11,0.12)',  color: '#D97706' },
-}
-
-// ── Interfaces ────────────────────────────────────────────────
-interface Member {
+// ── Types ──────────────────────────────────────────────────────
+interface Profile {
   id: string
-  email: string
+  email: string | null
   full_name: string | null
-  user_roles: { role: string }[]
+  club_id: string | null
+}
+
+interface UserRole {
+  profile_id: string
+  role: string
 }
 
 interface Invite {
   id: string
   email: string
   roles: string[]
+  accepted: boolean
   created_at: string
+  athlete_id: string | null
 }
 
-interface AthleteRow {
-  id: string
-  name: string
-  email: string | null
-  active: boolean
-  profile_id: string | null
-  group_id: string | null
-  group_name: string | null
-  group_color: string | null
+// ── Constants ──────────────────────────────────────────────────
+const ROLE_META: Record<string, { label: string; desc: string; bg: string; color: string }> = {
+  admin:   { label: 'Admin',    desc: 'Full åtkomst till admin-panelen',   bg: 'rgba(147,51,234,0.12)',  color: '#9333EA' },
+  coach:   { label: 'Tränare',  desc: 'Kan hantera grupper och atleter',    bg: 'rgba(13,115,119,0.10)',  color: '#0D7377' },
+  athlete: { label: 'Atlet',    desc: 'Åtkomst till athlete-vyn',           bg: 'rgba(245,158,11,0.12)',  color: '#D97706' },
 }
 
-interface GroupRow {
-  id: string
-  name: string
-  color: string
-}
-
-// ── Helpers ───────────────────────────────────────────────────
-function initials(name: string | null | undefined): string {
-  if (!name) return '?'
-  const parts = name.trim().split(' ')
-  if (parts.length === 1) return parts[0][0].toUpperCase()
+// ── Helpers ────────────────────────────────────────────────────
+function initials(name: string | null, email: string | null): string {
+  const src = name ?? email ?? '?'
+  const parts = src.trim().split(/[\s@]/)
+  if (parts.length === 1) return parts[0][0]?.toUpperCase() ?? '?'
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-function SkeletonLine({ w = '60%', h = 12 }: { w?: string; h?: number }) {
+function daysAgo(dateStr: string): string {
+  const days = Math.floor((Date.now() - new Date(dateStr).getTime()) / 86_400_000)
+  if (days === 0) return 'Skickad idag'
+  if (days === 1) return 'Skickad igår'
+  return `Skickad ${days} dagar sedan`
+}
+
+// ── Sub-components ─────────────────────────────────────────────
+function Toast({ text, type }: { text: string; type: 'success' | 'error' }) {
   return (
-    <div style={{ height: h, background: '#F1F5F9', borderRadius: 6, width: w }} />
+    <div style={{
+      position: 'fixed',
+      top: 'max(16px, env(safe-area-inset-top, 16px))',
+      left: '50%', transform: 'translateX(-50%)',
+      zIndex: 1000,
+      background: type === 'success' ? '#0D7377' : '#DC2626',
+      color: 'white', borderRadius: 14,
+      padding: '10px 20px', fontSize: 13, fontWeight: 600,
+      boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
+      whiteSpace: 'nowrap', pointerEvents: 'none',
+    }}>
+      {type === 'success' ? '✓ ' : '✗ '}{text}
+    </div>
   )
 }
 
-// ── Component ─────────────────────────────────────────────────
+function SheetBackdrop({ onClose }: { onClose: () => void }) {
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, zIndex: 40,
+        background: 'rgba(0,0,0,0.35)',
+        backdropFilter: 'blur(2px)',
+        WebkitBackdropFilter: 'blur(2px)',
+      }}
+    />
+  )
+}
+
+function RolePill({ role }: { role: string }) {
+  const m = ROLE_META[role] ?? { label: role, bg: '#F1F5F9', color: '#64748B' }
+  return (
+    <span style={{
+      display: 'inline-block',
+      fontSize: 11, fontWeight: 700,
+      padding: '2px 8px', borderRadius: 20,
+      background: m.bg, color: m.color,
+    }}>
+      {m.label}
+    </span>
+  )
+}
+
+function StatCard({ value, label }: { value: number; label: string }) {
+  return (
+    <div style={{
+      background: 'rgba(255,255,255,0.9)',
+      borderRadius: 14,
+      border: '1px solid rgba(255,255,255,0.8)',
+      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+      padding: '14px 16px',
+      flex: 1,
+    }}>
+      <div style={{ fontSize: 26, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.04em', lineHeight: 1 }}>
+        {value}
+      </div>
+      <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, marginTop: 3 }}>
+        {label}
+      </div>
+    </div>
+  )
+}
+
+function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
+      <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+        {title}
+      </span>
+      {action}
+    </div>
+  )
+}
+
+// ── Main page ──────────────────────────────────────────────────
 export default function AdminPage() {
   const router = useRouter()
-  const { roles, profile, loading } = useUser()
+  const { profile: currentProfile, roles, loading: userLoading } = useUser()
+  const supabase = createClient()
 
-  // ── Existing state ────────────────────────────────────────
-  const [inviteEmail, setInviteEmail]     = useState('')
-  const [selectedRoles, setSelectedRoles] = useState<string[]>([])
-  const [sending, setSending]             = useState(false)
-  const [message, setMessage]             = useState<{ type: 'error' | 'success'; text: string } | null>(null)
-  const [members, setMembers]             = useState<Member[]>([])
-  const [pendingInvites, setPendingInvites] = useState<Invite[]>([])
-  const [removingId, setRemovingId]       = useState<string | null>(null)
-
-  // ── New state ────────────────────────────────────────────
-  const [athletes, setAthletes]     = useState<AthleteRow[]>([])
-  const [allGroups, setAllGroups]   = useState<GroupRow[]>([])
+  const [profiles, setProfiles] = useState<Profile[]>([])
+  const [userRoles, setUserRoles] = useState<UserRole[]>([])
+  const [invites, setInvites] = useState<Invite[]>([])
+  const [clubName, setClubName] = useState<string | null>(null)
   const [dataLoading, setDataLoading] = useState(true)
-  const [fetchError, setFetchError] = useState<string | null>(null)
-  const [toast, setToast]           = useState<{ type: 'success' | 'error'; text: string } | null>(null)
+  const [toast, setToast] = useState<{ text: string; type: 'success' | 'error' } | null>(null)
 
-  // Athlete invite state
-  const [inviteSending, setInviteSending] = useState<string | null>(null)
-  const [sentInvites, setSentInvites]     = useState<Set<string>>(new Set())
+  // ManageRoles sheet
+  const [manageProfile, setManageProfile] = useState<Profile | null>(null)
+  const [rolesSaving, setRolesSaving] = useState<string | null>(null)
 
-  // Athlete linking sheet
-  const [linkAthlete, setLinkAthlete]               = useState<AthleteRow | null>(null)
-  const [linkProfileId, setLinkProfileId]           = useState<string | null>(null)
-  const [linkGroupId, setLinkGroupId]               = useState<string | null>(null)
-  const [linkSaving, setLinkSaving]                 = useState(false)
+  // InviteStaff sheet
+  const [showInvite, setShowInvite] = useState(false)
+  const [inviteEmail, setInviteEmail] = useState('')
+  const [inviteRole, setInviteRole] = useState<'coach' | 'admin'>('coach')
+  const [inviteSending, setInviteSending] = useState(false)
 
-  // Add-role sheet
-  const [addRoleForId, setAddRoleForId] = useState<string | null>(null)
-  const [addingRole, setAddingRole]     = useState(false)
-
-  // ── Toast helper ──────────────────────────────────────────
-  function showToast(type: 'success' | 'error', text: string) {
-    setToast({ type, text })
-    setTimeout(() => setToast(null), 3000)
-  }
-
-  // ── Role check ────────────────────────────────────────────
+  // ── Auth guard ────────────────────────────────────────────
   useEffect(() => {
-    if (!loading && !roles.includes('admin')) {
+    if (!userLoading && !roles.includes('admin')) {
       router.replace('/dashboard')
     }
-  }, [loading, roles, router])
-
-  useEffect(() => {
-    if (profile?.club_id) fetchAll()
-  }, [profile])
+  }, [userLoading, roles, router])
 
   // ── Data fetch ────────────────────────────────────────────
   async function fetchAll() {
-    const supabase = createClient()
+    if (!currentProfile?.club_id) return
     setDataLoading(true)
-    setFetchError(null)
 
-    const [memberRes, inviteRes, athleteRes, groupRes] = await Promise.all([
+    const [{ data: prof }, { data: roleRows }, { data: inv }, { data: club }] = await Promise.all([
       supabase
         .from('profiles')
-        .select('id, email, full_name, user_roles(role)')
-        .eq('club_id', profile!.club_id),
+        .select('id, email, full_name, club_id')
+        .eq('club_id', currentProfile.club_id),
+      supabase
+        .from('user_roles')
+        .select('profile_id, role'),
       supabase
         .from('invites')
-        .select('id, email, roles, created_at')
-        .eq('club_id', profile!.club_id)
-        .eq('accepted', false)
+        .select('id, email, roles, accepted, created_at, athlete_id')
+        .eq('club_id', currentProfile.club_id)
         .order('created_at', { ascending: false }),
       supabase
-        .from('athletes')
-        .select('id, name, email, active, profile_id, group_id, groups(id, name, color)')
-        .eq('club_id', profile!.club_id)
-        .order('name'),
-      supabase
-        .from('groups')
-        .select('id, name, color')
-        .eq('club_id', profile!.club_id),
+        .from('clubs')
+        .select('name')
+        .eq('id', currentProfile.club_id)
+        .single(),
     ])
 
-    if (memberRes.error || athleteRes.error || groupRes.error) {
-      setFetchError('Kunde inte ladda data. Försök igen.')
-      setDataLoading(false)
-      return
-    }
-
-    setMembers((memberRes.data ?? []) as Member[])
-    setPendingInvites(inviteRes.data ?? [])
-
-    setAthletes(
-      (athleteRes.data ?? []).map((a: any) => {
-        const g = Array.isArray(a.groups) ? a.groups[0] : a.groups
-        return {
-          id: a.id,
-          name: a.name,
-          email: a.email ?? null,
-          active: a.active,
-          profile_id: a.profile_id ?? null,
-          group_id: a.group_id ?? null,
-          group_name: g?.name ?? null,
-          group_color: g?.color ?? null,
-        }
-      })
-    )
-    setAllGroups((groupRes.data ?? []) as GroupRow[])
+    setProfiles((prof as Profile[]) ?? [])
+    setUserRoles((roleRows as UserRole[]) ?? [])
+    setInvites((inv as Invite[]) ?? [])
+    setClubName((club as { name: string } | null)?.name ?? null)
     setDataLoading(false)
   }
 
-  // ── Existing actions ──────────────────────────────────────
-  function toggleInviteRole(role: string) {
-    setSelectedRoles(prev =>
-      prev.includes(role) ? prev.filter(r => r !== role) : [...prev, role]
-    )
+  useEffect(() => { fetchAll() }, [currentProfile?.club_id])
+
+  // ── Toast ─────────────────────────────────────────────────
+  function showToast(text: string, type: 'success' | 'error' = 'success') {
+    setToast({ text, type })
+    setTimeout(() => setToast(null), 3000)
   }
 
-  async function sendInvite() {
-    const normalized = inviteEmail.toLowerCase().trim()
-    if (!normalized || selectedRoles.length === 0) {
-      setMessage({ type: 'error', text: 'Ange e-post och välj minst en roll.' })
-      return
-    }
-    if (members.some(m => m.email?.toLowerCase() === normalized)) {
-      setMessage({ type: 'error', text: 'Den här personen är redan medlem i klubben.' })
-      return
-    }
-    if (pendingInvites.some(i => i.email.toLowerCase() === normalized)) {
-      setMessage({ type: 'error', text: 'Det finns redan en väntande inbjudan till den här e-posten.' })
-      return
-    }
-    setSending(true)
-    setMessage(null)
-    const res = await fetch('/api/invite', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ email: normalized, roles: selectedRoles, clubId: profile!.club_id }),
-    })
-    const result = await res.json()
-    if (!res.ok) {
-      setMessage({ type: 'error', text: result.error ?? 'Kunde inte skicka inbjudan.' })
-    } else {
-      setMessage({ type: 'success', text: `Inbjudan skickad till ${normalized}` })
-      setInviteEmail('')
-      setSelectedRoles([])
-      fetchAll()
-    }
-    setSending(false)
-  }
-
-  async function handleRemoveMember(memberId: string) {
-    if (!confirm('Ta bort den här personen från klubben?')) return
-    setRemovingId(memberId)
-    await removeMemberFromClub(memberId)
-    setMembers(prev => prev.filter(m => m.id !== memberId))
-    setRemovingId(null)
-    showToast('success', 'Medlem borttagen')
-  }
-
-  async function handleDeleteInvite(inviteId: string) {
-    setRemovingId(inviteId)
-    await deleteInvite(inviteId)
-    setPendingInvites(prev => prev.filter(i => i.id !== inviteId))
-    setRemovingId(null)
-    showToast('success', 'Inbjudan borttagen')
-  }
-
-  // ── Athlete linking ───────────────────────────────────────
-  function openLinkSheet(athlete: AthleteRow) {
-    setLinkAthlete(athlete)
-    setLinkProfileId(null)
-    setLinkGroupId(athlete.group_id)
-  }
-
-  async function saveLinking() {
-    if (!linkAthlete) return
-    const supabase = createClient()
-    setLinkSaving(true)
-
-    const updates: Record<string, string | null> = {}
-    if (linkProfileId) updates.profile_id = linkProfileId
-    if (linkGroupId !== linkAthlete.group_id) updates.group_id = linkGroupId
-
-    if (Object.keys(updates).length === 0) {
-      setLinkAthlete(null)
-      setLinkSaving(false)
-      return
-    }
-
-    const { error } = await supabase
-      .from('athletes')
-      .update(updates)
-      .eq('id', linkAthlete.id)
-
-    setLinkSaving(false)
-    if (error) {
-      showToast('error', 'Kunde inte spara ändringar')
-    } else {
-      showToast('success', 'Atlet uppdaterad')
-      setLinkAthlete(null)
-      fetchAll()
-    }
-  }
-
-  // ── Role management ───────────────────────────────────────
-  async function addRole(profileId: string, role: string) {
-    const supabase = createClient()
-    setAddingRole(true)
-    const { error } = await supabase
-      .from('user_roles')
-      .insert({ profile_id: profileId, role })
-    setAddingRole(false)
-    setAddRoleForId(null)
-    if (error) {
-      showToast('error', 'Kunde inte lägga till roll')
-    } else {
-      showToast('success', `Roll "${ROLE_LABEL[role]}" tillagd`)
-      fetchAll()
-    }
-  }
-
-  async function removeRole(profileId: string, role: string) {
-    if (!confirm(`Ta bort rollen "${ROLE_LABEL[role]}"?`)) return
-    const supabase = createClient()
-    const { error } = await supabase
-      .from('user_roles')
-      .delete()
-      .eq('profile_id', profileId)
-      .eq('role', role)
-    if (error) {
-      showToast('error', 'Kunde inte ta bort roll')
-    } else {
-      showToast('success', `Roll borttagen`)
-      fetchAll()
-    }
-  }
-
-  // ── Athlete invite ────────────────────────────────────────
-  async function sendAthleteInvite(athlete: AthleteRow) {
-    if (!athlete.email) return
-    setInviteSending(athlete.id)
-    const supabase = createClient()
-    const { data: { session } } = await supabase.auth.getSession()
+  // ── Send invite ───────────────────────────────────────────
+  async function sendInvite(email: string, role: string) {
     try {
-      const res = await fetch(
+      const { data: { session } } = await supabase.auth.getSession()
+      await fetch(
         `${process.env.NEXT_PUBLIC_SUPABASE_URL}/functions/v1/send-invite`,
         {
           method: 'POST',
@@ -319,56 +210,56 @@ export default function AdminPage() {
             'Content-Type': 'application/json',
             'Authorization': `Bearer ${session?.access_token}`,
           },
-          body: JSON.stringify({
-            athlete_id:   athlete.id,
-            email:        athlete.email,
-            athlete_name: athlete.name,
-            club_name:    (profile as any)?.club_name ?? 'klubben',
-            invited_by:   profile?.full_name ?? 'Din tränare',
-          }),
+          body: JSON.stringify({ email, role }),
         }
       )
-      if (res.ok) {
-        setSentInvites(prev => new Set(prev).add(athlete.id))
-        showToast('success', `Inbjudan skickad till ${athlete.email}!`)
-      } else {
-        showToast('error', 'Kunde inte skicka — försök igen')
-      }
     } catch {
-      showToast('error', 'Kunde inte skicka — försök igen')
-    } finally {
-      setInviteSending(null)
+      // best-effort
     }
   }
 
-  if (loading) return null
+  // ── Role toggle ───────────────────────────────────────────
+  function profileRoles(profileId: string): string[] {
+    return userRoles.filter(r => r.profile_id === profileId).map(r => r.role)
+  }
 
-  // ── Computed ──────────────────────────────────────────────
-  const uncoupledCount  = athletes.filter(a => !a.profile_id).length
-  const addRoleProfile  = members.find(m => m.id === addRoleForId) ?? null
+  async function toggleRole(profileId: string, role: string, has: boolean) {
+    setRolesSaving(role)
+    if (has) {
+      await supabase
+        .from('user_roles')
+        .delete()
+        .eq('profile_id', profileId)
+        .eq('role', role)
+      setUserRoles(prev => prev.filter(r => !(r.profile_id === profileId && r.role === role)))
+    } else {
+      const { data } = await supabase
+        .from('user_roles')
+        .insert({ profile_id: profileId, role })
+        .select('profile_id, role')
+        .single()
+      if (data) setUserRoles(prev => [...prev, data as UserRole])
+    }
+    setRolesSaving(null)
+  }
+
+  // ── Computed stats ────────────────────────────────────────
+  const stats = useMemo(() => ({
+    users:    profiles.length,
+    coaches:  new Set(userRoles.filter(r => r.role === 'coach').map(r => r.profile_id)).size,
+    admins:   new Set(userRoles.filter(r => r.role === 'admin').map(r => r.profile_id)).size,
+    pending:  invites.filter(i => !i.accepted).length,
+  }), [profiles, userRoles, invites])
+
+  if (userLoading) return null
 
   // ── Render ────────────────────────────────────────────────
   return (
-    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%' }}>
+    <div style={{ display: 'flex', flexDirection: 'column', minHeight: '100%', background: 'var(--surface-bg)' }}>
 
-      {/* ── Toast ──────────────────────────────────────────── */}
-      {toast && (
-        <div style={{
-          position: 'fixed',
-          top: 'max(16px, env(safe-area-inset-top, 16px))',
-          left: '50%', transform: 'translateX(-50%)',
-          zIndex: 999,
-          background: toast.type === 'success' ? '#0D7377' : '#DC2626',
-          color: 'white', borderRadius: 14,
-          padding: '10px 20px', fontSize: 13, fontWeight: 600,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
-          whiteSpace: 'nowrap', pointerEvents: 'none',
-        }}>
-          {toast.type === 'success' ? '✓ ' : '✗ '}{toast.text}
-        </div>
-      )}
+      {toast && <Toast text={toast.text} type={toast.type} />}
 
-      {/* ── Sticky Header ──────────────────────────────────── */}
+      {/* ── Sticky header ──────────────────────────────────── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 20,
         background: 'rgba(245,244,241,0.92)',
@@ -379,20 +270,22 @@ export default function AdminPage() {
       }}>
         <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
-            width: 32, height: 32, borderRadius: 10, flexShrink: 0,
+            width: 34, height: 34, borderRadius: 11, flexShrink: 0,
             background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             boxShadow: '0 2px 8px rgba(13,115,119,0.25)',
           }}>
-            <Shield size={16} color="white" strokeWidth={2} />
+            <Lock size={15} color="white" strokeWidth={2.5} />
           </div>
           <div>
             <div style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
               Admin
             </div>
-            <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>
-              Klubbadministration
-            </div>
+            {clubName && (
+              <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>
+                {clubName}
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -405,763 +298,404 @@ export default function AdminPage() {
         display: 'flex', flexDirection: 'column', gap: 24,
       }}>
 
-        {/* Fetch error */}
-        {fetchError && (
-          <div style={{
-            padding: '12px 16px', borderRadius: 12,
-            background: 'rgba(239,68,68,0.08)', color: '#DC2626',
-            border: '1px solid rgba(239,68,68,0.2)', fontSize: 13, fontWeight: 500,
-          }}>
-            {fetchError}
-          </div>
-        )}
-
-        {/* ── Summary Cards ─────────────────────────────────── */}
+        {/* ── Stats row ──────────────────────────────────── */}
         {dataLoading ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {[0, 1, 2, 3].map(i => (
-              <div key={i} style={{ background: 'white', borderRadius: 16, padding: '14px 16px', boxShadow: '0 2px 8px rgba(0,0,0,0.05)' }}>
-                <SkeletonLine w="40%" h={28} />
-                <div style={{ marginTop: 6 }}><SkeletonLine w="70%" h={10} /></div>
-              </div>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            {[1,2,3,4].map(i => (
+              <div key={i} style={{ height: 72, borderRadius: 14, background: 'rgba(0,0,0,0.05)' }} />
             ))}
           </div>
         ) : (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 10 }}>
-            {[
-              { label: 'Totalt atleter',      value: athletes.length,  alert: false },
-              { label: 'Atleter utan profil', value: uncoupledCount,   alert: uncoupledCount > 0 },
-              { label: 'Antal profiler',      value: members.length,   alert: false },
-              { label: 'Antal grupper',       value: allGroups.length, alert: false },
-            ].map(card => (
-              <div key={card.label} style={{
-                background: 'white', borderRadius: 16, padding: '14px 16px',
-                boxShadow: '0 2px 8px rgba(0,0,0,0.05)',
-                border: card.alert ? '1px solid rgba(245,158,11,0.3)' : '1px solid rgba(0,0,0,0.04)',
-              }}>
-                <div style={{
-                  fontSize: 30, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1,
-                  color: card.alert ? '#D97706' : '#0D7377',
-                }}>
-                  {card.value}
-                </div>
-                <div style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', marginTop: 5 }}>
-                  {card.label}
-                </div>
-              </div>
-            ))}
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 8 }}>
+            <StatCard value={stats.users}   label="Totalt användare" />
+            <StatCard value={stats.coaches} label="Tränare" />
+            <StatCard value={stats.admins}  label="Admins" />
+            <StatCard value={stats.pending} label="Väntande inbjudningar" />
           </div>
         )}
 
-        {/* ── Athletes & Profile Linking ─────────────────────── */}
+        {/* ── Users & Roles ──────────────────────────────── */}
         <div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 10 }}>
-            <span style={{
-              fontSize: 11, fontWeight: 700, color: '#94A3B8',
-              textTransform: 'uppercase', letterSpacing: '0.08em',
-            }}>
-              Atleter &amp; Profillänkning
-            </span>
-            {!dataLoading && uncoupledCount > 0 && (
-              <span style={{
-                background: 'rgba(245,158,11,0.15)', color: '#D97706',
-                borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 700,
-              }}>
-                {uncoupledCount} ej kopplade
-              </span>
-            )}
-          </div>
-
-          {dataLoading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {[0, 1, 2].map(i => (
-                <div key={i} style={{
-                  background: 'white', borderRadius: 14, padding: '14px 16px',
-                  boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                  display: 'flex', gap: 12, alignItems: 'center',
-                }}>
-                  <div style={{ width: 36, height: 36, borderRadius: 11, background: '#F1F5F9', flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
-                    <SkeletonLine w="50%" h={12} />
-                    <div style={{ marginTop: 6 }}><SkeletonLine w="30%" h={10} /></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : athletes.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px 0', color: '#94A3B8', fontSize: 14 }}>
-              Inga atleter registrerade
-            </div>
-          ) : (
-            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-              {athletes.map(athlete => {
-                const hasProfile = !!athlete.profile_id
-                const linkedMember = hasProfile ? members.find(m => m.id === athlete.profile_id) : null
-                return (
-                  <div key={athlete.id} style={{
-                    background: 'white', borderRadius: 14, padding: '12px 14px',
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    boxShadow: '0 1px 4px rgba(0,0,0,0.05)',
-                    border: hasProfile ? '1px solid rgba(0,0,0,0.04)' : '1px solid rgba(245,158,11,0.2)',
-                  }}>
-                    {/* Avatar */}
-                    <div style={{
-                      width: 36, height: 36, borderRadius: 11, flexShrink: 0,
-                      background: hasProfile
-                        ? 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)'
-                        : 'rgba(148,163,184,0.15)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 13, fontWeight: 700,
-                      color: hasProfile ? 'white' : '#94A3B8',
-                    }}>
-                      {initials(athlete.name)}
-                    </div>
-
-                    {/* Name + pills */}
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 14, fontWeight: 700, color: '#0F172A',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
-                        {athlete.name}
-                      </div>
-                      {athlete.email && (
-                        <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>{athlete.email}</div>
-                      )}
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginTop: 5, flexWrap: 'wrap' }}>
-                        {athlete.group_name ? (
-                          <span style={{
-                            fontSize: 10, fontWeight: 700, padding: '2px 7px', borderRadius: 999,
-                            background: `${athlete.group_color ?? '#94A3B8'}20`,
-                            color: athlete.group_color ?? '#64748B',
-                            border: `1px solid ${athlete.group_color ?? '#94A3B8'}30`,
-                          }}>
-                            {athlete.group_name}
-                          </span>
-                        ) : (
-                          <span style={{
-                            fontSize: 10, fontWeight: 600, padding: '2px 7px', borderRadius: 999,
-                            background: 'rgba(148,163,184,0.1)', color: '#94A3B8',
-                          }}>
-                            Ingen grupp
-                          </span>
-                        )}
-                        {linkedMember && (linkedMember.user_roles ?? []).map(r => (
-                          <span key={r.role} style={{
-                            fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6,
-                            background: ROLE_COLOR[r.role]?.bg ?? 'rgba(148,163,184,0.1)',
-                            color: ROLE_COLOR[r.role]?.color ?? '#64748B',
-                            textTransform: 'uppercase', letterSpacing: '0.04em',
-                          }}>
-                            {ROLE_LABEL[r.role] ?? r.role}
-                          </span>
-                        ))}
-                      </div>
-                    </div>
-
-                    {/* Right: status + invite */}
-                    {hasProfile ? (
-                      <div style={{ display: 'flex', alignItems: 'center', gap: 4, flexShrink: 0 }}>
-                        <CheckCircle size={14} color="#16A34A" strokeWidth={2.5} />
-                        <span style={{ fontSize: 11, fontWeight: 600, color: '#16A34A' }}>Kopplad</span>
-                      </div>
-                    ) : (
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 5, flexShrink: 0 }}>
-                        <div style={{ display: 'flex', alignItems: 'center', gap: 3 }}>
-                          <AlertCircle size={13} color="#D97706" strokeWidth={2} />
-                          <span style={{ fontSize: 11, fontWeight: 600, color: '#D97706' }}>Ej kopplad</span>
-                        </div>
-                        <div style={{ display: 'flex', gap: 5 }}>
-                          {athlete.email && (
-                            sentInvites.has(athlete.id) ? (
-                              <span style={{
-                                fontSize: 11, fontWeight: 700, padding: '4px 8px', borderRadius: 8,
-                                background: 'rgba(148,163,184,0.1)', color: '#94A3B8',
-                              }}>
-                                Skickad ✓
-                              </span>
-                            ) : (
-                              <button
-                                onClick={() => sendAthleteInvite(athlete)}
-                                disabled={inviteSending === athlete.id}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: 4,
-                                  background: 'rgba(13,115,119,0.08)', color: '#0D7377',
-                                  border: 'none', borderRadius: 8, padding: '4px 9px',
-                                  fontSize: 11, fontWeight: 700,
-                                  cursor: inviteSending === athlete.id ? 'not-allowed' : 'pointer',
-                                  opacity: inviteSending === athlete.id ? 0.6 : 1,
-                                }}
-                              >
-                                <Send size={11} strokeWidth={2.2} />
-                                {inviteSending === athlete.id ? '...' : 'Bjud in'}
-                              </button>
-                            )
-                          )}
-                          <button
-                            onClick={() => openLinkSheet(athlete)}
-                            style={{
-                              background: 'rgba(13,115,119,0.08)', color: '#0D7377',
-                              border: 'none', borderRadius: 8, padding: '4px 9px',
-                              fontSize: 11, fontWeight: 700, cursor: 'pointer',
-                            }}
-                          >
-                            Koppla →
-                          </button>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── Groups ────────────────────────────────────────── */}
-        <div>
-          <div style={{
-            fontSize: 11, fontWeight: 700, color: '#94A3B8',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-          }}>
-            Grupper
-          </div>
-
-          {dataLoading ? (
-            <div style={{ background: 'white', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-              <SkeletonLine w="50%" h={12} />
-              <div style={{ marginTop: 10 }}><SkeletonLine w="70%" h={12} /></div>
-            </div>
-          ) : allGroups.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '16px 0', color: '#94A3B8', fontSize: 14 }}>
-              Inga grupper skapade
-            </div>
-          ) : (
-            <div className="glass-card" style={{ padding: 6 }}>
-              {allGroups.map((group, i) => {
-                const groupAthletes = athletes.filter(a => a.group_id === group.id)
-                const uncoupled     = groupAthletes.filter(a => !a.profile_id).length
-                return (
-                  <div key={group.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 10px',
-                    borderBottom: i < allGroups.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
-                  }}>
-                    <div style={{
-                      width: 10, height: 10, borderRadius: '50%',
-                      background: group.color || '#94A3B8', flexShrink: 0,
-                    }} />
-                    <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', flex: 1 }}>
-                      {group.name}
-                    </span>
-                    <span style={{
-                      fontSize: 11, fontWeight: 700, padding: '3px 9px', borderRadius: 999,
-                      background: 'rgba(13,115,119,0.08)', color: '#0D7377',
-                    }}>
-                      {groupAthletes.length} atleter
-                    </span>
-                    {uncoupled > 0 && (
-                      <span style={{
-                        fontSize: 11, fontWeight: 600, padding: '3px 9px', borderRadius: 999,
-                        background: 'rgba(245,158,11,0.1)', color: '#D97706',
-                      }}>
-                        {uncoupled} saknar profil
-                      </span>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── Roles & Permissions ───────────────────────────── */}
-        <div>
-          <div style={{
-            fontSize: 11, fontWeight: 700, color: '#94A3B8',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-          }}>
-            Roller &amp; Behörigheter
-          </div>
-
-          {dataLoading ? (
-            <div style={{ background: 'white', borderRadius: 14, padding: '14px 16px', boxShadow: '0 1px 4px rgba(0,0,0,0.05)' }}>
-              {[0, 1].map(i => (
-                <div key={i} style={{ display: 'flex', gap: 12, alignItems: 'center', padding: '8px 0' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: 11, background: '#F1F5F9', flexShrink: 0 }} />
-                  <div style={{ flex: 1 }}>
-                    <SkeletonLine w="55%" h={12} />
-                    <div style={{ marginTop: 6 }}><SkeletonLine w="35%" h={10} /></div>
-                  </div>
-                </div>
-              ))}
-            </div>
-          ) : members.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '16px 0', color: '#94A3B8', fontSize: 14 }}>
-              Inga profiler
-            </div>
-          ) : (
-            <div className="glass-card" style={{ padding: 6 }}>
-              {members.map((member, i) => {
-                const isMe        = member.id === profile?.id
-                const memberRoles = member.user_roles?.map(r => r.role) ?? []
-                return (
-                  <div key={member.id} style={{
-                    display: 'flex', alignItems: 'center', gap: 12,
-                    padding: '12px 10px',
-                    borderBottom: i < members.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
-                  }}>
-                    <div style={{
-                      width: 34, height: 34, borderRadius: 11, flexShrink: 0,
-                      background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
-                      display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontSize: 13, fontWeight: 700, color: 'white',
-                    }}>
-                      {(member.full_name ?? member.email ?? '?')[0].toUpperCase()}
-                    </div>
-
-                    <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{
-                        fontSize: 14, fontWeight: 600, color: '#0F172A',
-                        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                      }}>
-                        {member.full_name ?? member.email}
-                        {isMe && (
-                          <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500, marginLeft: 6 }}>
-                            (du)
-                          </span>
-                        )}
-                      </div>
-                      {member.full_name && (
-                        <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>{member.email}</div>
-                      )}
-                      <div style={{ display: 'flex', gap: 4, marginTop: 5, flexWrap: 'wrap', alignItems: 'center' }}>
-                        {memberRoles.map(role => (
-                          <button
-                            key={role}
-                            onClick={() => !isMe && removeRole(member.id, role)}
-                            title={isMe ? undefined : 'Tryck för att ta bort'}
-                            style={{
-                              fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6,
-                              background: ROLE_COLOR[role]?.bg ?? 'rgba(148,163,184,0.1)',
-                              color: ROLE_COLOR[role]?.color ?? '#64748B',
-                              textTransform: 'uppercase', letterSpacing: '0.04em',
-                              border: 'none', cursor: isMe ? 'default' : 'pointer',
-                            }}
-                          >
-                            {ROLE_LABEL[role] ?? role}
-                          </button>
-                        ))}
-                        <button
-                          onClick={() => setAddRoleForId(member.id)}
-                          style={{
-                            width: 20, height: 20, borderRadius: 6,
-                            background: 'rgba(13,115,119,0.08)', border: 'none',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            cursor: 'pointer',
-                          }}
-                        >
-                          <Plus size={12} color="#0D7377" strokeWidth={2.5} />
-                        </button>
-                      </div>
-                    </div>
-
-                    {!isMe && (
-                      <button
-                        onClick={() => handleRemoveMember(member.id)}
-                        disabled={removingId === member.id}
-                        style={{
-                          background: 'none', border: 'none', cursor: 'pointer',
-                          padding: 6, color: '#CBD5E1', borderRadius: 8,
-                          opacity: removingId === member.id ? 0.4 : 1, flexShrink: 0,
-                        }}
-                      >
-                        <Trash2 size={15} strokeWidth={2} />
-                      </button>
-                    )}
-                  </div>
-                )
-              })}
-            </div>
-          )}
-        </div>
-
-        {/* ── Invite ────────────────────────────────────────── */}
-        <div>
-          <div style={{
-            fontSize: 11, fontWeight: 700, color: '#94A3B8',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-          }}>
-            Bjud in ny medlem
-          </div>
-          <div className="glass-card" style={{ padding: 20 }}>
-            {message && (
-              <div style={{
-                padding: '10px 14px', borderRadius: 10, marginBottom: 14,
-                fontSize: 13, fontWeight: 500,
-                background: message.type === 'error' ? 'rgba(239,68,68,0.08)' : 'rgba(13,115,119,0.08)',
-                color:  message.type === 'error' ? '#DC2626' : '#0D7377',
-                border: `1px solid ${message.type === 'error' ? 'rgba(239,68,68,0.2)' : 'rgba(13,115,119,0.2)'}`,
-              }}>
-                {message.text}
-              </div>
-            )}
-            <input
-              type="email"
-              placeholder="E-postadress"
-              value={inviteEmail}
-              onChange={e => setInviteEmail(e.target.value)}
-              onKeyDown={e => e.key === 'Enter' && sendInvite()}
-              className="glass-input"
-              style={{
-                width: '100%', padding: '12px 14px', borderRadius: 12,
-                fontSize: 15, marginBottom: 14, boxSizing: 'border-box',
-              }}
-            />
-            <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 600, color: '#64748B', marginBottom: 8 }}>Roll</div>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-                {(['athlete', 'coach', 'admin'] as const).map(role => {
-                  const selected = selectedRoles.includes(role)
-                  const colors   = ROLE_COLOR[role]
-                  return (
-                    <button
-                      key={role}
-                      onClick={() => toggleInviteRole(role)}
-                      style={{
-                        padding: '7px 14px', borderRadius: 10,
-                        fontSize: 13, fontWeight: 600, cursor: 'pointer',
-                        border: selected ? `1.5px solid ${colors.color}` : '1.5px solid rgba(0,0,0,0.1)',
-                        background: selected ? colors.bg : 'rgba(255,255,255,0.6)',
-                        color: selected ? colors.color : '#64748B',
-                        transition: 'all 0.15s ease',
-                      }}
-                    >
-                      {ROLE_LABEL[role]}
-                    </button>
-                  )
-                })}
-              </div>
-            </div>
-            <button
-              onClick={sendInvite}
-              disabled={sending || !inviteEmail || selectedRoles.length === 0}
-              className="btn-primary"
-              style={{
-                width: '100%', padding: '12px 0', borderRadius: 12,
-                fontSize: 14, fontWeight: 700, border: 'none',
-                cursor: sending ? 'not-allowed' : 'pointer',
-                opacity: sending || !inviteEmail || selectedRoles.length === 0 ? 0.6 : 1,
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              }}
-            >
-              <Send size={15} strokeWidth={2.2} />
-              {sending ? 'Skickar...' : 'Skicka inbjudan'}
-            </button>
-          </div>
-        </div>
-
-        {/* ── Pending Invites ───────────────────────────────── */}
-        <div>
-          <div style={{
-            display: 'flex', alignItems: 'center', gap: 6,
-            fontSize: 11, fontWeight: 700, color: '#94A3B8',
-            textTransform: 'uppercase', letterSpacing: '0.08em', marginBottom: 10,
-          }}>
-            <Clock size={12} strokeWidth={2.5} />
-            Väntande inbjudningar ({pendingInvites.length})
-          </div>
-          <div className="glass-card" style={{ padding: pendingInvites.length === 0 ? '14px 16px' : 6 }}>
-            {pendingInvites.length === 0 ? (
-              <div style={{ color: '#94A3B8', fontSize: 14 }}>Inga väntande inbjudningar.</div>
-            ) : (
-              pendingInvites.map((invite, i) => (
-                <div key={invite.id} style={{
-                  display: 'flex', alignItems: 'center', gap: 12,
-                  padding: '11px 10px',
-                  borderBottom: i < pendingInvites.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
-                }}>
-                  <div style={{
-                    width: 34, height: 34, borderRadius: 11, flexShrink: 0,
-                    background: 'rgba(148,163,184,0.1)',
-                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                  }}>
-                    <Mail size={15} color="#94A3B8" strokeWidth={2} />
-                  </div>
-                  <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{
-                      fontSize: 14, fontWeight: 600, color: '#0F172A',
-                      overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-                    }}>
-                      {invite.email}
-                    </div>
-                    <div style={{ display: 'flex', gap: 4, marginTop: 3, flexWrap: 'wrap' }}>
-                      {invite.roles.map(role => (
-                        <span key={role} style={{
-                          fontSize: 10, fontWeight: 700, padding: '2px 6px', borderRadius: 6,
-                          background: ROLE_COLOR[role]?.bg ?? 'rgba(148,163,184,0.1)',
-                          color: ROLE_COLOR[role]?.color ?? '#64748B',
-                          textTransform: 'uppercase', letterSpacing: '0.04em',
-                        }}>
-                          {ROLE_LABEL[role] ?? role}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                  <button
-                    onClick={() => handleDeleteInvite(invite.id)}
-                    disabled={removingId === invite.id}
-                    style={{
-                      background: 'none', border: 'none', cursor: 'pointer',
-                      padding: 6, color: '#CBD5E1', borderRadius: 8,
-                      opacity: removingId === invite.id ? 0.4 : 1, flexShrink: 0,
-                    }}
-                  >
-                    <Trash2 size={15} strokeWidth={2} />
-                  </button>
-                </div>
-              ))
-            )}
-          </div>
-        </div>
-
-      </div>
-
-      {/* ── Athlete Linking Sheet ─────────────────────────────── */}
-      {linkAthlete && (
-        <>
-          <div
-            onClick={() => !linkSaving && setLinkAthlete(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 90,
-              background: 'rgba(15,23,42,0.45)',
-              backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-            }}
-          />
-          <div
-            className="glass-sheet"
-            style={{
-              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 91,
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-              maxHeight: '85vh', overflowY: 'auto',
-            }}
-          >
-            {/* Handle */}
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)' }} />
-            </div>
-
-            <div style={{ padding: '4px 20px 24px' }}>
-              {/* Title */}
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 20 }}>
-                <div>
-                  <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
-                    Koppla {linkAthlete.name}
-                  </div>
-                  <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
-                    Välj profil och grupp
-                  </div>
-                </div>
-                <button
-                  onClick={() => setLinkAthlete(null)}
-                  style={{
-                    background: 'rgba(0,0,0,0.06)', border: 'none',
-                    borderRadius: 8, padding: 8, cursor: 'pointer',
-                  }}
-                >
-                  <X size={16} color="#64748B" strokeWidth={2.5} />
-                </button>
-              </div>
-
-              {/* Section A: Choose profile */}
-              <div style={{
-                fontSize: 12, fontWeight: 700, color: '#64748B', marginBottom: 8,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}>
-                Välj befintlig profil
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 6, marginBottom: 20 }}>
-                {members.length === 0 ? (
-                  <div style={{ color: '#94A3B8', fontSize: 13, padding: '8px 0' }}>
-                    Inga profiler tillgängliga
-                  </div>
-                ) : (
-                  members.map(m => {
-                    const selected    = linkProfileId === m.id
-                    const memberRoles = m.user_roles?.map(r => r.role) ?? []
-                    return (
-                      <div
-                        key={m.id}
-                        onClick={() => setLinkProfileId(selected ? null : m.id)}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '10px 12px', borderRadius: 12, cursor: 'pointer',
-                          background: selected ? 'rgba(13,115,119,0.06)' : 'rgba(0,0,0,0.02)',
-                          border: selected ? '1.5px solid rgba(13,115,119,0.3)' : '1.5px solid transparent',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        <div style={{
-                          width: 32, height: 32, borderRadius: 10, flexShrink: 0,
-                          background: selected
-                            ? 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)'
-                            : 'rgba(148,163,184,0.15)',
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontSize: 12, fontWeight: 700,
-                          color: selected ? 'white' : '#94A3B8',
-                        }}>
-                          {initials(m.full_name ?? m.email)}
-                        </div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 13, fontWeight: 600, color: '#0F172A' }}>
-                            {m.full_name ?? m.email}
-                          </div>
-                          <div style={{ fontSize: 11, color: '#94A3B8' }}>{m.email}</div>
-                          <div style={{ display: 'flex', gap: 4, marginTop: 3 }}>
-                            {memberRoles.map(role => (
-                              <span key={role} style={{
-                                fontSize: 9, fontWeight: 700, padding: '1px 5px', borderRadius: 5,
-                                background: ROLE_COLOR[role]?.bg ?? 'rgba(148,163,184,0.1)',
-                                color: ROLE_COLOR[role]?.color ?? '#64748B',
-                                textTransform: 'uppercase', letterSpacing: '0.04em',
-                              }}>
-                                {ROLE_LABEL[role] ?? role}
-                              </span>
-                            ))}
-                          </div>
-                        </div>
-                        {selected && <Check size={16} color="#0D7377" strokeWidth={2.5} />}
-                      </div>
-                    )
-                  })
-                )}
-              </div>
-
-              {/* Section B: Group picker */}
-              <div style={{
-                fontSize: 12, fontWeight: 700, color: '#64748B', marginBottom: 8,
-                textTransform: 'uppercase', letterSpacing: '0.06em',
-              }}>
-                Byt grupp
-              </div>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8, marginBottom: 24 }}>
-                <button
-                  onClick={() => setLinkGroupId(null)}
-                  style={{
-                    padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
-                    cursor: 'pointer',
-                    background: linkGroupId === null ? 'rgba(13,115,119,0.1)' : 'rgba(0,0,0,0.04)',
-                    color:  linkGroupId === null ? '#0D7377' : '#64748B',
-                    border: linkGroupId === null ? '1.5px solid rgba(13,115,119,0.3)' : '1.5px solid transparent',
-                  }}
-                >
-                  Ingen grupp
-                </button>
-                {allGroups.map(g => (
-                  <button
-                    key={g.id}
-                    onClick={() => setLinkGroupId(g.id)}
-                    style={{
-                      padding: '7px 14px', borderRadius: 999, fontSize: 13, fontWeight: 600,
-                      cursor: 'pointer',
-                      background: linkGroupId === g.id ? `${g.color}20` : 'rgba(0,0,0,0.04)',
-                      color:  linkGroupId === g.id ? g.color : '#64748B',
-                      border: linkGroupId === g.id ? `1.5px solid ${g.color}40` : '1.5px solid transparent',
-                    }}
-                  >
-                    {g.name}
-                  </button>
-                ))}
-              </div>
-
+          <SectionHeader
+            title="Användare & Roller"
+            action={
               <button
-                onClick={saveLinking}
-                disabled={linkSaving || (!linkProfileId && linkGroupId === linkAthlete.group_id)}
-                className="btn-primary"
+                onClick={() => { setShowInvite(true); setInviteEmail(''); setInviteRole('coach') }}
                 style={{
-                  width: '100%', padding: '13px 0', borderRadius: 14,
-                  fontSize: 14, fontWeight: 700, border: 'none',
-                  cursor: linkSaving ? 'not-allowed' : 'pointer',
-                  opacity: linkSaving || (!linkProfileId && linkGroupId === linkAthlete.group_id) ? 0.5 : 1,
+                  display: 'flex', alignItems: 'center', gap: 5,
+                  background: '#0D7377', color: 'white',
+                  border: 'none', borderRadius: 20,
+                  padding: '7px 13px', fontSize: 12, fontWeight: 700,
+                  cursor: 'pointer',
                 }}
               >
-                {linkSaving ? 'Sparar...' : 'Spara'}
+                <Mail size={13} strokeWidth={2.5} />
+                Bjud in tränare/admin
               </button>
-            </div>
-          </div>
-        </>
-      )}
-
-      {/* ── Add Role Sheet ──────────────────────────────────── */}
-      {addRoleForId && addRoleProfile && (
-        <>
-          <div
-            onClick={() => !addingRole && setAddRoleForId(null)}
-            style={{
-              position: 'fixed', inset: 0, zIndex: 90,
-              background: 'rgba(15,23,42,0.45)',
-              backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)',
-            }}
+            }
           />
-          <div
-            className="glass-sheet"
-            style={{
-              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 91,
-              paddingBottom: 'env(safe-area-inset-bottom, 0px)',
-            }}
-          >
-            <div style={{ display: 'flex', justifyContent: 'center', padding: '12px 0 4px' }}>
-              <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)' }} />
+
+          {dataLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[1,2,3].map(i => (
+                <div key={i} style={{ height: 70, borderRadius: 14, background: 'rgba(0,0,0,0.05)' }} />
+              ))}
             </div>
-            <div style={{ padding: '4px 20px 28px' }}>
-              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 6 }}>
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
-                  Lägg till roll
-                </div>
-                <button
-                  onClick={() => setAddRoleForId(null)}
+          ) : profiles.length === 0 ? (
+            <div style={{ color: '#94A3B8', fontSize: 14, padding: '20px 0', textAlign: 'center' }}>
+              Inga användare ännu
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {profiles.map(p => {
+                const pRoles = profileRoles(p.id)
+                const displayName = p.full_name ?? p.email ?? 'Okänd'
+                return (
+                  <div
+                    key={p.id}
+                    style={{
+                      background: 'rgba(255,255,255,0.9)',
+                      borderRadius: 14,
+                      border: '1px solid rgba(255,255,255,0.8)',
+                      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                      padding: '12px 14px',
+                      display: 'flex', alignItems: 'center', gap: 12,
+                    }}
+                  >
+                    {/* Avatar */}
+                    <div style={{
+                      width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                      background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      color: 'white', fontSize: 14, fontWeight: 700,
+                    }}>
+                      {initials(p.full_name, p.email)}
+                    </div>
+
+                    {/* Info */}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        {displayName}
+                      </div>
+                      {p.full_name && p.email && (
+                        <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                          {p.email}
+                        </div>
+                      )}
+                      <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
+                        {pRoles.length === 0 ? (
+                          <span style={{ fontSize: 11, color: '#CBD5E1', fontWeight: 500 }}>Inga roller</span>
+                        ) : (
+                          pRoles.map(r => <RolePill key={r} role={r} />)
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Manage button */}
+                    <button
+                      onClick={() => setManageProfile(p)}
+                      className="btn-secondary"
+                      style={{ fontSize: 12, fontWeight: 700, padding: '7px 12px', flexShrink: 0 }}
+                    >
+                      Hantera
+                    </button>
+                  </div>
+                )
+              })}
+            </div>
+          )}
+        </div>
+
+        {/* ── Pending invites ─────────────────────────────── */}
+        <div>
+          <SectionHeader
+            title="Väntande inbjudningar"
+            action={
+              stats.pending > 0 ? (
+                <span style={{
+                  background: 'rgba(245,158,11,0.12)', color: '#D97706',
+                  borderRadius: 20, padding: '3px 10px',
+                  fontSize: 12, fontWeight: 700,
+                }}>
+                  {stats.pending}
+                </span>
+              ) : undefined
+            }
+          />
+
+          {dataLoading ? (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {[1,2].map(i => <div key={i} style={{ height: 72, borderRadius: 14, background: 'rgba(0,0,0,0.05)' }} />)}
+            </div>
+          ) : invites.length === 0 ? (
+            <div style={{
+              background: 'rgba(255,255,255,0.7)',
+              borderRadius: 14, border: '1px dashed rgba(0,0,0,0.1)',
+              padding: '28px 20px', textAlign: 'center',
+              color: '#94A3B8', fontSize: 14,
+            }}>
+              Inga inbjudningar skickade än
+            </div>
+          ) : (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {invites.map(inv => (
+                <div
+                  key={inv.id}
                   style={{
-                    background: 'rgba(0,0,0,0.06)', border: 'none',
-                    borderRadius: 8, padding: 8, cursor: 'pointer',
+                    background: 'rgba(255,255,255,0.9)',
+                    borderRadius: 14,
+                    border: '1px solid rgba(255,255,255,0.8)',
+                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                    padding: '12px 14px',
+                    display: 'flex', alignItems: 'center', gap: 12,
                   }}
                 >
-                  <X size={16} color="#64748B" strokeWidth={2.5} />
-                </button>
-              </div>
-              <div style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>
-                {addRoleProfile.full_name ?? addRoleProfile.email}
-              </div>
-              <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-                {(['admin', 'coach', 'athlete'] as const).map(role => {
-                  const alreadyHas = (addRoleProfile.user_roles ?? []).some(r => r.role === role)
-                  const colors     = ROLE_COLOR[role]
-                  return (
+                  {/* Icon */}
+                  <div style={{
+                    width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
+                    background: inv.accepted ? 'rgba(16,185,129,0.12)' : 'rgba(245,158,11,0.12)',
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  }}>
+                    <Mail size={16} color={inv.accepted ? '#059669' : '#D97706'} strokeWidth={2} />
+                  </div>
+
+                  {/* Info */}
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      {inv.email}
+                    </div>
+                    <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, margin: '4px 0' }}>
+                      {(inv.roles ?? []).map(r => <RolePill key={r} role={r} />)}
+                    </div>
+                    <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>
+                      {daysAgo(inv.created_at)}
+                    </div>
+                  </div>
+
+                  {/* Action */}
+                  {inv.accepted ? (
+                    <span style={{ fontSize: 12, fontWeight: 700, color: '#059669', flexShrink: 0 }}>
+                      Accepterad ✓
+                    </span>
+                  ) : (
                     <button
-                      key={role}
-                      onClick={() => !alreadyHas && addRole(addRoleForId, role)}
-                      disabled={alreadyHas || addingRole}
+                      onClick={() => {
+                        sendInvite(inv.email, inv.roles?.[0] ?? 'coach')
+                        showToast(`Inbjudan skickad igen till ${inv.email}`)
+                      }}
                       style={{
-                        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-                        padding: '13px 16px', borderRadius: 12,
-                        background: alreadyHas ? 'rgba(0,0,0,0.02)' : colors.bg,
-                        border: `1.5px solid ${alreadyHas ? 'rgba(0,0,0,0.06)' : colors.color + '40'}`,
-                        cursor: alreadyHas ? 'not-allowed' : 'pointer',
-                        opacity: alreadyHas ? 0.5 : 1,
+                        fontSize: 12, fontWeight: 700, color: '#0D7377',
+                        background: 'none', border: 'none',
+                        cursor: 'pointer', flexShrink: 0,
+                        padding: '6px 0',
                       }}
                     >
-                      <span style={{ fontSize: 14, fontWeight: 700, color: alreadyHas ? '#94A3B8' : colors.color }}>
-                        Lägg till {ROLE_LABEL[role]}
-                      </span>
-                      {alreadyHas && <Check size={14} color="#94A3B8" strokeWidth={2.5} />}
+                      Skicka igen
                     </button>
-                  )
-                })}
+                  )}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* ── Danger zone ─────────────────────────────────── */}
+        <div style={{
+          background: 'rgba(239,68,68,0.05)',
+          border: '1px solid rgba(239,68,68,0.15)',
+          borderRadius: 16, padding: '16px',
+        }}>
+          <div style={{ fontSize: 13, fontWeight: 800, color: '#DC2626', marginBottom: 12, letterSpacing: '-0.01em' }}>
+            Farlig zon
+          </div>
+          <button
+            style={{
+              display: 'flex', alignItems: 'center', gap: 8,
+              background: 'none',
+              border: '1.5px solid rgba(239,68,68,0.3)',
+              borderRadius: 12, padding: '10px 14px',
+              color: '#DC2626', fontSize: 13, fontWeight: 600,
+              cursor: 'pointer', width: '100%',
+            }}
+          >
+            <Download size={15} strokeWidth={2} />
+            Exportera all data
+          </button>
+        </div>
+      </div>
+
+      {/* ── Manage Roles Sheet ──────────────────────────── */}
+      {manageProfile && (
+        <>
+          <SheetBackdrop onClose={() => setManageProfile(null)} />
+          <div className="glass-sheet" style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+            padding: '20px 20px',
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            maxWidth: 480, margin: '0 auto',
+          }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
+
+            <button
+              onClick={() => setManageProfile(null)}
+              style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+            >
+              <X size={20} color="#94A3B8" />
+            </button>
+
+            {/* Header */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
+              <div style={{
+                width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
+                background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+                display: 'flex', alignItems: 'center', justifyContent: 'center',
+                color: 'white', fontSize: 16, fontWeight: 700,
+              }}>
+                {initials(manageProfile.full_name, manageProfile.email)}
+              </div>
+              <div>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A' }}>
+                  {manageProfile.full_name ?? manageProfile.email ?? 'Okänd'}
+                </div>
+                {manageProfile.full_name && manageProfile.email && (
+                  <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>{manageProfile.email}</div>
+                )}
               </div>
             </div>
+
+            {/* Role label */}
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#64748B', marginBottom: 10 }}>Roller</div>
+
+            {/* Role toggles */}
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 20 }}>
+              {(['admin', 'coach', 'athlete'] as const).map(role => {
+                const has = profileRoles(manageProfile.id).includes(role)
+                const m = ROLE_META[role]
+                const saving = rolesSaving === role
+                return (
+                  <button
+                    key={role}
+                    onClick={() => toggleRole(manageProfile.id, role, has)}
+                    disabled={saving}
+                    style={{
+                      display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+                      padding: '12px 14px', borderRadius: 12,
+                      background: has ? `${m.bg}` : 'rgba(0,0,0,0.02)',
+                      border: `1.5px solid ${has ? m.color + '40' : 'rgba(0,0,0,0.06)'}`,
+                      cursor: saving ? 'default' : 'pointer',
+                      textAlign: 'left',
+                    }}
+                  >
+                    <div>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: has ? m.color : '#0F172A' }}>
+                        {m.label}
+                      </div>
+                      <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 1 }}>{m.desc}</div>
+                    </div>
+                    <div style={{
+                      width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+                      background: has ? m.color : 'rgba(0,0,0,0.08)',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      transition: 'background 0.15s',
+                    }}>
+                      {has && <Check size={13} color="white" strokeWidth={3} />}
+                    </div>
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              className="btn-secondary"
+              onClick={() => setManageProfile(null)}
+              style={{ width: '100%', padding: '13px', fontSize: 15 }}
+            >
+              Stäng
+            </button>
           </div>
         </>
       )}
 
+      {/* ── Invite Staff Sheet ──────────────────────────── */}
+      {showInvite && (
+        <>
+          <SheetBackdrop onClose={() => setShowInvite(false)} />
+          <div className="glass-sheet" style={{
+            position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
+            padding: '20px 20px',
+            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            maxWidth: 480, margin: '0 auto',
+          }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
+
+            <button
+              onClick={() => setShowInvite(false)}
+              style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
+            >
+              <X size={20} color="#94A3B8" />
+            </button>
+
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 18 }}>
+              Bjud in tränare eller admin
+            </div>
+
+            {/* Email */}
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+              E-post
+            </label>
+            <input
+              className="glass-input"
+              type="email"
+              placeholder="namn@email.com"
+              value={inviteEmail}
+              onChange={e => setInviteEmail(e.target.value)}
+              style={{ width: '100%', padding: '10px 14px', marginBottom: 16 }}
+              autoFocus
+            />
+
+            {/* Role picker */}
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 8 }}>
+              Roll
+            </label>
+            <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
+              {(['coach', 'admin'] as const).map(r => {
+                const m = ROLE_META[r]
+                const active = inviteRole === r
+                return (
+                  <button
+                    key={r}
+                    onClick={() => setInviteRole(r)}
+                    style={{
+                      flex: 1, padding: '10px 0', borderRadius: 12, fontSize: 14, fontWeight: 700,
+                      border: active ? 'none' : '1.5px solid rgba(0,0,0,0.1)',
+                      background: active ? m.bg : 'rgba(255,255,255,0.7)',
+                      color: active ? m.color : '#64748B',
+                      cursor: 'pointer',
+                    }}
+                  >
+                    {m.label}
+                  </button>
+                )
+              })}
+            </div>
+
+            <button
+              className="btn-primary"
+              disabled={inviteSending || !inviteEmail.trim()}
+              onClick={async () => {
+                setInviteSending(true)
+                await sendInvite(inviteEmail.trim(), inviteRole)
+                showToast(`Inbjudan skickad till ${inviteEmail.trim()}`)
+                setShowInvite(false)
+                setInviteSending(false)
+              }}
+              style={{ width: '100%', padding: '13px' }}
+            >
+              {inviteSending ? 'Skickar...' : 'Skicka inbjudan'}
+            </button>
+          </div>
+        </>
+      )}
     </div>
   )
 }
