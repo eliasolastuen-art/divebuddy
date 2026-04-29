@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@/lib/context/user'
 import { createClient } from '@/lib/supabase/client'
 import { Lock, Mail, X, Check, Download } from 'lucide-react'
+import Portal from '@/components/Portal'
 
 // ── Types ──────────────────────────────────────────────────────
 interface Profile {
@@ -526,13 +527,14 @@ export default function AdminPage() {
 
       {/* ── Manage Roles Sheet ──────────────────────────── */}
       {manageProfile && (
-        <>
+        <Portal>
           <SheetBackdrop onClose={() => setManageProfile(null)} />
           <div className="glass-sheet" style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             padding: '20px 20px',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
             maxWidth: 480, margin: '0 auto',
+            maxHeight: '85vh', overflowY: 'auto',
           }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
 
@@ -613,18 +615,19 @@ export default function AdminPage() {
               Stäng
             </button>
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Invite Staff Sheet ──────────────────────────── */}
       {showInvite && (
-        <>
+        <Portal>
           <SheetBackdrop onClose={() => setShowInvite(false)} />
           <div className="glass-sheet" style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             padding: '20px 20px',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
             maxWidth: 480, margin: '0 auto',
+            maxHeight: '85vh', overflowY: 'auto',
           }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
 
@@ -694,7 +697,7 @@ export default function AdminPage() {
               {inviteSending ? 'Skickar...' : 'Skicka inbjudan'}
             </button>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

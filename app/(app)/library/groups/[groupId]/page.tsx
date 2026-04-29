@@ -3,6 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Plus } from 'lucide-react'
+import Portal from '@/components/Portal'
 
 const BLOCK_CATEGORIES = [
   { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#0D7377' },
@@ -240,14 +241,14 @@ export default function GroupLibraryPage() {
 
       {/* New template sheet */}
       {showNewSheet && (
-        <>
+        <Portal>
           <div
             onClick={() => setShowNewSheet(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000 }}
           />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 16 }}>Ny mall för {group?.name}</div>
@@ -291,7 +292,7 @@ export default function GroupLibraryPage() {
               {creating ? 'Skapar...' : 'Skapa mall'}
             </button>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

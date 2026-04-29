@@ -2,6 +2,7 @@
 import { useState, useEffect, useRef } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { ChevronDown, Plus, Search, X } from 'lucide-react'
+import Portal from '@/components/Portal'
 
 interface SessionItem {
   id: string
@@ -228,14 +229,14 @@ export default function AthleteBlockLive({ block, athletes, savedScores, onScore
 
       {/* Library picker bottom sheet */}
       {pickerForAthlete && (
-        <>
+        <Portal>
           <div
             onClick={() => setPickerForAthlete(null)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 400 }}
           />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 401, borderRadius: '20px 20px 0 0', padding: '16px 16px calc(env(safe-area-inset-bottom,0px) + 24px)', maxHeight: '70vh', display: 'flex', flexDirection: 'column', maxWidth: 520, margin: '0 auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 401, borderRadius: '20px 20px 0 0', padding: '16px 16px calc(env(safe-area-inset-bottom,0px) + 100px)', maxHeight: '70vh', display: 'flex', flexDirection: 'column', maxWidth: 520, margin: '0 auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 14px', flexShrink: 0 }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexShrink: 0 }}>
@@ -280,7 +281,7 @@ export default function AthleteBlockLive({ block, athletes, savedScores, onScore
               )}
             </div>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

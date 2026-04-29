@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { X, Plus, Trash2, Copy, Calendar, ChevronDown, ChevronUp, Play } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/context/user'
+import Portal from '@/components/Portal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -308,6 +309,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
   // Template list view
   if (!active) {
     return (
+      <Portal>
       <div className="glass-sheet" style={{
         position: 'fixed', inset: 0, zIndex: 9999,
         background: 'rgba(248,250,252,0.97)', backdropFilter: 'blur(20px)',
@@ -426,12 +428,14 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           )}
         </div>
       </div>
+      </Portal>
     )
   }
 
   // ─── Active template editor ─────────────────────────────────────────────────
 
   return (
+    <Portal>
     <div className="glass-sheet" style={{
       position: 'fixed', inset: 0, zIndex: 9999,
       background: 'rgba(248,250,252,0.97)', backdropFilter: 'blur(20px)',
@@ -627,8 +631,9 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           <div style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001,
             background: 'white', borderRadius: '24px 24px 0 0',
-            padding: '24px 20px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 16px)',
+            padding: '24px 20px', paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
             boxShadow: '0 -8px 40px rgba(0,0,0,0.15)',
+            maxHeight: '85vh', overflowY: 'auto',
           }}>
             <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', marginBottom: 4 }}>
               Applicera mall
@@ -690,5 +695,6 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
         </>
       )}
     </div>
+    </Portal>
   )
 }

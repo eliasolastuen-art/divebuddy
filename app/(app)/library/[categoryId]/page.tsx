@@ -6,6 +6,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ChevronLeft, Plus, Pencil, Trash2, X, Check, MoreHorizontal } from 'lucide-react'
 import ExerciseModal, { type ExerciseData } from '@/components/ExerciseModal'
 import type { BlockCategoryRecord } from '@/types'
+import Portal from '@/components/Portal'
 
 // Preset colors & emojis for block category editor
 const PRESET_COLORS = [
@@ -678,11 +679,11 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
 
       {/* ── Create sheet ─────────────────────────────────────────────────────── */}
       {showCreate && (
-        <>
+        <Portal>
           <div onClick={() => setShowCreate(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000 }} />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
 
@@ -724,16 +725,16 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
               </>
             )}
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Quick-add sheet ── */}
       {showQuickAdd && quickAddExercise && (
-        <>
+        <Portal>
           <div onClick={() => setShowQuickAdd(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 1000 }} />
           <div
             className="glass-sheet"
-            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto', maxHeight: '80vh', overflowY: 'auto' }}
+            style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '80vh', overflowY: 'auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
             <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
@@ -779,7 +780,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
               </div>
             )}
           </div>
-        </>
+        </Portal>
       )}
 
       {/* Exercise modal */}
@@ -794,9 +795,9 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
 
       {/* ── Edit block category sheet ────────────────────────────────────────── */}
       {showEditBlockCat && blockCatInfo && (
-        <>
+        <Portal>
           <div onClick={() => { setShowEditBlockCat(false); setConfirmDeleteBc(false) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 32px)', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
@@ -874,7 +875,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
               </div>
             )}
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

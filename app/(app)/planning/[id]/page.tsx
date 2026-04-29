@@ -4,6 +4,7 @@ import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { PlanningFolder } from '@/types'
 import TrainingBuilder from '../TrainingBuilder'
+import Portal from '@/components/Portal'
 import { ArrowLeft, MoreHorizontal, Pencil, Copy, Trash2, LayoutList } from 'lucide-react'
 
 const BLOCK_COLORS: Record<string, { color: string; emoji: string }> = {
@@ -299,7 +300,7 @@ export default function TrainingDetailPage() {
 
       {/* Action menu */}
       {showMenu && (
-        <>
+        <Portal>
           <div
             onClick={() => setShowMenu(false)}
             style={{
@@ -339,7 +340,7 @@ export default function TrainingDetailPage() {
               {deleting ? 'Tar bort...' : 'Ta bort pass'}
             </button>
           </div>
-        </>
+        </Portal>
       )}
 
       {showEdit && (

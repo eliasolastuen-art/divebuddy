@@ -6,6 +6,7 @@ import { ArrowLeft, Pencil, Trash2, X, UserPlus, Lock } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/context/user'
 import BottomNav from '@/components/nav/BottomNav'
+import Portal from '@/components/Portal'
 
 interface AthleteDetail {
   id: string
@@ -468,12 +469,12 @@ export default function Athlete360Page() {
 
       {/* ── Note Sheet ── */}
       {showNoteSheet && (
-        <>
+        <Portal>
           <div
             onClick={() => setShowNoteSheet(false)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }}
           />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(var(--safe-bottom, 0px) + 24px)' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(var(--safe-bottom, 0px) + 100px)' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Ny notering</h2>
@@ -499,12 +500,12 @@ export default function Athlete360Page() {
               Spara
             </button>
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Edit Sheet ── */}
       {showEdit && (
-        <>
+        <Portal>
           <div onClick={() => setShowEdit(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(var(--safe-bottom, 0px) + 100px)', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
@@ -566,7 +567,7 @@ export default function Athlete360Page() {
               </div>
             )}
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

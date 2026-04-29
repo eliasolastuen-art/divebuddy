@@ -4,6 +4,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, Plus, Search, X, ChevronUp, ChevronDown, Trash2 } from 'lucide-react'
+import Portal from '@/components/Portal'
 
 const BLOCK_CATEGORIES = [
   { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#0D7377' },
@@ -342,7 +343,7 @@ export default function BlockTemplatePage() {
 
       {/* ── Library picker ────────────────────────────────────────────────── */}
       {showPicker && (
-        <>
+        <Portal>
           <div onClick={() => setShowPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, maxHeight: '84vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '16px 20px 10px', flexShrink: 0 }}>
@@ -374,7 +375,7 @@ export default function BlockTemplatePage() {
               </div>
             </div>
 
-            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 20px calc(var(--safe-bottom) + 20px)' }}>
+            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 20px calc(var(--safe-bottom) + 100px)' }}>
               {filtered.length === 0 ? (
                 <div style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8', fontSize: 14 }}>Inga övningar</div>
               ) : (
@@ -403,7 +404,7 @@ export default function BlockTemplatePage() {
               )}
             </div>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

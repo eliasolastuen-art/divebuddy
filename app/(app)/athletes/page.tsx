@@ -5,6 +5,7 @@ import { useRouter } from 'next/navigation'
 import { useUser } from '@/lib/context/user'
 import { createClient } from '@/lib/supabase/client'
 import { Plus, X, ChevronDown, ChevronRight, Check } from 'lucide-react'
+import Portal from '@/components/Portal'
 
 // ── Types ──────────────────────────────────────────────────────
 interface Group {
@@ -567,13 +568,14 @@ export default function AthletesPage() {
 
       {/* ── Athlete Detail Sheet ────────────────────────────── */}
       {detailAthlete && (
-        <>
+        <Portal>
           <SheetBackdrop onClose={() => setDetailAthlete(null)} />
           <div className="glass-sheet" style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             padding: '20px 20px',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
             maxWidth: 480, margin: '0 auto',
+            maxHeight: '85vh', overflowY: 'auto',
           }}>
             {/* Handle */}
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
@@ -717,18 +719,19 @@ export default function AthletesPage() {
               </div>
             )}
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Edit Email Sheet ────────────────────────────────── */}
       {editEmailAthlete && (
-        <>
+        <Portal>
           <SheetBackdrop onClose={() => setEditEmailAthlete(null)} />
           <div className="glass-sheet" style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             padding: '20px 20px',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
             maxWidth: 480, margin: '0 auto',
+            maxHeight: '85vh', overflowY: 'auto',
           }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
             <button
@@ -764,18 +767,19 @@ export default function AthletesPage() {
               {editEmailSaving ? 'Sparar...' : 'Spara'}
             </button>
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Add Athlete Sheet ───────────────────────────────── */}
       {showAddSheet && (
-        <>
+        <Portal>
           <SheetBackdrop onClose={() => setShowAddSheet(false)} />
           <div className="glass-sheet" style={{
             position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 50,
             padding: '20px 20px',
-            paddingBottom: 'max(24px, env(safe-area-inset-bottom, 0px))',
+            paddingBottom: 'calc(env(safe-area-inset-bottom, 0px) + 100px)',
             maxWidth: 480, margin: '0 auto',
+            maxHeight: '85vh', overflowY: 'auto',
           }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 18px' }} />
             <button
@@ -854,7 +858,7 @@ export default function AthletesPage() {
               Atlet utan mail kan läggas till manuellt och bjudas in senare
             </div>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

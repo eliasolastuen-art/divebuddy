@@ -7,6 +7,7 @@ import { Search, Plus, X, Settings, Check, Trash2, ChevronRight } from 'lucide-r
 import ExerciseModal from '@/components/ExerciseModal'
 import type { ExerciseData } from '@/components/ExerciseModal'
 import type { BlockCategoryRecord } from '@/types'
+import Portal from '@/components/Portal'
 
 const PRESET_COLORS = [
   '#0D7377', '#D4A017', '#DC2626', '#16A34A',
@@ -750,9 +751,9 @@ export default function LibraryPage() {
 
       {/* ── AI Sheet ── */}
       {showAISheet && (
-        <>
+        <Portal>
           <div onClick={() => setShowAISheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 28px)', maxHeight: '85vh', overflowY: 'auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
               <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Generera pass med AI</h2>
@@ -800,14 +801,14 @@ export default function LibraryPage() {
               Avbryt
             </button>
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Edit block category sheet ── */}
       {editingCat && (
-        <>
+        <Portal>
           <div onClick={() => setEditingCat(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 16, background: `${editColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{editEmoji}</div>
@@ -844,14 +845,14 @@ export default function LibraryPage() {
               </div>
             )}
           </div>
-        </>
+        </Portal>
       )}
 
       {/* ── Add new block category sheet ── */}
       {showAddCat && (
-        <>
+        <Portal>
           <div onClick={() => setShowAddCat(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
-          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom, 0px) + 32px)', maxWidth: 520, margin: '0 auto' }}>
+          <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
             <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 24 }}>Ny kategori</h3>
             <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
@@ -872,7 +873,7 @@ export default function LibraryPage() {
               {creatingCat ? 'Skapar...' : 'Skapa kategori'}
             </button>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )

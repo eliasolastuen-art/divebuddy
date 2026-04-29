@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import Portal from '@/components/Portal'
 
 interface Group {
   id: string
@@ -326,6 +327,7 @@ export default function GroupDashboardPage() {
 
       {/* ── Invite Sheet ── */}
       {showInviteSheet && (
+        <Portal>
         <div
           onClick={() => setShowInviteSheet(false)}
           style={{
@@ -378,6 +380,7 @@ export default function GroupDashboardPage() {
             </button>
           </div>
         </div>
+        </Portal>
       )}
 
     </div>

@@ -2,6 +2,7 @@
 import { useEffect, useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import { X, Pencil, Copy } from 'lucide-react'
+import Portal from '@/components/Portal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -87,7 +88,7 @@ export default function TrainingQuickSheet({
     : null
 
   return (
-    <>
+    <Portal>
       {/* Backdrop */}
       <div
         onClick={onClose}
@@ -213,7 +214,7 @@ export default function TrainingQuickSheet({
 
         {/* Action buttons */}
         <div style={{
-          padding: '16px 20px calc(var(--safe-bottom) + 24px)',
+          padding: '16px 20px calc(var(--safe-bottom) + 100px)',
           borderTop: '1px solid rgba(0,0,0,0.06)',
           display: 'flex', gap: 10, flexShrink: 0,
           background: 'var(--glass-bg-strong)',
@@ -246,6 +247,6 @@ export default function TrainingQuickSheet({
           </button>
         </div>
       </div>
-    </>
+    </Portal>
   )
 }

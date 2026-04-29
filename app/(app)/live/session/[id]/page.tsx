@@ -7,6 +7,7 @@ import AthleteLogging from './AthleteLogging'
 import AthleteBlockLive from './AthleteBlockLive'
 import AddDiveSheet from './AddDiveSheet'
 import { useUser } from '@/lib/context/user'
+import Portal from '@/components/Portal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -560,7 +561,7 @@ export default function LiveSessionPage() {
 
       {/* ── Add dive sheet ───────────────────────────────────────────────────── */}
       {addDiveTarget && (
-        <>
+        <Portal>
           <div
             onClick={() => setAddDiveTarget(null)}
             style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 300 }}
@@ -574,12 +575,12 @@ export default function LiveSessionPage() {
               setRefreshKey(k => k + 1)
             }}
           />
-        </>
+        </Portal>
       )}
 
       {/* ── Scoring bottom sheet ─────────────────────────────────────────────── */}
       {scoringItem && (
-        <>
+        <Portal>
           {/* Backdrop */}
           <div
             onClick={() => setScoringItem(null)}
@@ -592,7 +593,7 @@ export default function LiveSessionPage() {
             style={{
               position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001,
               borderRadius: '24px 24px 0 0',
-              padding: '20px 20px calc(var(--safe-bottom) + 32px)',
+              padding: '20px 20px calc(var(--safe-bottom) + 100px)',
               maxWidth: 520, margin: '0 auto',
               maxHeight: '85vh', overflowY: 'auto',
             }}
@@ -699,7 +700,7 @@ export default function LiveSessionPage() {
               {savingScore ? 'Sparar…' : 'Spara scores'}
             </button>
           </div>
-        </>
+        </Portal>
       )}
     </div>
   )
