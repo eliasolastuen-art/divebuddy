@@ -339,7 +339,7 @@ export default function GroupDashboardPage() {
           <div
             onClick={(e) => e.stopPropagation()}
             className="glass-sheet"
-            style={{ width: '100%', maxWidth: 520, margin: '0 auto', padding: '24px 20px 40px' }}
+            style={{ width: '100%', maxWidth: 520, margin: '0 auto', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxHeight: '85vh', overflowY: 'auto' }}
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 20px' }} />
 
