@@ -46,6 +46,20 @@ Deno.serve(async (req) => {
     if (!athlete_id || !email) return json({ error: 'Missing athlete_id or email' }, 400)
 
     const admin = createClient(SUPABASE_URL, SERVICE_ROLE_KEY)
+
+    // 2b. Only coaches and admins may invite, and only for athletes in their own club
+    const { data: roleRows } = await admin
+      .from('user_roles').select('role').eq('profile_id', user.id)
+    const roles = (roleRows ?? []).map((r: { role: string }) => r.role)
+    if (!roles.includes('coach') && !roles.includes('admin')) {
+      return json({ error: 'Forbidden' }, 403)
+    }
+
+    const { data: athlete } = await admin
+      .from('athletes').select('club_id').eq('id', athlete_id).maybeSingle()
+    if (!athlete || athlete.club_id !== profile.club_id) {
+      return json({ error: 'Athlete not found in your club' }, 403)
+    }
     const normalizedEmail = (email as string).toLowerCase().trim()
     const token = crypto.randomUUID()
 

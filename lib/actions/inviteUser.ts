@@ -1,37 +1,41 @@
 'use server'
 
-import { createClient } from '@/lib/supabase/server'
 import { createAdminClient } from '@/lib/supabase/admin'
+import { getCaller, isAdmin, sanitizeRoles } from '@/lib/actions/caller'
 
+// Invite someone to the caller's own club.
+// Admins may grant any role; coaches may only invite athletes.
+// The club always comes from the caller's profile, never from the request.
 export async function inviteUser(
   email: string,
-  roles: string[],
-  clubId: string
+  roles: string[]
 ): Promise<{ success: boolean; error?: string }> {
   try {
-    // Verify the caller is authenticated
-    const supabase = await createClient()
-    const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { success: false, error: 'Not authenticated' }
+    const caller = await getCaller()
+    if (!caller) return { success: false, error: 'Not authenticated' }
+    if (!caller.clubId) return { success: false, error: 'Du tillhör ingen klubb.' }
+
+    const cleanRoles = sanitizeRoles(roles)
+    if (!cleanRoles.length) return { success: false, error: 'Välj minst en roll.' }
+
+    const onlyAthlete = cleanRoles.every(r => r === 'athlete')
+    const allowed = isAdmin(caller) || (onlyAthlete && caller.roles.includes('coach'))
+    if (!allowed) return { success: false, error: 'Du har inte behörighet att bjuda in med den rollen.' }
 
     const normalizedEmail = email.toLowerCase().trim()
     const admin = createAdminClient()
 
-    // Send invite email via Supabase Auth
-    const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-      normalizedEmail,
-      { data: { roles, club_id: clubId } }
-    )
-
-    if (inviteError) return { success: false, error: inviteError.message }
-
-    // Also record in invites table (for UI list + processInvite to read)
-    await supabase.from('invites').insert({
+    // The invites row is the source of truth for club and roles (see processInvite)
+    const { error: insertError } = await admin.from('invites').insert({
       email: normalizedEmail,
-      club_id: clubId,
-      roles,
-      created_by: user.id,
+      club_id: caller.clubId,
+      roles: cleanRoles,
+      created_by: caller.userId,
     })
+    if (insertError) return { success: false, error: insertError.message }
+
+    const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(normalizedEmail)
+    if (inviteError) return { success: false, error: inviteError.message }
 
     return { success: true }
   } catch (err) {

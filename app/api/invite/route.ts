@@ -1,43 +1,22 @@
 import { NextResponse } from 'next/server'
-import { createClient as createServerClient } from '@/lib/supabase/server'
-import { createClient } from '@supabase/supabase-js'
+import { inviteUser } from '@/lib/actions/inviteUser'
 
 export async function POST(req: Request) {
-  // Verify the caller is authenticated
-  const supabase = await createServerClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) {
-    return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
-  }
+  const body = await req.json()
+  const email: string | undefined = body.email
+  // Accept both { roles: [...] } and the older { role: '...' }
+  const roles: string[] = body.roles ?? (body.role ? [body.role] : [])
 
-  const { email, roles, clubId } = await req.json()
-
-  if (!email || !roles?.length || !clubId) {
+  if (!email || !roles.length) {
     return NextResponse.json({ error: 'Missing required fields.' }, { status: 400 })
   }
 
-  // Admin client — service role key, server only
-  const admin = createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.SUPABASE_SERVICE_ROLE_KEY!
-  )
-
-  const { error: inviteError } = await admin.auth.admin.inviteUserByEmail(
-    email.toLowerCase().trim(),
-    { data: { roles, club_id: clubId } }
-  )
-
-  if (inviteError) {
-    return NextResponse.json({ error: inviteError.message }, { status: 400 })
+  // Same rules as the server action: caller's own club, coaches may only invite athletes
+  const result = await inviteUser(email, roles)
+  if (!result.success) {
+    const status = result.error === 'Not authenticated' ? 401 : 403
+    return NextResponse.json({ error: result.error }, { status })
   }
-
-  // Record in invites table for UI display + processInvite pickup
-  await supabase.from('invites').insert({
-    email: email.toLowerCase().trim(),
-    club_id: clubId,
-    roles,
-    created_by: user.id,
-  })
 
   return NextResponse.json({ success: true })
 }

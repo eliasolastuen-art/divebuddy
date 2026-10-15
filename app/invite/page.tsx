@@ -3,14 +3,13 @@
 import { Suspense, useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { processInvite } from '@/lib/actions/processInvite'
 
 function InviteContent() {
   const router       = useRouter()
   const searchParams = useSearchParams()
 
-  const tokenParam    = searchParams.get('token')    ?? ''
   const emailParam    = searchParams.get('email')    ?? ''
-  const athleteIdParam = searchParams.get('athlete_id') ?? ''
 
   const [email, setEmail]       = useState(emailParam)
   const [password, setPassword] = useState('')
@@ -31,30 +30,34 @@ function InviteContent() {
     setMessage(null)
 
     const supabase = createClient()
+    const { data: { session } } = await supabase.auth.getSession()
 
-    // 1. Create account
-    const { data, error } = await supabase.auth.signUp({ email, password })
-    if (error || !data.user) {
-      setMessage({ type: 'error', text: error?.message ?? 'Kunde inte skapa konto.' })
-      setLoading(false)
-      return
+    if (session) {
+      // 1a. Came in via the invite link (already signed in) → just choose a password
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) {
+        setMessage({ type: 'error', text: error.message })
+        setLoading(false)
+        return
+      }
+    } else {
+      // 1b. Create account
+      const { data, error } = await supabase.auth.signUp({ email, password })
+      if (error || !data.user) {
+        setMessage({ type: 'error', text: error?.message ?? 'Kunde inte skapa konto.' })
+        setLoading(false)
+        return
+      }
+      if (!data.session) {
+        setMessage({ type: 'success', text: 'Kolla din e-post och bekräfta kontot för att fortsätta.' })
+        setLoading(false)
+        return
+      }
     }
 
-    const userId = data.user.id
-
-    // 2–4. Post-signup updates (parallel)
-    await Promise.all([
-      athleteIdParam
-        ? supabase.from('athletes').update({ profile_id: userId }).eq('id', athleteIdParam)
-        : Promise.resolve(),
-      tokenParam
-        ? supabase.from('invites').update({ accepted: true }).eq('token', tokenParam)
-        : Promise.resolve(),
-      supabase.from('user_roles').insert({ profile_id: userId, role: 'athlete' }),
-    ])
-
-    // 5. Navigate to athlete home
-    router.push('/athlete')
+    // 2. Club, roles and athlete link are set on the server from the invite
+    const result = await processInvite()
+    router.push(result.status === 'ok' ? '/athlete' : '/no-access')
   }
 
   return (

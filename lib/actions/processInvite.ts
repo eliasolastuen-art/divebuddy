@@ -1,125 +1,106 @@
 'use server'
 
 import { createClient } from '@/lib/supabase/server'
+import { createAdminClient } from '@/lib/supabase/admin'
+import { sanitizeRoles } from '@/lib/actions/caller'
 
 export type ProcessInviteResult =
   | { status: 'ok' }
   | { status: 'no_access' }
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
+type AdminClient = ReturnType<typeof createAdminClient>
+
 async function linkAthleteProfile(
-  supabase: any,
+  admin: AdminClient,
   profileId: string,
   email: string,
-  clubId: string
+  clubId: string,
+  athleteId: string | null
 ) {
-  // Hitta befintlig athlete-rad med samma email i klubben
-  const { data: existing } = await supabase
+  // Already linked? Nothing to do.
+  const { data: linked } = await admin
+    .from('athletes').select('id').eq('profile_id', profileId).limit(1).maybeSingle()
+  if (linked) return
+
+  // 1. The athlete row the invite was sent for (must belong to the same club)
+  if (athleteId) {
+    const { data: target } = await admin
+      .from('athletes').select('id, club_id, profile_id').eq('id', athleteId).maybeSingle()
+    if (target && target.club_id === clubId && !target.profile_id) {
+      await admin.from('athletes').update({ profile_id: profileId }).eq('id', target.id)
+      return
+    }
+  }
+
+  // 2. Hitta befintlig athlete-rad med samma email i klubben
+  const { data: existing } = await admin
     .from('athletes')
     .select('id')
     .eq('email', email)
     .eq('club_id', clubId)
     .is('profile_id', null)
     .limit(1)
-    .single()
+    .maybeSingle()
 
   if (existing) {
-    await supabase
-      .from('athletes')
-      .update({ profile_id: profileId })
-      .eq('id', existing.id)
+    await admin.from('athletes').update({ profile_id: profileId }).eq('id', existing.id)
   } else {
     // Skapa ny athlete-rad om ingen finns
-    await supabase
+    await admin
       .from('athletes')
       .insert({ email, club_id: clubId, profile_id: profileId, name: email.split('@')[0] })
   }
 }
 
+// Gives a newly signed-in user their club and roles.
+// The only source of truth is a pending row in `invites` for the user's
+// verified email — never user_metadata, which the user can write themselves.
 export async function processInvite(): Promise<ProcessInviteResult> {
   try {
     const supabase = await createClient()
-
     const { data: { user } } = await supabase.auth.getUser()
-    if (!user) return { status: 'no_access' }
+    if (!user?.email || !user.email_confirmed_at) return { status: 'no_access' }
 
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('id, email, club_id')
-      .eq('id', user.id)
-      .single()
+    const admin = createAdminClient()
+    const email = user.email.toLowerCase()
 
+    const { data: profile } = await admin
+      .from('profiles').select('id, club_id').eq('id', user.id).single()
     if (!profile) return { status: 'no_access' }
 
     // Already has a club → nothing to do
     if (profile.club_id) return { status: 'ok' }
 
-    // Check user_metadata from invite email
-    const meta = user.user_metadata as { roles?: string[]; club_id?: string } | undefined
-
-    if (meta?.club_id && meta?.roles?.length) {
-      await supabase
-        .from('profiles')
-        .update({ club_id: meta.club_id })
-        .eq('id', profile.id)
-
-      for (const role of meta.roles) {
-        await supabase
-          .from('user_roles')
-          .upsert({ profile_id: profile.id, role }, { onConflict: 'profile_id,role' })
-      }
-
-      // Länka athlete-rad om rollen är athlete
-      if (meta.roles.includes('athlete') && profile.email) {
-        await linkAthleteProfile(supabase, profile.id, profile.email, meta.club_id)
-      }
-
-      // Mark invite as accepted if it exists
-      await supabase
-        .from('invites')
-        .update({ accepted: true })
-        .eq('email', profile.email)
-        .eq('accepted', false)
-
-      return { status: 'ok' }
-    }
-
-    // Check invites table as fallback
-    const { data: invite } = await supabase
+    const { data: invite } = await admin
       .from('invites')
-      .select('*')
-      .eq('email', profile.email)
+      .select('id, club_id, roles, athlete_id')
+      .eq('email', email)
       .eq('accepted', false)
+      .order('created_at', { ascending: false })
       .limit(1)
-      .single()
+      .maybeSingle()
 
-    if (invite) {
-      await supabase
-        .from('profiles')
-        .update({ club_id: invite.club_id })
-        .eq('id', profile.id)
+    if (!invite?.club_id) return { status: 'no_access' }
 
-      for (const role of invite.roles as string[]) {
-        await supabase
-          .from('user_roles')
-          .upsert({ profile_id: profile.id, role }, { onConflict: 'profile_id,role' })
-      }
+    const roles = sanitizeRoles(invite.roles)
+    if (!roles.length) return { status: 'no_access' }
 
-      // Länka athlete-rad om rollen är athlete
-      if ((invite.roles as string[]).includes('athlete') && profile.email) {
-        await linkAthleteProfile(supabase, profile.id, profile.email, invite.club_id)
-      }
+    await admin.from('profiles').update({ club_id: invite.club_id }).eq('id', profile.id)
 
-      await supabase
-        .from('invites')
-        .update({ accepted: true })
-        .eq('id', invite.id)
-
-      return { status: 'ok' }
+    for (const role of roles) {
+      await admin
+        .from('user_roles')
+        .upsert({ profile_id: profile.id, role }, { onConflict: 'profile_id,role' })
     }
 
-    // No invite found → no access
-    return { status: 'no_access' }
+    // Länka athlete-rad om rollen är athlete
+    if (roles.includes('athlete')) {
+      await linkAthleteProfile(admin, profile.id, email, invite.club_id, invite.athlete_id ?? null)
+    }
+
+    await admin.from('invites').update({ accepted: true }).eq('id', invite.id)
+
+    return { status: 'ok' }
   } catch (err) {
     console.error('[processInvite] error:', err)
     return { status: 'no_access' }

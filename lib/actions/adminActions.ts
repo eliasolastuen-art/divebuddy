@@ -1,25 +1,12 @@
 'use server'
 
 import { createAdminClient } from '@/lib/supabase/admin'
-import { createClient } from '@/lib/supabase/server'
-
-async function verifyAdmin() {
-  const supabase = await createClient()
-  const { data: { user } } = await supabase.auth.getUser()
-  if (!user) return null
-
-  const { data } = await supabase
-    .from('user_roles')
-    .select('role')
-    .eq('profile_id', user.id)
-
-  if (!data?.some(r => r.role === 'admin')) return null
-  return user
-}
+import { getCaller, isAdmin, isInClub } from '@/lib/actions/caller'
 
 export async function removeMemberFromClub(profileId: string): Promise<{ error?: string }> {
-  const user = await verifyAdmin()
-  if (!user) return { error: 'Unauthorized' }
+  const caller = await getCaller()
+  if (!isAdmin(caller)) return { error: 'Unauthorized' }
+  if (!(await isInClub(profileId, caller.clubId))) return { error: 'Unauthorized' }
 
   const admin = createAdminClient()
 
@@ -30,11 +17,11 @@ export async function removeMemberFromClub(profileId: string): Promise<{ error?:
 }
 
 export async function deleteInvite(inviteId: string): Promise<{ error?: string }> {
-  const user = await verifyAdmin()
-  if (!user) return { error: 'Unauthorized' }
+  const caller = await getCaller()
+  if (!isAdmin(caller)) return { error: 'Unauthorized' }
 
   const admin = createAdminClient()
-  await admin.from('invites').delete().eq('id', inviteId)
+  await admin.from('invites').delete().eq('id', inviteId).eq('club_id', caller.clubId)
 
   return {}
 }
