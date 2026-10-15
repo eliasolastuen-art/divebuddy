@@ -33,7 +33,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
   }
 
   return (
-    <div style={{
+    <div className="app-shell" style={{
       height: '100dvh',
       display: 'flex',
       flexDirection: 'column',
@@ -41,7 +41,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       overflow: 'hidden',
     }}>
       {/* Header — fixed height, never overlaps content */}
-      <header style={{
+      <header className="app-chrome" style={{
         flexShrink: 0,
         height: 'var(--content-top)',
         paddingTop: 'var(--safe-top)',
@@ -82,7 +82,7 @@ function AppShell({ children }: { children: React.ReactNode }) {
       {/* Content — scrolls freely, never hidden behind nav */}
       <main
         key={pathname}
-        className="page-enter"
+        className="page-enter app-main"
         style={{
           flex: 1,
           overflowY: 'auto',

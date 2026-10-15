@@ -15,7 +15,7 @@ export default function BottomNav() {
   const pathname = usePathname()
 
   return (
-    <nav style={{
+    <nav className="app-chrome" style={{
       flexShrink: 0,
       paddingBottom: 'var(--safe-bottom)',
       background: 'var(--glass-bg-strong)',
