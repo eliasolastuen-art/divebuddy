@@ -6,6 +6,7 @@ import { useRouter } from 'next/navigation'
 import { Plus } from 'lucide-react'
 import { useUser } from '@/lib/context/user'
 import { createClient } from '@/lib/supabase/client'
+import CoachToday from './CoachToday'
 
 // ── Types ─────────────────────────────────────────────────────
 interface Group {
@@ -219,6 +220,9 @@ export default function DashboardPage() {
           </div>
           <span style={{ fontSize: 22, color: 'rgba(255,255,255,0.55)', fontWeight: 300, lineHeight: 1 }}>›</span>
         </div>
+
+        {/* ── Coach: today, what to plan, next week, inspiration ─────────── */}
+        <CoachToday />
 
         {/* ── Groups ─────────────────────────────────────────────── */}
         <div>

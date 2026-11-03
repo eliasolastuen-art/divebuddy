@@ -181,3 +181,15 @@ a, button { -webkit-tap-highlight-color: transparent; }
 .sheet-safe {
   padding-bottom: max(env(safe-area-inset-bottom, 0px), 16px);
 }
+
+/* Print: hide app chrome and let the page flow (Schema) */
+.print-only { display: none; }
+@media print {
+  .app-chrome, .no-print { display: none !important; }
+  .app-shell, .app-main { height: auto !important; overflow: visible !important; padding: 0 !important; }
+  html, body { height: auto !important; background: #fff !important; }
+  .print-only { display: block !important; }
+  .week-card, .sess-row { break-inside: avoid; }
+  * { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+  @page { margin: 14mm; }
+}

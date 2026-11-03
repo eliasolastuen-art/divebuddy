@@ -4,6 +4,7 @@ import BottomNav from '@/components/nav/BottomNav'
 import HamburgerMenu from '@/components/nav/HamburgerMenu'
 import RoleSwitcher from '@/components/nav/RoleSwitcher'
 import { UserProvider, useUser } from '@/lib/context/user'
+import { ScheduleProvider } from '@/lib/schedule/store'
 import { Menu } from 'lucide-react'
 import { useEffect, useState } from 'react'
 import { usePathname, useRouter } from 'next/navigation'
@@ -102,7 +103,9 @@ function AppShell({ children }: { children: React.ReactNode }) {
 export default function AppLayout({ children }: { children: React.ReactNode }) {
   return (
     <UserProvider>
-      <AppShell>{children}</AppShell>
+      <ScheduleProvider>
+        <AppShell>{children}</AppShell>
+      </ScheduleProvider>
     </UserProvider>
   )
 }

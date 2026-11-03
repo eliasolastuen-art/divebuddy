@@ -220,7 +220,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
 
               <div className="glass-card" style={{ padding: 6 }}>
                 {[
-                  { href: '/schema', label: 'Träningsschema HT2026', Icon: CalendarRange },
+                  { href: '/schema', label: 'Schema', Icon: CalendarRange },
                   { href: '/library', label: 'Bibliotek', Icon: BookOpen },
                   { href: '/groups', label: 'Alla grupper & atleter', Icon: Users },
                   ...(roles.includes('admin') ? [{ href: '/admin', label: 'Admin', Icon: Shield }] : []),
