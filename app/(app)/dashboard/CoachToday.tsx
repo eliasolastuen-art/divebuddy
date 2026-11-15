@@ -66,7 +66,7 @@ export default function CoachToday() {
                       : <span style={{ fontSize: 13, color: '#92400E', fontWeight: 700 }}>Inte planerat än</span>}
                     <ContentChips pass={p} />
                   </div>
-                  <span style={{ flexShrink: 0, minHeight: 36, padding: '0 12px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', fontSize: 13, fontWeight: 800, background: planned ? UI.tealLight : UI.teal, color: planned ? UI.tealDark : '#fff' }}>
+                  <span style={{ flexShrink: 0, minHeight: 36, padding: '0 12px', borderRadius: 10, display: 'inline-flex', alignItems: 'center', fontSize: 13, fontWeight: 800, background: planned ? UI.primarySoft : UI.primary, color: planned ? UI.primary : '#fff' }}>
                     {planned ? 'Visa passet' : 'Planera nu'}
                   </span>
                 </Link>
@@ -143,7 +143,7 @@ export default function CoachToday() {
                   </span>
                   <span style={{ display: 'block', fontSize: 13.5, fontWeight: 600, color: UI.text, marginTop: 2 }}>{p.content!.blocks.map(b => b.name).join(' · ')}</span>
                 </span>
-                <span style={{ fontSize: 12.5, fontWeight: 800, color: UI.tealDark, flexShrink: 0 }}>{p.review ? 'Ändra' : 'Så gick det?'}</span>
+                <span style={{ fontSize: 12.5, fontWeight: 800, color: UI.primary, flexShrink: 0 }}>{p.review ? 'Ändra' : 'Så gick det?'}</span>
               </Link>
             ))}
           </div>

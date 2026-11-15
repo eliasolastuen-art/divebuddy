@@ -25,7 +25,7 @@ interface TrainingQuickSheetProps {
 }
 
 const BLOCK_META: Record<string, { emoji: string; color: string }> = {
-  vatten:      { emoji: '💧', color: '#0D7377' },
+  vatten:      { emoji: '💧', color: '#2B5C9E' },
   land:        { emoji: '🏃', color: '#D4A017' },
   styrka:      { emoji: '💪', color: '#DC2626' },
   rorlighet:   { emoji: '🧘', color: '#16A34A' },
@@ -34,8 +34,8 @@ const BLOCK_META: Record<string, { emoji: string; color: string }> = {
 }
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  draft:     { bg: 'rgba(100,116,139,0.10)', text: '#64748B', label: 'Utkast'    },
-  published: { bg: 'rgba(13,115,119,0.10)',  text: '#0D7377', label: 'Publicerad' },
+  draft:     { bg: 'rgba(86,99,122,0.10)', text: '#56637A', label: 'Utkast'    },
+  published: { bg: 'rgba(43,92,158,0.10)',  text: '#2B5C9E', label: 'Publicerad' },
   completed: { bg: 'rgba(22,163,74,0.10)',   text: '#16A34A', label: 'Genomförd'  },
 }
 
@@ -94,8 +94,7 @@ export default function TrainingQuickSheet({
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0,
-          background: 'rgba(15,23,42,0.45)',
-          backdropFilter: 'blur(6px)', WebkitBackdropFilter: 'blur(6px)',
+          background: 'rgba(30,43,66,0.45)',
           zIndex: 1000,
         }}
       />
@@ -120,7 +119,7 @@ export default function TrainingQuickSheet({
         <div style={{ padding: '0 20px 16px', flexShrink: 0 }}>
           <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, marginBottom: 10 }}>
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 8, lineHeight: 1.2 }}>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 8, lineHeight: 1.2 }}>
                 {trainingTitle}
               </h2>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -128,16 +127,16 @@ export default function TrainingQuickSheet({
                   {s.label}
                 </span>
                 {groupName && (
-                  <span style={{ fontSize: 11, fontWeight: 600, color: '#0D7377', background: 'rgba(13,115,119,0.08)', padding: '3px 9px', borderRadius: 9999 }}>
+                  <span style={{ fontSize: 11, fontWeight: 600, color: '#2B5C9E', background: 'rgba(43,92,158,0.08)', padding: '3px 9px', borderRadius: 9999 }}>
                     👥 {groupName}
                   </span>
                 )}
                 {dateLabel && (
-                  <span style={{ fontSize: 11, color: '#64748B', fontWeight: 500 }}>
+                  <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500 }}>
                     📅 {dateLabel}
                   </span>
                 )}
-                <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>
+                <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500 }}>
                   {blocks.length} block · {totalItems} övn
                 </span>
               </div>
@@ -146,7 +145,7 @@ export default function TrainingQuickSheet({
               onClick={onClose}
               style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}
             >
-              <X size={14} color="#64748B" strokeWidth={2.5} />
+              <X size={14} color="#56637A" strokeWidth={2.5} />
             </button>
           </div>
 
@@ -161,13 +160,13 @@ export default function TrainingQuickSheet({
               {[1,2].map(i => <div key={i} style={{ height: 60, borderRadius: 14, background: 'rgba(0,0,0,0.04)', animation: 'pulse 1.5s ease-in-out infinite' }} />)}
             </div>
           ) : blocks.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '32px 0', color: '#94A3B8', fontSize: 14 }}>
+            <div style={{ textAlign: 'center', padding: '32px 0', color: '#56637A', fontSize: 14 }}>
               Inga block i detta pass än
             </div>
           ) : (
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, paddingBottom: 16 }}>
               {blocks.map(block => {
-                const meta = BLOCK_META[block.category] || { emoji: '📋', color: '#64748B' }
+                const meta = BLOCK_META[block.category] || { emoji: '📋', color: '#56637A' }
                 return (
                   <div key={block.id} style={{
                     background: `${meta.color}08`,
@@ -188,18 +187,18 @@ export default function TrainingQuickSheet({
                       <div style={{ display: 'flex', flexDirection: 'column', gap: 4 }}>
                         {block.items.slice(0, 4).map(item => (
                           <div key={item.id} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 8 }}>
-                            <span style={{ fontSize: 13, color: '#0F172A', fontWeight: 500, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                            <span style={{ fontSize: 13, color: '#1E2B42', fontWeight: 500, flex: 1, minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                               {item.sets && item.sets > 1 ? `${item.sets}×` : ''}{item.name}
                             </span>
                             {item.reps && (
-                              <span style={{ fontSize: 11, color: '#64748B', fontWeight: 600, flexShrink: 0 }}>
+                              <span style={{ fontSize: 11, color: '#56637A', fontWeight: 600, flexShrink: 0 }}>
                                 {item.reps} reps
                               </span>
                             )}
                           </div>
                         ))}
                         {block.items.length > 4 && (
-                          <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500, marginTop: 2 }}>
+                          <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500, marginTop: 2 }}>
                             +{block.items.length - 4} till…
                           </span>
                         )}
@@ -215,18 +214,16 @@ export default function TrainingQuickSheet({
         {/* Action buttons */}
         <div style={{
           padding: '16px 20px calc(var(--safe-bottom) + 100px)',
-          borderTop: '1px solid rgba(0,0,0,0.06)',
+          borderTop: '1px solid #E1E8F0',
           display: 'flex', gap: 10, flexShrink: 0,
           background: 'var(--glass-bg-strong)',
-          backdropFilter: 'blur(12px)',
-          WebkitBackdropFilter: 'blur(12px)',
         }}>
           <button
             onClick={onDuplicate}
             style={{
-              flex: 1, padding: '13px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.09)',
-              background: 'rgba(255,255,255,0.7)', backdropFilter: 'blur(8px)',
-              fontSize: 14, fontWeight: 700, color: '#475569', cursor: 'pointer',
+              flex: 1, padding: '13px', borderRadius: 14, border: '1px solid #E1E8F0',
+              background: '#FFFFFF',
+              fontSize: 14, fontWeight: 700, color: '#56637A', cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 7,
             }}
           >

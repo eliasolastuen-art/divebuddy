@@ -29,25 +29,25 @@ export default function NoAccessPage() {
       }}>
         <div style={{
           width: 56, height: 56,
-          background: 'rgba(13,115,119,0.1)',
+          background: 'rgba(43,92,158,0.1)',
           borderRadius: 18,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 20px',
         }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
-            <circle cx="12" cy="12" r="10" stroke="#0D7377" strokeWidth="2"/>
-            <path d="M12 8v4m0 4h.01" stroke="#0D7377" strokeWidth="2" strokeLinecap="round"/>
+            <circle cx="12" cy="12" r="10" stroke="#2B5C9E" strokeWidth="2"/>
+            <path d="M12 8v4m0 4h.01" stroke="#2B5C9E" strokeWidth="2" strokeLinecap="round"/>
           </svg>
         </div>
 
         <h1 style={{
-          fontSize: 22, fontWeight: 800, color: '#0F172A',
+          fontSize: 22, fontWeight: 800, color: '#1E2B42',
           letterSpacing: '-0.03em', marginBottom: 10,
         }}>
           Inget åtkomst
         </h1>
         <p style={{
-          fontSize: 14, color: '#64748B', fontWeight: 500,
+          fontSize: 14, color: '#56637A', fontWeight: 500,
           lineHeight: 1.6, marginBottom: 28,
         }}>
           Ditt konto väntar på godkännande. Kontakta din klubbadmin för att få en inbjudan.

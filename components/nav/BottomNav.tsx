@@ -19,9 +19,7 @@ export default function BottomNav() {
       flexShrink: 0,
       paddingBottom: 'var(--safe-bottom)',
       background: 'var(--glass-bg-strong)',
-      backdropFilter: 'blur(20px)',
-      WebkitBackdropFilter: 'blur(20px)',
-      borderTop: '1px solid rgba(0,0,0,0.06)',
+      borderTop: '1px solid #E1E8F0',
       zIndex: 40,
     }}>
       <div style={{
@@ -55,20 +53,20 @@ export default function BottomNav() {
               <div style={{
                 width: 48, height: 28,
                 borderRadius: 999,
-                background: active ? 'rgba(13,115,119,0.1)' : 'transparent',
+                background: active ? 'rgba(43,92,158,0.1)' : 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 transition: 'background 0.15s',
               }}>
                 <Icon
                   size={20}
                   strokeWidth={active ? 2.5 : 1.8}
-                  color={active ? '#0D7377' : '#94A3B8'}
+                  color={active ? '#2B5C9E' : '#56637A'}
                 />
               </div>
               <span style={{
                 fontSize: 10,
                 fontWeight: active ? 700 : 500,
-                color: active ? '#0D7377' : '#94A3B8',
+                color: active ? '#2B5C9E' : '#56637A',
                 letterSpacing: '0.01em',
               }}>
                 {tab.label}

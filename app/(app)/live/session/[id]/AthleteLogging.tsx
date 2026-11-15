@@ -125,8 +125,8 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
         display: 'flex', alignItems: 'center', gap: 8,
         marginBottom: 12,
       }}>
-        <Users size={14} color="#64748B" strokeWidth={2} />
-        <span style={{ fontSize: 11, fontWeight: 800, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
+        <Users size={14} color="#56637A" strokeWidth={2} />
+        <span style={{ fontSize: 11, fontWeight: 800, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
           Utövare
         </span>
       </div>
@@ -142,23 +142,23 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
               key={athlete.id}
               style={{
                 padding: '14px 16px',
-                borderBottom: i < athletes.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                borderBottom: i < athletes.length - 1 ? '1px solid #E1E8F0' : 'none',
               }}
             >
               {/* Name row */}
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-                <span style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>
+                <span style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42' }}>
                   {athlete.name}
                 </span>
                 {isSaving && (
-                  <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>Sparar…</span>
+                  <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500 }}>Sparar…</span>
                 )}
               </div>
 
               {/* Inputs */}
               <div style={{ display: 'flex', gap: 8 }}>
                 <div style={{ flex: '0 0 80px' }}>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', display: 'block', marginBottom: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#56637A', display: 'block', marginBottom: 4 }}>
                     Poäng
                   </label>
                   <input
@@ -169,15 +169,15 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
                     placeholder="—"
                     style={{
                       width: '100%', padding: '7px 10px',
-                      border: '1px solid rgba(0,0,0,0.1)',
+                      border: '1px solid #E1E8F0',
                       borderRadius: 10, fontSize: 14, fontWeight: 600,
-                      background: 'rgba(255,255,255,0.7)',
-                      color: '#0F172A', outline: 'none',
+                      background: '#FFFFFF',
+                      color: '#1E2B42', outline: 'none',
                     }}
                   />
                 </div>
                 <div style={{ flex: 1 }}>
-                  <label style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', display: 'block', marginBottom: 4 }}>
+                  <label style={{ fontSize: 11, fontWeight: 600, color: '#56637A', display: 'block', marginBottom: 4 }}>
                     Anteckningar
                   </label>
                   <input
@@ -187,10 +187,10 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
                     placeholder="Kommentar…"
                     style={{
                       width: '100%', padding: '7px 10px',
-                      border: '1px solid rgba(0,0,0,0.1)',
+                      border: '1px solid #E1E8F0',
                       borderRadius: 10, fontSize: 13,
-                      background: 'rgba(255,255,255,0.7)',
-                      color: '#0F172A', outline: 'none',
+                      background: '#FFFFFF',
+                      color: '#1E2B42', outline: 'none',
                     }}
                   />
                 </div>
@@ -206,10 +206,10 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
         disabled={finishing}
         style={{
           width: '100%', padding: '14px',
-          background: finishing ? '#94A3B8' : 'linear-gradient(135deg, #16A34A, #15803d)',
+          background: finishing ? '#56637A' : 'linear-gradient(135deg, #16A34A, #15803d)',
           color: 'white', border: 'none', borderRadius: 14,
           fontSize: 15, fontWeight: 800, cursor: finishing ? 'default' : 'pointer',
-          boxShadow: finishing ? 'none' : '0 4px 14px rgba(22,163,74,0.3)',
+          boxShadow: finishing ? 'none' : 'none',
           marginBottom: 20,
           letterSpacing: '-0.01em',
         }}

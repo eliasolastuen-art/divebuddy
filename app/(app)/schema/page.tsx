@@ -43,7 +43,7 @@ function SchemaContent() {
             {data.term.name} · {v.canEditSchedule ? 'du kan redigera' : 'endast läsning'}
           </div>
         </div>
-        <button className="no-print" onClick={() => window.print()} style={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, color: UI.text, cursor: 'pointer' }}>
+        <button className="no-print" onClick={() => window.print()} style={{ minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #E1E8F0', background: '#fff', display: 'flex', alignItems: 'center', gap: 8, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, color: UI.text, cursor: 'pointer' }}>
           <Printer size={16} /> Skriv ut
         </button>
       </div>
@@ -58,7 +58,7 @@ function SchemaContent() {
       {source === 'demo' && (
         <p className="no-print" style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 12.5, color: UI.muted, lineHeight: 1.5 }}>
           Visar testdata för {data.term.name} från designen. Ändringar sparas bara i den här webbläsaren.{' '}
-          <button onClick={resetDemo} style={{ border: 'none', background: 'none', padding: 0, color: UI.teal, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>
+          <button onClick={resetDemo} style={{ border: 'none', background: 'none', padding: 0, color: UI.primary, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>
             Återställ testdata
           </button>
         </p>

@@ -133,7 +133,7 @@ function Overview({ onPickGroup, canEdit, onEditEvent }: {
 
       <div style={{ ...cardStyle, padding: 18 }}>
         <SectionTitle aside={canEdit && (
-          <button className="no-print" onClick={() => onEditEvent('new')} style={{ minHeight: 40, padding: '0 12px', borderRadius: 11, border: `1.5px dashed ${UI.teal}`, background: '#fff', color: UI.tealDark, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
+          <button className="no-print" onClick={() => onEditEvent('new')} style={{ minHeight: 40, padding: '0 12px', borderRadius: 11, border: `1.5px dashed ${UI.primary}`, background: '#fff', color: UI.primary, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 5 }}>
             <Plus size={14} />Lägg till datum
           </button>
         )}>Viktiga datum</SectionTitle>
@@ -166,7 +166,7 @@ function EventCard({ event: e, past, onEdit }: { event: ClubEvent; past?: boolea
         {e.groupIds.length > 0 && <div style={{ fontSize: 12, color: UI.muted, marginTop: 3 }}>{e.groupIds.map(id => gm[id]?.name).join(', ')}</div>}
       </div>
       {onEdit && (
-        <button className="no-print" onClick={onEdit} aria-label={`Ändra ${e.title}`} style={{ width: 36, height: 36, flexShrink: 0, alignSelf: 'flex-start', borderRadius: 10, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(255,255,255,0.7)', color: UI.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+        <button className="no-print" onClick={onEdit} aria-label={`Ändra ${e.title}`} style={{ width: 36, height: 36, flexShrink: 0, alignSelf: 'flex-start', borderRadius: 10, border: '1px solid #E1E8F0', background: '#FFFFFF', color: UI.text, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
           <PencilLine size={15} />
         </button>
       )}
@@ -211,7 +211,7 @@ function GroupSchedule({ groupId, onPickGroup, onOpen, canEdit, onAddExtra }: {
         options={data.groups.map(x => ({ id: x.id, name: x.name, color: x.color, count: counts[x.id] }))} />
 
       {canEdit && (
-        <button className="no-print" onClick={onAddExtra} style={{ alignSelf: 'flex-start', minHeight: 44, padding: '0 14px', borderRadius: 12, border: `1.5px dashed ${UI.teal}`, background: '#fff', color: UI.tealDark, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
+        <button className="no-print" onClick={onAddExtra} style={{ alignSelf: 'flex-start', minHeight: 44, padding: '0 14px', borderRadius: 12, border: `1.5px dashed ${UI.primary}`, background: '#fff', color: UI.primary, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: 6 }}>
           <Plus size={16} />Extrapass för {g.name}
         </button>
       )}
@@ -232,7 +232,7 @@ function GroupSchedule({ groupId, onPickGroup, onOpen, canEdit, onAddExtra }: {
       {weeks.map(w => (
         <section key={w.monday} className="week-card">
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 10, margin: '4px 0 8px' }}>
-            <span style={{ fontWeight: 800, fontSize: 14, color: w.monday === thisMonday ? UI.teal : UI.text }}>Vecka {weekNumber(w.monday)}</span>
+            <span style={{ fontWeight: 800, fontSize: 14, color: w.monday === thisMonday ? UI.primary : UI.text }}>Vecka {weekNumber(w.monday)}</span>
             <span style={{ fontSize: 12.5, color: UI.muted }}>{weekRangeLabel(w.monday)}{w.monday === thisMonday ? ' · denna vecka' : ''}</span>
             <span aria-hidden style={{ flex: 1, height: 1, background: UI.line }} />
           </div>
@@ -286,7 +286,7 @@ function PassRow({ pass: p, onOpen }: { pass: SchedulePass; onOpen: () => void }
     <button onClick={onOpen} className="sess-row" style={{
       width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer',
       display: 'flex', alignItems: 'center', gap: 12, padding: '10px 12px', borderRadius: 14,
-      background: '#fff', border: `1px ${st.dashed ? 'dashed' : 'solid'} ${status === 'unplanned' ? '#CBD5E1' : 'rgba(0,0,0,0.06)'}`,
+      background: '#fff', border: `1px ${st.dashed ? 'dashed' : 'solid'} ${status === 'unplanned' ? '#E1E8F0' : 'rgba(0,0,0,0.06)'}`,
       opacity: status === 'past' ? 0.7 : 1,
     }}>
       <DateBadge date={p.date} small />
@@ -355,7 +355,7 @@ function MonthCalendar({ onOpen }: { onOpen: (id: string) => void }) {
         {months.map((mm, i) => (
           <button key={`${mm.y}-${mm.m}`} onClick={() => { setIdx(i); setSelected(null) }} aria-pressed={i === idx} style={{
             flexShrink: 0, minHeight: 40, padding: '0 14px', borderRadius: 999, fontFamily: 'inherit', cursor: 'pointer',
-            border: `1.5px solid ${i === idx ? UI.teal : 'rgba(0,0,0,0.08)'}`, background: i === idx ? UI.teal : '#fff',
+            border: `1.5px solid ${i === idx ? UI.primary : 'rgba(0,0,0,0.08)'}`, background: i === idx ? UI.primary : '#fff',
             color: i === idx ? '#fff' : UI.text, fontSize: 13.5, fontWeight: 600,
           }}>{MONTHS_FULL[mm.m]}</button>
         ))}
@@ -373,8 +373,8 @@ function MonthCalendar({ onOpen }: { onOpen: (id: string) => void }) {
             return (
               <button key={date} onClick={() => setSelected(isSel ? null : date)} aria-pressed={isSel}
                 aria-label={`${shortDate(date)}: ${passes.length} pass${evs.length ? `, ${evs.map(e => e.title).join(', ')}` : ''}`}
-                className="cal-cell" style={{ outline: isSel ? `2px solid ${UI.teal}` : 'none', outlineOffset: -2 }}>
-                <span className="cal-date" style={{ color: date === today ? '#fff' : UI.text, background: date === today ? UI.teal : 'transparent' }}>{parseISO(date).getDate()}</span>
+                className="cal-cell" style={{ outline: isSel ? `2px solid ${UI.primary}` : 'none', outlineOffset: -2 }}>
+                <span className="cal-date" style={{ color: date === today ? '#fff' : UI.text, background: date === today ? UI.primary : 'transparent' }}>{parseISO(date).getDate()}</span>
                 {evs.map(e => (
                   <span key={e.id} className="cal-ev" style={{ background: EVENT_STYLE[e.type].bg, color: EVENT_STYLE[e.type].fg }}>{e.title}</span>
                 ))}
@@ -410,7 +410,7 @@ function MonthCalendar({ onOpen }: { onOpen: (id: string) => void }) {
       <style>{`
         .cal-grid { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 3px; }
         .cal-dow { text-align: center; font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: 0.04em; color: ${UI.muted}; padding: 4px 0 6px; }
-        .cal-cell { min-height: 92px; min-width: 0; border: 1px solid rgba(0,0,0,0.05); border-radius: 10px; background: #fff; padding: 4px; display: flex; flex-direction: column; gap: 2px; text-align: left; font-family: inherit; cursor: pointer; overflow: hidden; }
+        .cal-cell { min-height: 92px; min-width: 0; border: 1px solid #E1E8F0; border-radius: 10px; background: #fff; padding: 4px; display: flex; flex-direction: column; gap: 2px; text-align: left; font-family: inherit; cursor: pointer; overflow: hidden; }
         .cal-empty { background: rgba(0,0,0,0.02); border-color: transparent; cursor: default; }
         .cal-date { align-self: flex-start; font-size: 12px; font-weight: 800; min-width: 20px; height: 20px; border-radius: 999px; display: inline-flex; align-items: center; justify-content: center; padding: 0 4px; }
         .cal-ev { font-size: 9.5px; font-weight: 700; border-radius: 4px; padding: 1px 3px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }

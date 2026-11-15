@@ -15,8 +15,8 @@ export interface TrainingWithGroup {
 }
 
 const STATUS_STYLE = {
-  draft:     { bg: 'rgba(100,116,139,0.1)', text: '#64748B', label: 'Utkast' },
-  published: { bg: 'rgba(13,115,119,0.1)',  text: '#0D7377', label: 'Publicerad' },
+  draft:     { bg: 'rgba(86,99,122,0.1)', text: '#56637A', label: 'Utkast' },
+  published: { bg: 'rgba(43,92,158,0.1)',  text: '#2B5C9E', label: 'Publicerad' },
   completed: { bg: 'rgba(22,163,74,0.1)',   text: '#16A34A', label: 'Genomförd' },
 } as const
 
@@ -58,16 +58,16 @@ export default function TodayTrainings({ trainings, onSessionStarted }: Props) {
       <div style={{ textAlign: 'center', padding: '28px 20px' }}>
         <div style={{
           width: 52, height: 52, borderRadius: 16,
-          background: 'rgba(13,115,119,0.07)',
+          background: 'rgba(43,92,158,0.07)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 12px',
         }}>
-          <CalendarDays size={22} color="#0D7377" strokeWidth={1.5} />
+          <CalendarDays size={22} color="#2B5C9E" strokeWidth={1.5} />
         </div>
-        <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', marginBottom: 3 }}>
+        <p style={{ fontSize: 14, fontWeight: 700, color: '#56637A', marginBottom: 3 }}>
           Inga pass idag
         </p>
-        <p style={{ fontSize: 13, color: '#94A3B8' }}>
+        <p style={{ fontSize: 13, color: '#56637A' }}>
           Planera ett träningspass i Planning.
         </p>
       </div>
@@ -92,7 +92,7 @@ export default function TodayTrainings({ trainings, onSessionStarted }: Props) {
             }}
           >
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 6, letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 6, letterSpacing: '-0.01em' }}>
                 {t.title}
               </div>
               <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -104,7 +104,7 @@ export default function TodayTrainings({ trainings, onSessionStarted }: Props) {
                   {s.label}
                 </span>
                 {groupName && (
-                  <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>
+                  <span style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
                     {groupName}
                   </span>
                 )}
@@ -132,8 +132,8 @@ export default function TodayTrainings({ trainings, onSessionStarted }: Props) {
                   flexShrink: 0,
                   padding: '8px 12px', borderRadius: 12,
                   background: 'rgba(0,0,0,0.05)',
-                  border: '1px solid rgba(0,0,0,0.08)',
-                  fontSize: 13, fontWeight: 600, color: '#475569',
+                  border: '1px solid #E1E8F0',
+                  fontSize: 13, fontWeight: 600, color: '#56637A',
                   cursor: 'pointer',
                 }}
               >

@@ -3,7 +3,7 @@ import type { BlockCategory, PassContent, PlanTemplate, ScheduleData, SchedulePa
 
 export const BLOCK_CATEGORIES: { id: BlockCategory; label: string; color: string }[] = [
   { id: 'uppvarmning', label: 'Uppvärmning', color: '#C2410C' },
-  { id: 'vatten', label: 'Vatten', color: '#0D7377' },
+  { id: 'vatten', label: 'Vatten', color: '#2B5C9E' },
   { id: 'land', label: 'Land', color: '#B45309' },
   { id: 'styrka', label: 'Styrka', color: '#B91C1C' },
   { id: 'rorlighet', label: 'Rörlighet', color: '#15803D' },

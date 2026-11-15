@@ -7,7 +7,7 @@ import { ArrowLeft, Plus, Search, X, ChevronUp, ChevronDown, Trash2 } from 'luci
 import Portal from '@/components/Portal'
 
 const BLOCK_CATEGORIES = [
-  { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#0D7377' },
+  { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#2B5C9E' },
   { id: 'land',        label: 'Land',        emoji: '🏃', color: '#D4A017' },
   { id: 'styrka',      label: 'Styrka',      emoji: '💪', color: '#DC2626' },
   { id: 'rorlighet',   label: 'Rörlighet',   emoji: '🧘', color: '#16A34A' },
@@ -176,7 +176,7 @@ export default function BlockTemplatePage() {
     return matchSearch && matchCat
   })
 
-  const cat = CAT_BY_ID[templateCategory as keyof typeof CAT_BY_ID] ?? { color: '#64748B', emoji: '📋', label: templateCategory }
+  const cat = CAT_BY_ID[templateCategory as keyof typeof CAT_BY_ID] ?? { color: '#56637A', emoji: '📋', label: templateCategory }
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto' }}>
@@ -188,7 +188,7 @@ export default function BlockTemplatePage() {
             onClick={() => router.back()}
             style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           >
-            <ArrowLeft size={18} color="#0F172A" strokeWidth={2} />
+            <ArrowLeft size={18} color="#1E2B42" strokeWidth={2} />
           </button>
 
           {editingName ? (
@@ -207,7 +207,7 @@ export default function BlockTemplatePage() {
           ) : (
             <h1
               onClick={() => { setNameInput(templateName); setEditingName(true) }}
-              style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', cursor: 'text', flex: 1 }}
+              style={{ fontSize: 26, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.04em', cursor: 'text', flex: 1 }}
             >
               {templateName || '…'}
             </h1>
@@ -228,7 +228,7 @@ export default function BlockTemplatePage() {
                 background: templateCategory === c.id ? `${c.color}15` : 'rgba(0,0,0,0.05)',
                 fontSize: 12,
                 fontWeight: 700,
-                color: templateCategory === c.id ? c.color : '#94A3B8',
+                color: templateCategory === c.id ? c.color : '#56637A',
                 cursor: 'pointer',
                 display: 'flex',
                 alignItems: 'center',
@@ -254,11 +254,11 @@ export default function BlockTemplatePage() {
       {/* Items */}
       <div style={{ padding: '4px 16px 140px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8' }}>Laddar...</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#56637A' }}>Laddar...</div>
         ) : items.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px', background: 'rgba(255,255,255,0.5)', borderRadius: 18, border: '1px solid rgba(0,0,0,0.05)', marginBottom: 16 }}>
+          <div style={{ textAlign: 'center', padding: '40px 20px', background: '#FFFFFF', borderRadius: 18, border: '1px solid #E1E8F0', marginBottom: 16 }}>
             <span style={{ fontSize: 24, display: 'block', marginBottom: 8 }}>{cat.emoji}</span>
-            <p style={{ fontSize: 14, color: '#94A3B8', fontWeight: 500 }}>Inga övningar än — lägg till från biblioteket</p>
+            <p style={{ fontSize: 14, color: '#56637A', fontWeight: 500 }}>Inga övningar än — lägg till från biblioteket</p>
           </div>
         ) : (
           <div className="glass-card" style={{ borderRadius: 18, overflow: 'hidden', marginBottom: 16 }}>
@@ -278,19 +278,19 @@ export default function BlockTemplatePage() {
                     {/* Reorder */}
                     <div style={{ display: 'flex', flexDirection: 'column', flexShrink: 0 }}>
                       <button onClick={() => moveItem(i, -1)} disabled={i === 0} style={{ background: 'none', border: 'none', cursor: i === 0 ? 'default' : 'pointer', padding: '2px 4px', opacity: i === 0 ? 0.18 : 0.55, display: 'flex' }}>
-                        <ChevronUp size={13} color="#64748B" strokeWidth={2.5} />
+                        <ChevronUp size={13} color="#56637A" strokeWidth={2.5} />
                       </button>
                       <button onClick={() => moveItem(i, 1)} disabled={i === items.length - 1} style={{ background: 'none', border: 'none', cursor: i === items.length - 1 ? 'default' : 'pointer', padding: '2px 4px', opacity: i === items.length - 1 ? 0.18 : 0.55, display: 'flex' }}>
-                        <ChevronDown size={13} color="#64748B" strokeWidth={2.5} />
+                        <ChevronDown size={13} color="#56637A" strokeWidth={2.5} />
                       </button>
                     </div>
 
                     {/* Name */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      {label && <div style={{ fontSize: 11, fontWeight: 700, color: '#0D7377', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>}
-                      <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{displayName}</div>
+                      {label && <div style={{ fontSize: 11, fontWeight: 700, color: '#2B5C9E', letterSpacing: '0.06em', marginBottom: 2 }}>{label}</div>}
+                      <div style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42' }}>{displayName}</div>
                       {(item.sets || item.reps || item.height) && (
-                        <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2, fontWeight: 500 }}>
+                        <div style={{ fontSize: 11, color: '#56637A', marginTop: 2, fontWeight: 500 }}>
                           {[item.sets && `${item.sets} set`, item.reps && `${item.reps} reps`, item.height].filter(Boolean).join(' · ')}
                         </div>
                       )}
@@ -299,12 +299,12 @@ export default function BlockTemplatePage() {
                     {/* Delete */}
                     {confirmDeleteItem === item.id ? (
                       <div style={{ display: 'flex', gap: 6, flexShrink: 0 }}>
-                        <button onClick={() => setConfirmDeleteItem(null)} style={{ padding: '4px 8px', borderRadius: 8, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Avbryt</button>
+                        <button onClick={() => setConfirmDeleteItem(null)} style={{ padding: '4px 8px', borderRadius: 8, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 11, fontWeight: 600, cursor: 'pointer', color: '#56637A' }}>Avbryt</button>
                         <button onClick={() => removeItem(item.id)} style={{ padding: '4px 10px', borderRadius: 8, background: '#DC2626', border: 'none', color: 'white', fontSize: 11, fontWeight: 700, cursor: 'pointer' }}>Ta bort</button>
                       </div>
                     ) : (
                       <button onClick={() => setConfirmDeleteItem(item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: '6px 8px', display: 'flex', flexShrink: 0 }}>
-                        <Trash2 size={14} color="#CBD5E1" strokeWidth={2} />
+                        <Trash2 size={14} color="#E1E8F0" strokeWidth={2} />
                       </button>
                     )}
                   </div>
@@ -317,7 +317,7 @@ export default function BlockTemplatePage() {
         {/* Add exercise button */}
         <button
           onClick={() => { setShowPicker(true); setPickerSearch(''); setPickerCategory('all') }}
-          style={{ width: '100%', padding: '14px', borderRadius: 16, border: '2px dashed rgba(13,115,119,0.3)', background: 'rgba(13,115,119,0.04)', fontSize: 14, fontWeight: 600, color: '#0D7377', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
+          style={{ width: '100%', padding: '14px', borderRadius: 16, border: '2px dashed rgba(43,92,158,0.3)', background: 'rgba(43,92,158,0.04)', fontSize: 14, fontWeight: 600, color: '#2B5C9E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8 }}
         >
           <Plus size={15} strokeWidth={2.5} /> Lägg till övning
         </button>
@@ -334,7 +334,7 @@ export default function BlockTemplatePage() {
           <div style={{ marginTop: 20, background: 'rgba(220,38,38,0.07)', borderRadius: 14, padding: '14px 16px' }}>
             <p style={{ fontSize: 13, fontWeight: 600, color: '#DC2626', marginBottom: 12, textAlign: 'center' }}>Ta bort denna mall permanent?</p>
             <div style={{ display: 'flex', gap: 8 }}>
-              <button onClick={() => setShowDeleteTemplate(false)} style={{ flex: 1, padding: '10px', borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>Avbryt</button>
+              <button onClick={() => setShowDeleteTemplate(false)} style={{ flex: 1, padding: '10px', borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#56637A' }}>Avbryt</button>
               <button onClick={deleteTemplate} style={{ flex: 1, padding: '10px', borderRadius: 10, background: '#DC2626', border: 'none', color: 'white', fontSize: 13, fontWeight: 700, cursor: 'pointer' }}>Ta bort</button>
             </div>
           </div>
@@ -344,19 +344,19 @@ export default function BlockTemplatePage() {
       {/* ── Library picker ────────────────────────────────────────────────── */}
       {showPicker && (
         <Portal>
-          <div onClick={() => setShowPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
+          <div onClick={() => setShowPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, maxHeight: '84vh', display: 'flex', flexDirection: 'column' }}>
             <div style={{ padding: '16px 20px 10px', flexShrink: 0 }}>
               <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 16px' }} />
               <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 12 }}>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Lägg till övning</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>Lägg till övning</h3>
                 <button onClick={() => setShowPicker(false)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                  <X size={14} color="#64748B" strokeWidth={2.5} />
+                  <X size={14} color="#56637A" strokeWidth={2.5} />
                 </button>
               </div>
 
               <div style={{ position: 'relative', marginBottom: 10 }}>
-                <Search size={14} color="#94A3B8" strokeWidth={2} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <Search size={14} color="#56637A" strokeWidth={2} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input
                   autoFocus
                   value={pickerSearch}
@@ -377,7 +377,7 @@ export default function BlockTemplatePage() {
 
             <div style={{ overflowY: 'auto', flex: 1, padding: '4px 20px calc(var(--safe-bottom) + 100px)' }}>
               {filtered.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '40px 0', color: '#94A3B8', fontSize: 14 }}>Inga övningar</div>
+                <div style={{ textAlign: 'center', padding: '40px 0', color: '#56637A', fontSize: 14 }}>Inga övningar</div>
               ) : (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {filtered.map(item => (
@@ -390,14 +390,14 @@ export default function BlockTemplatePage() {
                     >
                       <div style={{ flex: 1, minWidth: 0 }}>
                         {item.codeLabel && (
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#0D7377', letterSpacing: '0.06em', marginBottom: 2 }}>{item.codeLabel}</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#2B5C9E', letterSpacing: '0.06em', marginBottom: 2 }}>{item.codeLabel}</div>
                         )}
-                        <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{item.name}</div>
+                        <div style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42' }}>{item.name}</div>
                         {item.category_name && (
-                          <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>{item.category_name}</div>
+                          <div style={{ fontSize: 11, color: '#56637A', marginTop: 2 }}>{item.category_name}</div>
                         )}
                       </div>
-                      <Plus size={15} color="#0D7377" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+                      <Plus size={15} color="#2B5C9E" strokeWidth={2.5} style={{ flexShrink: 0 }} />
                     </button>
                   ))}
                 </div>

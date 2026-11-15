@@ -8,7 +8,7 @@ import Portal from '@/components/Portal'
 import { ArrowLeft, MoreHorizontal, Pencil, Copy, Trash2, LayoutList } from 'lucide-react'
 
 const BLOCK_COLORS: Record<string, { color: string; emoji: string }> = {
-  vatten:      { color: '#0D7377', emoji: '💧' },
+  vatten:      { color: '#2B5C9E', emoji: '💧' },
   land:        { color: '#D4A017', emoji: '🏃' },
   styrka:      { color: '#DC2626', emoji: '💪' },
   rorlighet:   { color: '#16A34A', emoji: '🧘' },
@@ -17,8 +17,8 @@ const BLOCK_COLORS: Record<string, { color: string; emoji: string }> = {
 }
 
 const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  draft:     { bg: 'rgba(100,116,139,0.1)', text: '#64748B', label: 'Utkast' },
-  published: { bg: 'rgba(13,115,119,0.1)',  text: '#0D7377', label: 'Publicerad' },
+  draft:     { bg: 'rgba(86,99,122,0.1)', text: '#56637A', label: 'Utkast' },
+  published: { bg: 'rgba(43,92,158,0.1)',  text: '#2B5C9E', label: 'Publicerad' },
   completed: { bg: 'rgba(22,163,74,0.1)',   text: '#16A34A', label: 'Genomförd' },
 }
 
@@ -132,8 +132,8 @@ export default function TrainingDetailPage() {
     setDuplicating(false)
   }
 
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#94A3B8' }}>Laddar...</div>
-  if (!training) return <div style={{ padding: 24 }}><p style={{ color: '#94A3B8' }}>Hittades inte.</p></div>
+  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#56637A' }}>Laddar...</div>
+  if (!training) return <div style={{ padding: 24 }}><p style={{ color: '#56637A' }}>Hittades inte.</p></div>
 
   const s = STATUS_STYLE[training.status] || STATUS_STYLE.draft
   const totalItems = blocks.reduce((sum: number, b: any) => sum + (b.items?.length || 0), 0)
@@ -147,28 +147,28 @@ export default function TrainingDetailPage() {
           position: 'sticky', top: 0, zIndex: 10,
           display: 'flex', alignItems: 'center', gap: 12,
           padding: '0 16px', height: 56,
-          background: 'rgba(248,250,252,0.92)', backdropFilter: 'blur(12px)',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          background: 'rgba(248,250,252,0.92)',
+          borderBottom: '1px solid #E1E8F0',
         }}>
           <button
             onClick={() => router.back()}
-            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid #E1E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           >
-            <ArrowLeft size={16} color="#0F172A" strokeWidth={2.5} />
+            <ArrowLeft size={16} color="#1E2B42" strokeWidth={2.5} />
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: 15, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {training.title}
             </div>
             {totalItems > 0 && (
-              <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>{totalItems} övningar</div>
+              <div style={{ fontSize: 11, color: '#56637A', fontWeight: 600 }}>{totalItems} övningar</div>
             )}
           </div>
           <button
             onClick={() => setShowMenu(true)}
-            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid rgba(0,0,0,0.08)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
+            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid #E1E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
           >
-            <MoreHorizontal size={18} color="#0F172A" strokeWidth={2} />
+            <MoreHorizontal size={18} color="#1E2B42" strokeWidth={2} />
           </button>
         </div>
 
@@ -189,14 +189,14 @@ export default function TrainingDetailPage() {
               )}
               {/* Date */}
               {training.scheduled_date && (
-                <span style={{ fontSize: 13, color: '#64748B', fontWeight: 500 }}>
+                <span style={{ fontSize: 13, color: '#56637A', fontWeight: 500 }}>
                   {new Date(training.scheduled_date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
                 </span>
               )}
             </div>
 
             {training.notes && (
-              <p style={{ fontSize: 13, color: '#64748B', marginTop: 10, lineHeight: 1.5, marginBottom: 0 }}>
+              <p style={{ fontSize: 13, color: '#56637A', marginTop: 10, lineHeight: 1.5, marginBottom: 0 }}>
                 {training.notes}
               </p>
             )}
@@ -206,7 +206,7 @@ export default function TrainingDetailPage() {
           {training.status === 'draft' && (
             <button
               onClick={() => updateStatus('published')}
-              style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', background: 'linear-gradient(135deg, #0D7377, #0a5a5d)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16, boxShadow: '0 3px 12px rgba(13,115,119,0.3)' }}
+              style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', background: 'var(--gradient-hero)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16, boxShadow: 'none' }}
             >
               Publicera pass
             </button>
@@ -214,7 +214,7 @@ export default function TrainingDetailPage() {
           {training.status === 'published' && (
             <button
               onClick={() => updateStatus('draft')}
-              style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px solid rgba(100,116,139,0.2)', background: 'transparent', color: '#64748B', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }}
+              style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px solid rgba(86,99,122,0.2)', background: 'transparent', color: '#56637A', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }}
             >
               Ångra publicering
             </button>
@@ -224,12 +224,12 @@ export default function TrainingDetailPage() {
           {blocks.length === 0 ? (
             <div style={{ textAlign: 'center', padding: '48px 20px' }}>
               <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga block</p>
-              <p style={{ fontSize: 13, color: '#94A3B8' }}>Redigera passet för att lägga till övningar.</p>
+              <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga block</p>
+              <p style={{ fontSize: 13, color: '#56637A' }}>Redigera passet för att lägga till övningar.</p>
             </div>
           ) : (
             blocks.map(block => {
-              const bc = BLOCK_COLORS[block.category] ?? { color: '#64748B', emoji: '📋' }
+              const bc = BLOCK_COLORS[block.category] ?? { color: '#56637A', emoji: '📋' }
               return (
                 <div key={block.id} style={{ marginBottom: 16 }}>
                   {/* Block header */}
@@ -239,14 +239,14 @@ export default function TrainingDetailPage() {
                       {block.name}
                     </span>
                     {block.notes && (
-                      <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500, marginLeft: 4 }}>— {block.notes}</span>
+                      <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500, marginLeft: 4 }}>— {block.notes}</span>
                     )}
                   </div>
 
                   {/* Items */}
                   <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
                     {(block.items || []).length === 0 ? (
-                      <div style={{ padding: '14px 16px', fontSize: 13, color: '#94A3B8', fontStyle: 'italic' }}>Inga övningar i detta block</div>
+                      <div style={{ padding: '14px 16px', fontSize: 13, color: '#56637A', fontStyle: 'italic' }}>Inga övningar i detta block</div>
                     ) : (
                       (block.items || []).map((item: any, ii: number) => {
                         const itemName = item.library_item?.name || item.custom_name || '–'
@@ -254,20 +254,20 @@ export default function TrainingDetailPage() {
                         return (
                           <div
                             key={item.id}
-                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: ii < (block.items.length - 1) ? '1px solid rgba(0,0,0,0.05)' : 'none' }}
+                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: ii < (block.items.length - 1) ? '1px solid #E1E8F0' : 'none' }}
                           >
                             <div style={{ width: 28, height: 28, borderRadius: 9, background: `${bc.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
                               <div style={{ width: 7, height: 7, borderRadius: '50%', background: bc.color }} />
                             </div>
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{setsPrefix}{itemName}</div>
+                              <div style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42' }}>{setsPrefix}{itemName}</div>
                               {item.notes && (
-                                <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes}</div>
+                                <div style={{ fontSize: 11, color: '#56637A', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes}</div>
                               )}
                             </div>
                             <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
                               {item.reps && (
-                                <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(100,116,139,0.08)', color: '#475569', padding: '3px 8px', borderRadius: 9999 }}>
+                                <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(86,99,122,0.08)', color: '#56637A', padding: '3px 8px', borderRadius: 9999 }}>
                                   🔁 {item.reps}
                                 </span>
                               )}
@@ -290,7 +290,7 @@ export default function TrainingDetailPage() {
           {/* ── Edit button ──────────────────────────────────────────────────── */}
           <button
             onClick={() => setShowEdit(true)}
-            style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 14, fontWeight: 700, color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 }}
+            style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 14, fontWeight: 700, color: '#56637A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 }}
           >
             <LayoutList size={16} strokeWidth={2} />
             Redigera pass
@@ -306,7 +306,7 @@ export default function TrainingDetailPage() {
             style={{
               position: 'fixed',
               inset: 0,
-              background: 'rgba(15,23,42,0.4)',
+              background: 'rgba(30,43,66,0.4)',
               backdropFilter: 'blur(4px)',
               WebkitBackdropFilter: 'blur(4px)',
               zIndex: 9998, // ✅ FIX
@@ -326,8 +326,8 @@ export default function TrainingDetailPage() {
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
 
             {[
-              { onClick: () => { setShowMenu(false); setShowEdit(true) }, Icon: Pencil, label: 'Redigera pass', color: '#0F172A', bg: 'rgba(0,0,0,0.04)' },
-              { onClick: handleDuplicate, Icon: Copy, label: duplicating ? 'Kopierar...' : 'Duplicera pass', color: '#0F172A', bg: 'rgba(0,0,0,0.04)' },
+              { onClick: () => { setShowMenu(false); setShowEdit(true) }, Icon: Pencil, label: 'Redigera pass', color: '#1E2B42', bg: 'rgba(0,0,0,0.04)' },
+              { onClick: handleDuplicate, Icon: Copy, label: duplicating ? 'Kopierar...' : 'Duplicera pass', color: '#1E2B42', bg: 'rgba(0,0,0,0.04)' },
             ].map((action, i) => (
               <button key={i} onClick={action.onClick} style={{ width: '100%', padding: '15px 18px', borderRadius: 14, border: 'none', background: action.bg, fontSize: 15, fontWeight: 600, color: action.color, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
                 <action.Icon size={18} strokeWidth={2} />

@@ -88,9 +88,9 @@ export default function PeriodView() {
             const isPast = sunday < today
             return (
               <div key={w.monday} role="row" ref={isNow ? currentRow : undefined} style={{ display: 'contents' }}>
-                <div role="rowheader" style={{ padding: '8px 8px', borderRadius: 10, background: isNow ? UI.tealLight : 'rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: 5, opacity: isPast ? 0.75 : 1 }}>
+                <div role="rowheader" style={{ padding: '8px 8px', borderRadius: 10, background: isNow ? UI.primarySoft : 'rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', gap: 5, opacity: isPast ? 0.75 : 1 }}>
                   <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', gap: 6 }}>
-                    <span style={{ fontSize: 13.5, fontWeight: 900, color: isNow ? UI.tealDark : UI.text }}>v.{weekNumber(w.monday)}</span>
+                    <span style={{ fontSize: 13.5, fontWeight: 900, color: isNow ? UI.primary : UI.text }}>v.{weekNumber(w.monday)}</span>
                     <span style={{ fontSize: 11.5, color: UI.muted }}>{weekRangeLabel(w.monday)}</span>
                   </div>
                   {wEvents.map(e => (
@@ -161,6 +161,6 @@ function PeriodCell({ pass, onOpen }: { pass: SchedulePass; onOpen: () => void }
 
 const head: React.CSSProperties = { fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: UI.muted, padding: '4px 6px' }
 const tool: React.CSSProperties = {
-  minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
-  display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, color: UI.tealDark, cursor: 'pointer',
+  minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #E1E8F0', background: '#fff',
+  display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, color: UI.primary, cursor: 'pointer',
 }

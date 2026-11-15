@@ -5,7 +5,7 @@ import { createClient } from '@/lib/supabase/client'
 import { ArrowLeft, ChevronDown } from 'lucide-react'
 
 const BLOCK_CATEGORIES = [
-  { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#0D7377' },
+  { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#2B5C9E' },
   { id: 'land',        label: 'Land',        emoji: '🏃', color: '#D4A017' },
   { id: 'styrka',      label: 'Styrka',      emoji: '💪', color: '#DC2626' },
   { id: 'rorlighet',   label: 'Rörlighet',   emoji: '🧘', color: '#16A34A' },
@@ -111,14 +111,14 @@ export default function TrainingTemplatePage() {
       {/* Header */}
       <div style={{ padding: '20px 16px 14px', display: 'flex', alignItems: 'flex-start', gap: 12 }}>
         <button onClick={() => router.back()} style={{ width: 38, height: 38, borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 2 }}>
-          <ArrowLeft size={18} color="#0F172A" strokeWidth={2} />
+          <ArrowLeft size={18} color="#1E2B42" strokeWidth={2} />
         </button>
         <div style={{ flex: 1 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
+          <h1 style={{ fontSize: 24, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 4 }}>
             {template?.name ?? '…'}
           </h1>
           {!loading && (
-            <div style={{ fontSize: 13, color: '#94A3B8', fontWeight: 500 }}>
+            <div style={{ fontSize: 13, color: '#56637A', fontWeight: 500 }}>
               {blocks.length} block · {blocks.reduce((s, b) => s + b.items.length, 0)} övningar
             </div>
           )}
@@ -128,10 +128,10 @@ export default function TrainingTemplatePage() {
       {/* Content */}
       <div style={{ padding: '4px 16px 160px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8' }}>Laddar...</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#56637A' }}>Laddar...</div>
         ) : blocks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#475569' }}>Mallen är tom</p>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A' }}>Mallen är tom</p>
           </div>
         ) : (
           blocks.map(block => {
@@ -153,7 +153,7 @@ export default function TrainingTemplatePage() {
                 {expanded && (
                   <div style={{ padding: '10px 14px' }}>
                     {block.notes && (
-                      <div style={{ fontSize: 12, color: '#64748B', fontStyle: 'italic', marginBottom: 10, padding: '6px 10px', background: 'rgba(0,0,0,0.03)', borderRadius: 8 }}>
+                      <div style={{ fontSize: 12, color: '#56637A', fontStyle: 'italic', marginBottom: 10, padding: '6px 10px', background: 'rgba(0,0,0,0.03)', borderRadius: 8 }}>
                         {block.notes}
                       </div>
                     )}
@@ -168,18 +168,18 @@ export default function TrainingTemplatePage() {
                       if (item.height) params.push(item.height)
                       if (item.duration_seconds) params.push(formatDuration(item.duration_seconds))
                       return (
-                        <div key={item.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: idx < block.items.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none' }}>
+                        <div key={item.id} style={{ display: 'flex', alignItems: 'flex-start', gap: 10, padding: '10px 0', borderBottom: idx < block.items.length - 1 ? '1px solid #E1E8F0' : 'none' }}>
                           <div style={{ width: 22, height: 22, borderRadius: 7, background: cat ? `${cat.color}20` : 'rgba(0,0,0,0.06)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, marginTop: 1 }}>
-                            <span style={{ fontSize: 10, fontWeight: 800, color: cat?.color ?? '#64748B' }}>{idx + 1}</span>
+                            <span style={{ fontSize: 10, fontWeight: 800, color: cat?.color ?? '#56637A' }}>{idx + 1}</span>
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            {codeLabel && <div style={{ fontSize: 11, fontWeight: 700, color: '#0D7377', letterSpacing: '0.05em', marginBottom: 2 }}>{codeLabel}</div>}
-                            <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{name}</div>
+                            {codeLabel && <div style={{ fontSize: 11, fontWeight: 700, color: '#2B5C9E', letterSpacing: '0.05em', marginBottom: 2 }}>{codeLabel}</div>}
+                            <div style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42' }}>{name}</div>
                             {params.length > 0 && (
-                              <div style={{ fontSize: 12, color: '#64748B', marginTop: 3 }}>{params.join(' · ')}</div>
+                              <div style={{ fontSize: 12, color: '#56637A', marginTop: 3 }}>{params.join(' · ')}</div>
                             )}
                             {item.notes && (
-                              <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 3, fontStyle: 'italic' }}>{item.notes}</div>
+                              <div style={{ fontSize: 12, color: '#56637A', marginTop: 3, fontStyle: 'italic' }}>{item.notes}</div>
                             )}
                           </div>
                         </div>

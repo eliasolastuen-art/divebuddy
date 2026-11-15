@@ -60,7 +60,7 @@ function PlanningContent() {
       {source === 'demo' && (
         <p className="no-print" style={{ margin: '14px 0 0', textAlign: 'center', fontSize: 12.5, color: UI.muted, lineHeight: 1.5 }}>
           Visar testdata för {data.term.name} från designen. Ändringar sparas bara i den här webbläsaren.{' '}
-          <button onClick={resetDemo} style={{ border: 'none', background: 'none', padding: 0, color: UI.teal, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>
+          <button onClick={resetDemo} style={{ border: 'none', background: 'none', padding: 0, color: UI.primary, fontWeight: 700, fontSize: 12.5, cursor: 'pointer', fontFamily: 'inherit', textDecoration: 'underline' }}>
             Återställ testdata
           </button>
         </p>

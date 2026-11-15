@@ -6,7 +6,7 @@ import { ArrowLeft, Plus } from 'lucide-react'
 import Portal from '@/components/Portal'
 
 const BLOCK_CATEGORIES = [
-  { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#0D7377' },
+  { id: 'vatten',      label: 'Vatten',      emoji: '💧', color: '#2B5C9E' },
   { id: 'land',        label: 'Land',        emoji: '🏃', color: '#D4A017' },
   { id: 'styrka',      label: 'Styrka',      emoji: '💪', color: '#DC2626' },
   { id: 'rorlighet',   label: 'Rörlighet',   emoji: '🧘', color: '#16A34A' },
@@ -104,7 +104,7 @@ export default function GroupLibraryPage() {
           onClick={() => router.back()}
           style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex', alignItems: 'center' }}
         >
-          <ArrowLeft size={20} color="#0F172A" strokeWidth={2.5} />
+          <ArrowLeft size={20} color="#1E2B42" strokeWidth={2.5} />
         </button>
         {group && (
           <div style={{ display: 'flex', alignItems: 'center', gap: 10, flex: 1 }}>
@@ -112,10 +112,10 @@ export default function GroupLibraryPage() {
               width: 12,
               height: 12,
               borderRadius: '50%',
-              background: group.color ?? '#0D7377',
+              background: group.color ?? '#2B5C9E',
               flexShrink: 0,
             }} />
-            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+            <h1 style={{ fontSize: 24, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>
               {group.name}
             </h1>
           </div>
@@ -125,18 +125,18 @@ export default function GroupLibraryPage() {
       {/* Content */}
       <div style={{ padding: '4px 16px 120px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8' }}>Laddar...</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#56637A' }}>Laddar...</div>
         ) : templates.length === 0 && trainingTemplates.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga mallar ännu</p>
-            <p style={{ fontSize: 13, color: '#94A3B8' }}>Tryck + för att skapa en mall för den här gruppen</p>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga mallar ännu</p>
+            <p style={{ fontSize: 13, color: '#56637A' }}>Tryck + för att skapa en mall för den här gruppen</p>
           </div>
         ) : (
           <>
             {/* Training templates */}
             {trainingTemplates.length > 0 && (
               <div style={{ marginBottom: 28 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
                   Träningsmallar
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -145,10 +145,10 @@ export default function GroupLibraryPage() {
                       key={t.id}
                       onClick={() => router.push(`/library/trainings/${t.id}`)}
                       className="glass-card"
-                      style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 18, border: 'none', cursor: 'pointer', borderLeft: `4px solid ${group?.color ?? '#0D7377'}` }}
+                      style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 18, border: 'none', cursor: 'pointer', borderLeft: `4px solid ${group?.color ?? '#2B5C9E'}` }}
                     >
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>{t.name}</div>
-                      <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 3 }}>{t.block_count} block</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42' }}>{t.name}</div>
+                      <div style={{ fontSize: 12, color: '#56637A', marginTop: 3 }}>{t.block_count} block</div>
                     </button>
                   ))}
                 </div>
@@ -157,7 +157,7 @@ export default function GroupLibraryPage() {
 
             {/* Divider if both sections present */}
             {trainingTemplates.length > 0 && (grouped.some(g => g.templates.length > 0) || uncategorized.length > 0) && (
-              <div style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+              <div style={{ fontSize: 13, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
                 Blockmallar
               </div>
             )}
@@ -166,7 +166,7 @@ export default function GroupLibraryPage() {
               <div key={bc.id} style={{ marginBottom: 28 }}>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 12 }}>
                   <span style={{ fontSize: 18 }}>{bc.emoji}</span>
-                  <span style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                     {bc.label}
                   </span>
                 </div>
@@ -186,7 +186,7 @@ export default function GroupLibraryPage() {
                         borderLeft: `4px solid ${bc.color}`,
                       }}
                     >
-                      <div style={{ fontSize: 15, fontWeight: 600, color: '#0F172A' }}>{tmpl.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42' }}>{tmpl.name}</div>
                     </button>
                   ))}
                 </div>
@@ -195,7 +195,7 @@ export default function GroupLibraryPage() {
 
             {uncategorized.length > 0 && (
               <div style={{ marginBottom: 28 }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
                   Övriga
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -206,7 +206,7 @@ export default function GroupLibraryPage() {
                       className="glass-card"
                       style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 18, border: 'none', cursor: 'pointer' }}
                     >
-                      <div style={{ fontSize: 15, fontWeight: 600, color: '#0F172A' }}>{tmpl.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42' }}>{tmpl.name}</div>
                     </button>
                   ))}
                 </div>
@@ -226,13 +226,13 @@ export default function GroupLibraryPage() {
           width: 56,
           height: 56,
           borderRadius: 18,
-          background: 'linear-gradient(135deg, #0D7377, #0a5a5d)',
+          background: 'var(--gradient-hero)',
           border: 'none',
           cursor: 'pointer',
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'center',
-          boxShadow: '0 4px 20px rgba(13,115,119,0.4)',
+          boxShadow: 'none',
           zIndex: 50,
         }}
       >
@@ -250,8 +250,8 @@ export default function GroupLibraryPage() {
             className="glass-sheet"
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}
           >
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 16 }}>Ny mall för {group?.name}</div>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#1E2B42', marginBottom: 16 }}>Ny mall för {group?.name}</div>
             <input
               value={newName}
               onChange={e => setNewName(e.target.value)}
@@ -261,7 +261,7 @@ export default function GroupLibraryPage() {
               autoFocus
               onKeyDown={e => e.key === 'Enter' && createTemplate()}
             />
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
               Kategori (valfritt)
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 8, marginBottom: 20 }}>
@@ -279,7 +279,7 @@ export default function GroupLibraryPage() {
                   }}
                 >
                   <div style={{ fontSize: 18, marginBottom: 2 }}>{bc.emoji}</div>
-                  <div style={{ fontSize: 11, fontWeight: 600, color: '#475569' }}>{bc.label}</div>
+                  <div style={{ fontSize: 11, fontWeight: 600, color: '#56637A' }}>{bc.label}</div>
                 </button>
               ))}
             </div>

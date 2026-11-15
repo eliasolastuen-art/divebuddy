@@ -47,7 +47,7 @@ function Toast({ text, type }: { text: string; type: 'success' | 'error' }) {
       top: 'max(16px, env(safe-area-inset-top, 16px))',
       left: '50%', transform: 'translateX(-50%)',
       zIndex: 1000,
-      background: type === 'success' ? '#0D7377' : '#DC2626',
+      background: type === 'success' ? '#2B5C9E' : '#DC2626',
       color: 'white', borderRadius: 14,
       padding: '10px 20px', fontSize: 13, fontWeight: 600,
       boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
@@ -316,21 +316,19 @@ export default function AthletesPage() {
       {/* ── Sticky Header ──────────────────────────────────── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 20,
-        background: 'rgba(245,244,241,0.92)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        background: '#EEF3F8',
+        borderBottom: '1px solid #E1E8F0',
         padding: '12px 16px',
       }}>
         <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+          <span style={{ fontSize: 22, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>
             Atleter
           </span>
           <button
             onClick={() => setShowAddSheet(true)}
             style={{
               display: 'flex', alignItems: 'center', gap: 5,
-              background: '#0D7377', color: 'white',
+              background: '#2B5C9E', color: 'white',
               border: 'none', borderRadius: 20,
               padding: '8px 14px', fontSize: 13, fontWeight: 700,
               cursor: 'pointer',
@@ -386,7 +384,7 @@ export default function AthletesPage() {
           </div>
         ) : sortedGroupIds.length === 0 ? (
           <div style={{
-            textAlign: 'center', color: '#94A3B8',
+            textAlign: 'center', color: '#56637A',
             fontSize: 14, padding: '40px 0',
           }}>
             Inga atleter hittades
@@ -418,23 +416,23 @@ export default function AthletesPage() {
                     <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
                       <div style={{
                         width: 10, height: 10, borderRadius: '50%',
-                        background: group?.color ?? '#94A3B8', flexShrink: 0,
+                        background: group?.color ?? '#56637A', flexShrink: 0,
                       }} />
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em' }}>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#1E2B42', letterSpacing: '-0.01em' }}>
                         {group?.name ?? 'Ingen grupp tilldelad'}
                       </span>
                     </div>
                     <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
                       <span style={{
-                        background: 'rgba(0,0,0,0.07)', color: '#64748B',
+                        background: 'rgba(0,0,0,0.07)', color: '#56637A',
                         borderRadius: 20, padding: '2px 8px',
                         fontSize: 11, fontWeight: 700,
                       }}>
                         {groupAthletes.length}
                       </span>
                       {collapsed
-                        ? <ChevronRight size={14} color="#94A3B8" />
-                        : <ChevronDown size={14} color="#94A3B8" />
+                        ? <ChevronRight size={14} color="#56637A" />
+                        : <ChevronDown size={14} color="#56637A" />
                       }
                     </div>
                   </button>
@@ -444,7 +442,7 @@ export default function AthletesPage() {
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {groupAthletes.map(athlete => {
                         const status = athleteStatus(athlete)
-                        const avatarBg = status === 'active' ? '#0D7377' : status === 'invited' ? '#D97706' : '#94A3B8'
+                        const avatarBg = status === 'active' ? '#2B5C9E' : status === 'invited' ? '#D97706' : '#56637A'
                         const sent = sentInvites.has(athlete.id)
                         const sending = inviteSending === athlete.id
 
@@ -453,10 +451,10 @@ export default function AthletesPage() {
                             key={athlete.id}
                             onClick={() => openDetail(athlete)}
                             style={{
-                              background: 'rgba(255,255,255,0.9)',
+                              background: '#FFFFFF',
                               borderRadius: 14,
                               border: '1px solid rgba(255,255,255,0.8)',
-                              boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                              boxShadow: 'none',
                               padding: '12px 14px',
                               display: 'flex', alignItems: 'center', gap: 12,
                               cursor: 'pointer',
@@ -474,11 +472,11 @@ export default function AthletesPage() {
 
                             {/* Name + email + status */}
                             <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                              <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                 {athlete.name}
                               </div>
                               {athlete.email && (
-                                <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                                <div style={{ fontSize: 12, color: '#56637A', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                                   {athlete.email}
                                 </div>
                               )}
@@ -491,7 +489,7 @@ export default function AthletesPage() {
                                   : status === 'invited'
                                     ? 'rgba(217,119,6,0.12)'
                                     : 'rgba(148,163,184,0.15)',
-                                color: status === 'active' ? '#059669' : status === 'invited' ? '#D97706' : '#64748B',
+                                color: status === 'active' ? '#059669' : status === 'invited' ? '#D97706' : '#56637A',
                               }}>
                                 {status === 'active' ? 'Aktiv' : status === 'invited' ? 'Inbjuden' : 'Ej inbjuden'}
                               </div>
@@ -503,16 +501,16 @@ export default function AthletesPage() {
                                 <span style={{ fontSize: 12, fontWeight: 700, color: '#059669' }}>Aktiv ✓</span>
                               ) : status === 'invited' ? (
                                 sent ? (
-                                  <span style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8' }}>Skickad ✓</span>
+                                  <span style={{ fontSize: 12, fontWeight: 700, color: '#56637A' }}>Skickad ✓</span>
                                 ) : (
                                   <button
                                     onClick={() => sendInvite(athlete)}
                                     disabled={sending}
                                     style={{
                                       fontSize: 12, fontWeight: 700,
-                                      color: sending ? '#94A3B8' : '#0D7377',
+                                      color: sending ? '#56637A' : '#2B5C9E',
                                       background: 'none',
-                                      border: `1.5px solid ${sending ? '#CBD5E1' : '#0D7377'}`,
+                                      border: `1.5px solid ${sending ? '#E1E8F0' : '#2B5C9E'}`,
                                       borderRadius: 20, padding: '5px 11px',
                                       cursor: sending ? 'default' : 'pointer',
                                     }}
@@ -527,9 +525,9 @@ export default function AthletesPage() {
                                     setEditEmailValue('')
                                   }}
                                   style={{
-                                    fontSize: 12, fontWeight: 700, color: '#64748B',
+                                    fontSize: 12, fontWeight: 700, color: '#56637A',
                                     background: 'none',
-                                    border: '1.5px solid #CBD5E1',
+                                    border: '1.5px solid #E1E8F0',
                                     borderRadius: 20, padding: '5px 11px',
                                     cursor: 'pointer',
                                   }}
@@ -545,7 +543,7 @@ export default function AthletesPage() {
                                 <button
                                   onClick={() => openDetail(athlete)}
                                   style={{
-                                    fontSize: 12, fontWeight: 600, color: '#0D7377',
+                                    fontSize: 12, fontWeight: 600, color: '#2B5C9E',
                                     background: 'none', border: 'none', cursor: 'pointer',
                                     padding: '5px 0', whiteSpace: 'nowrap',
                                   }}
@@ -585,26 +583,26 @@ export default function AthletesPage() {
               onClick={() => setDetailAthlete(null)}
               style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             >
-              <X size={20} color="#94A3B8" />
+              <X size={20} color="#56637A" />
             </button>
 
             {/* Avatar + name */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 20 }}>
               <div style={{
                 width: 52, height: 52, borderRadius: '50%',
-                background: athleteStatus(detailAthlete) === 'active' ? '#0D7377' : athleteStatus(detailAthlete) === 'invited' ? '#D97706' : '#94A3B8',
+                background: athleteStatus(detailAthlete) === 'active' ? '#2B5C9E' : athleteStatus(detailAthlete) === 'invited' ? '#D97706' : '#56637A',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'white', fontSize: 18, fontWeight: 700, flexShrink: 0,
               }}>
                 {initials(detailAthlete.name)}
               </div>
               <div>
-                <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A' }}>{detailAthlete.name}</div>
+                <div style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42' }}>{detailAthlete.name}</div>
                 <div style={{
                   display: 'inline-block', marginTop: 4,
                   fontSize: 12, fontWeight: 600, padding: '2px 8px', borderRadius: 20,
                   background: athleteStatus(detailAthlete) === 'active' ? 'rgba(16,185,129,0.12)' : athleteStatus(detailAthlete) === 'invited' ? 'rgba(217,119,6,0.12)' : 'rgba(148,163,184,0.15)',
-                  color: athleteStatus(detailAthlete) === 'active' ? '#059669' : athleteStatus(detailAthlete) === 'invited' ? '#D97706' : '#64748B',
+                  color: athleteStatus(detailAthlete) === 'active' ? '#059669' : athleteStatus(detailAthlete) === 'invited' ? '#D97706' : '#56637A',
                 }}>
                   {athleteStatus(detailAthlete) === 'active' ? 'Aktiv' : athleteStatus(detailAthlete) === 'invited' ? 'Inbjuden' : 'Ej inbjuden'}
                 </div>
@@ -612,7 +610,7 @@ export default function AthletesPage() {
             </div>
 
             {/* Email field */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 4 }}>
               E-post
             </label>
             <input
@@ -625,7 +623,7 @@ export default function AthletesPage() {
             />
 
             {/* Group picker */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 8 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 8 }}>
               Grupp
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
@@ -636,9 +634,9 @@ export default function AthletesPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     padding: '7px 13px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-                    border: detailGroupId === g.id ? 'none' : '1.5px solid rgba(0,0,0,0.1)',
-                    background: detailGroupId === g.id ? g.color : 'rgba(255,255,255,0.7)',
-                    color: detailGroupId === g.id ? 'white' : '#0F172A',
+                    border: detailGroupId === g.id ? 'none' : '1px solid #E1E8F0',
+                    background: detailGroupId === g.id ? g.color : '#FFFFFF',
+                    color: detailGroupId === g.id ? 'white' : '#1E2B42',
                     cursor: 'pointer',
                   }}
                 >
@@ -650,9 +648,9 @@ export default function AthletesPage() {
                 onClick={() => setDetailGroupId(null)}
                 style={{
                   padding: '7px 13px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-                  border: detailGroupId === null ? 'none' : '1.5px solid rgba(0,0,0,0.1)',
-                  background: detailGroupId === null ? '#94A3B8' : 'rgba(255,255,255,0.7)',
-                  color: detailGroupId === null ? 'white' : '#0F172A',
+                  border: detailGroupId === null ? 'none' : '1px solid #E1E8F0',
+                  background: detailGroupId === null ? '#56637A' : '#FFFFFF',
+                  color: detailGroupId === null ? 'white' : '#1E2B42',
                   cursor: 'pointer',
                 }}
               >
@@ -676,8 +674,8 @@ export default function AthletesPage() {
                 onClick={() => { sendInvite(detailAthlete); setDetailAthlete(null) }}
                 style={{
                   width: '100%', padding: '13px', marginBottom: 10,
-                  background: 'rgba(13,115,119,0.1)', color: '#0D7377',
-                  border: '1.5px solid rgba(13,115,119,0.25)', borderRadius: 14,
+                  background: 'rgba(43,92,158,0.1)', color: '#2B5C9E',
+                  border: '1.5px solid rgba(43,92,158,0.25)', borderRadius: 14,
                   fontSize: 15, fontWeight: 700, cursor: 'pointer',
                 }}
               >
@@ -738,13 +736,13 @@ export default function AthletesPage() {
               onClick={() => setEditEmailAthlete(null)}
               style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             >
-              <X size={20} color="#94A3B8" />
+              <X size={20} color="#56637A" />
             </button>
 
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 4 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42', marginBottom: 4 }}>
               Lägg till mailadress
             </div>
-            <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>
+            <div style={{ fontSize: 13, color: '#56637A', marginBottom: 16 }}>
               för {editEmailAthlete.name}
             </div>
 
@@ -786,15 +784,15 @@ export default function AthletesPage() {
               onClick={() => setShowAddSheet(false)}
               style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             >
-              <X size={20} color="#94A3B8" />
+              <X size={20} color="#56637A" />
             </button>
 
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 18 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42', marginBottom: 18 }}>
               Lägg till atlet
             </div>
 
             {/* Name */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 4 }}>
               Namn <span style={{ color: '#DC2626' }}>*</span>
             </label>
             <input
@@ -806,8 +804,8 @@ export default function AthletesPage() {
             />
 
             {/* Email */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
-              E-post <span style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8' }}>(valfritt)</span>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 4 }}>
+              E-post <span style={{ fontSize: 11, fontWeight: 500, color: '#56637A' }}>(valfritt)</span>
             </label>
             <input
               className="glass-input"
@@ -817,12 +815,12 @@ export default function AthletesPage() {
               onChange={e => setAddEmail(e.target.value)}
               style={{ width: '100%', padding: '10px 14px', marginBottom: 4 }}
             />
-            <div style={{ fontSize: 11, color: '#94A3B8', marginBottom: 14 }}>
+            <div style={{ fontSize: 11, color: '#56637A', marginBottom: 14 }}>
               Lägg till för att kunna bjuda in
             </div>
 
             {/* Group picker */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 8 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 8 }}>
               Grupp <span style={{ color: '#DC2626' }}>*</span>
             </label>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 20 }}>
@@ -833,9 +831,9 @@ export default function AthletesPage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 6,
                     padding: '7px 13px', borderRadius: 20, fontSize: 13, fontWeight: 600,
-                    border: addGroupId === g.id ? 'none' : '1.5px solid rgba(0,0,0,0.1)',
-                    background: addGroupId === g.id ? g.color : 'rgba(255,255,255,0.7)',
-                    color: addGroupId === g.id ? 'white' : '#0F172A',
+                    border: addGroupId === g.id ? 'none' : '1px solid #E1E8F0',
+                    background: addGroupId === g.id ? g.color : '#FFFFFF',
+                    color: addGroupId === g.id ? 'white' : '#1E2B42',
                     cursor: 'pointer',
                   }}
                 >
@@ -854,7 +852,7 @@ export default function AthletesPage() {
               {addSaving ? 'Lägger till...' : 'Lägg till'}
             </button>
 
-            <div style={{ fontSize: 12, color: '#94A3B8', textAlign: 'center' }}>
+            <div style={{ fontSize: 12, color: '#56637A', textAlign: 'center' }}>
               Atlet utan mail kan läggas till manuellt och bjudas in senare
             </div>
           </div>

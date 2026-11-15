@@ -85,13 +85,13 @@ export default function BankView() {
       {/* Pass vi kört */}
       <section style={{ ...cardStyle, padding: 16, display: 'grid', gap: 10 }}>
         <SectionTitle aside={<span style={{ fontSize: 12.5, color: UI.muted }}>{ran.length} pass</span>}>Pass vi kört</SectionTitle>
-        <Pills label="Grupp" value={group} onChange={setGroup} options={[{ id: 'all', name: 'Mina grupper', color: UI.teal }, ...myGroups]} />
+        <Pills label="Grupp" value={group} onChange={setGroup} options={[{ id: 'all', name: 'Mina grupper', color: UI.primary }, ...myGroups]} />
         <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
           <div style={{ position: 'relative', flex: '1 1 220px' }}>
             <Search size={16} color={UI.faint} style={{ position: 'absolute', left: 12, top: 14 }} aria-hidden />
             <input type="search" aria-label="Sök övning eller block" value={q} onChange={e => setQ(e.target.value)} placeholder="Sök övning eller block" style={{ ...inputStyle, paddingLeft: 36 }} />
           </div>
-          <button aria-pressed={onlyRepeat} onClick={() => setOnlyRepeat(v => !v)} style={{ ...smallButton, minHeight: 44, background: onlyRepeat ? UI.tealLight : '#fff' }}>
+          <button aria-pressed={onlyRepeat} onClick={() => setOnlyRepeat(v => !v)} style={{ ...smallButton, minHeight: 44, background: onlyRepeat ? UI.primarySoft : '#fff' }}>
             <Repeat size={14} />Markerade &quot;kör igen&quot;
           </button>
         </div>
@@ -101,7 +101,7 @@ export default function BankView() {
           </p>
         )}
         {ran.slice(0, 30).map(p => (
-          <div key={p.id} style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', borderLeft: `4px solid ${gm[p.groupIds[0]]?.color}` }}>
+          <div key={p.id} style={{ display: 'flex', gap: 10, padding: '10px 12px', borderRadius: 12, background: '#fff', border: '1px solid #E1E8F0', borderLeft: `4px solid ${gm[p.groupIds[0]]?.color}` }}>
             <div style={{ flex: 1, minWidth: 0, display: 'grid', gap: 3 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap', fontSize: 12.5, color: UI.muted }}>
                 <strong style={{ color: UI.text }}>{dayShort(p.date)} {shortDate(p.date)}</strong>{timeText(p)} · {groupLabel(data, p)} · {p.place}<ReviewMark pass={p} />
@@ -181,7 +181,7 @@ function UseOnPassSheet({ source, onClose, onDone }: {
             saveContent(p.id, cloneContent(source.content, `Från ${source.label}`), 'draft')
             onDone(`Innehållet lades på ${dayShort(p.date)} ${shortDate(p.date)} ${groupLabel(data, p)} (som utkast).`)
             onClose()
-          }} style={{ width: '100%', textAlign: 'left', minHeight: 52, padding: '10px 14px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
+          }} style={{ width: '100%', textAlign: 'left', minHeight: 52, padding: '10px 14px', borderRadius: 14, border: '1px solid #E1E8F0', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
             <span style={{ display: 'block', fontSize: 14.5, fontWeight: 800 }}>{dayShort(p.date)} {shortDate(p.date)} · {timeText(p)}</span>
             <span style={{ display: 'block', fontSize: 12.5, color: UI.muted }}>{groupLabel(data, p)} · {p.place}</span>
           </button>
@@ -193,11 +193,11 @@ function UseOnPassSheet({ source, onClose, onDone }: {
 }
 
 const smallButton: React.CSSProperties = {
-  minHeight: 38, padding: '0 12px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
-  display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: UI.tealDark, cursor: 'pointer', flexShrink: 0,
+  minHeight: 38, padding: '0 12px', borderRadius: 10, border: '1px solid #E1E8F0', background: '#fff',
+  display: 'inline-flex', alignItems: 'center', gap: 6, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: UI.primary, cursor: 'pointer', flexShrink: 0,
 }
 const linkCard: React.CSSProperties = {
   ...cardStyle, padding: 16, display: 'flex', flexDirection: 'column', alignItems: 'flex-start', gap: 4, textAlign: 'left',
-  fontFamily: 'inherit', fontSize: 15, fontWeight: 800, color: UI.tealDark, textDecoration: 'none', cursor: 'pointer',
+  fontFamily: 'inherit', fontSize: 15, fontWeight: 800, color: UI.primary, textDecoration: 'none', cursor: 'pointer',
 }
 const linkSub: React.CSSProperties = { fontSize: 12.5, fontWeight: 500, color: UI.muted }

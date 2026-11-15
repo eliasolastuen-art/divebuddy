@@ -32,7 +32,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
       .then(({ data }) => { if (data) setGroup(data) })
   }, [groupId])
 
-  const groupColor = group?.color || '#0D7377'
+  const groupColor = group?.color || '#2B5C9E'
 
   // For deep routes (e.g. athlete profile), render children only
   const isDeepRoute = /^\/groups\/[^/]+\/athletes\/[^/]+/.test(pathname)
@@ -68,22 +68,22 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
           display: 'flex',
           alignItems: 'center',
           gap: 14,
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          borderBottom: '1px solid #E1E8F0',
         }}>
           <button
             onClick={() => router.back()}
             style={{
               width: 40, height: 40,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: '#FFFFFF',
+              border: '1px solid #E1E8F0',
               borderRadius: 12,
               cursor: 'pointer',
               flexShrink: 0,
             }}
             aria-label="Gå tillbaka"
           >
-            <ArrowLeft size={18} color="#1E293B" strokeWidth={2.5} />
+            <ArrowLeft size={18} color="#1E2B42" strokeWidth={2.5} />
           </button>
 
           {group ? (
@@ -103,7 +103,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
               <h1 style={{
                 fontSize: 18,
                 fontWeight: 800,
-                color: '#0F172A',
+                color: '#1E2B42',
                 letterSpacing: '-0.03em',
                 overflow: 'hidden',
                 textOverflow: 'ellipsis',
@@ -133,9 +133,7 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
         flexShrink: 0,
         paddingBottom: 'var(--safe-bottom)',
         background: 'var(--glass-bg-strong)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(0,0,0,0.06)',
+        borderTop: '1px solid #E1E8F0',
         zIndex: 40,
       }}>
         <div style={{
@@ -178,13 +176,13 @@ export default function GroupLayout({ children }: { children: React.ReactNode })
                   <Icon
                     size={20}
                     strokeWidth={active ? 2.5 : 1.8}
-                    color={active ? groupColor : '#94A3B8'}
+                    color={active ? groupColor : '#56637A'}
                   />
                 </div>
                 <span style={{
                   fontSize: 10,
                   fontWeight: active ? 700 : 500,
-                  color: active ? groupColor : '#94A3B8',
+                  color: active ? groupColor : '#56637A',
                   letterSpacing: '0.01em',
                 }}>
                   {tab.label}

@@ -42,7 +42,7 @@ interface SavedScore {
 // ─── Helpers ─────────────────────────────────────────────────────────────────
 
 const BLOCK_COLORS: Record<string, string> = {
-  vatten:      '#0D7377',
+  vatten:      '#2B5C9E',
   land:        '#D4A017',
   styrka:      '#DC2626',
   rorlighet:   '#16A34A',
@@ -287,26 +287,26 @@ export default function LiveSessionPage() {
         display: 'flex', alignItems: 'center', gap: 12,
         padding: '0 16px', height: 56,
         borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        borderBottom: '1px solid #E1E8F0',
       }}>
         <button
           onClick={() => router.push('/live')}
           style={{
             width: 36, height: 36, borderRadius: 11,
             background: 'rgba(0,0,0,0.05)',
-            border: '1px solid rgba(0,0,0,0.08)',
+            border: '1px solid #E1E8F0',
             cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
           }}
         >
-          <ArrowLeft size={16} color="#0F172A" strokeWidth={2.5} />
+          <ArrowLeft size={16} color="#1E2B42" strokeWidth={2.5} />
         </button>
 
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+          <div style={{ fontSize: 15, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>
             {sessionInfo?.groupName ?? 'Session'}
           </div>
           {!loading && totalItems > 0 && (
-            <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600 }}>
+            <div style={{ fontSize: 11, color: '#56637A', fontWeight: 600 }}>
               {checkedCount}/{totalItems} klart
             </div>
           )}
@@ -330,11 +330,11 @@ export default function LiveSessionPage() {
 
       {/* Progress bar */}
       {totalItems > 0 && (
-        <div style={{ height: 3, background: 'rgba(13,115,119,0.08)' }}>
+        <div style={{ height: 3, background: 'rgba(43,92,158,0.08)' }}>
           <div style={{
             height: '100%',
             width: `${(checkedCount / totalItems) * 100}%`,
-            background: 'linear-gradient(90deg, #0D7377, #0a9ea5)',
+            background: 'var(--gradient-hero)',
             transition: 'width 0.3s ease',
           }} />
         </div>
@@ -343,16 +343,16 @@ export default function LiveSessionPage() {
       {/* Body */}
       <div style={{ padding: '16px 16px 0' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94A3B8' }}>Laddar…</div>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#56637A' }}>Laddar…</div>
         ) : noTraining ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inget träningspass kopplat</div>
-            <div style={{ fontSize: 13, color: '#94A3B8' }}>Sessionen startades utan ett schemalagt pass.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inget träningspass kopplat</div>
+            <div style={{ fontSize: 13, color: '#56637A' }}>Sessionen startades utan ett schemalagt pass.</div>
           </div>
         ) : blocks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga övningar</div>
-            <div style={{ fontSize: 13, color: '#94A3B8' }}>Passet har inga block eller övningar ännu.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga övningar</div>
+            <div style={{ fontSize: 13, color: '#56637A' }}>Passet har inga block eller övningar ännu.</div>
           </div>
         ) : (
           blocks.map(block => {
@@ -360,7 +360,7 @@ export default function LiveSessionPage() {
               return (
                 <div key={block.id} style={{ marginBottom: 16 }}>
                   <div style={{
-                    fontSize: 11, fontWeight: 800, color: '#0D7377',
+                    fontSize: 11, fontWeight: 800, color: '#2B5C9E',
                     textTransform: 'uppercase', letterSpacing: '0.08em',
                     marginBottom: 8, paddingLeft: 2,
                   }}>
@@ -376,7 +376,7 @@ export default function LiveSessionPage() {
               )
             }
 
-            const color = BLOCK_COLORS[block.category] ?? '#64748B'
+            const color = BLOCK_COLORS[block.category] ?? '#56637A'
             return (
               <div key={block.id} style={{ marginBottom: 16 }}>
                 <div style={{
@@ -405,8 +405,8 @@ export default function LiveSessionPage() {
                         style={{
                           display: 'flex', alignItems: 'center', gap: 12,
                           padding: '14px 16px',
-                          borderBottom: ii < block.items.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
-                          background: isChecked ? 'rgba(13,115,119,0.04)' : 'transparent',
+                          borderBottom: ii < block.items.length - 1 ? '1px solid #E1E8F0' : 'none',
+                          background: isChecked ? 'rgba(43,92,158,0.04)' : 'transparent',
                           transition: 'background 0.2s ease',
                         }}
                       >
@@ -416,7 +416,7 @@ export default function LiveSessionPage() {
                           style={{
                             width: 26, height: 26, borderRadius: 8, flexShrink: 0,
                             border: isChecked ? 'none' : '2px solid rgba(0,0,0,0.15)',
-                            background: isChecked ? '#0D7377' : 'transparent',
+                            background: isChecked ? '#2B5C9E' : 'transparent',
                             cursor: 'pointer',
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             transition: 'all 0.15s ease',
@@ -433,7 +433,7 @@ export default function LiveSessionPage() {
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{
                             fontSize: 14, fontWeight: 600,
-                            color: isChecked ? '#94A3B8' : '#0F172A',
+                            color: isChecked ? '#56637A' : '#1E2B42',
                             textDecoration: isChecked ? 'line-through' : 'none',
                             transition: 'all 0.2s ease',
                           }}>
@@ -441,7 +441,7 @@ export default function LiveSessionPage() {
                           </div>
                           {isTimerActive && (
                             <div style={{
-                              fontSize: 22, fontWeight: 800, color: '#0D7377',
+                              fontSize: 22, fontWeight: 800, color: '#2B5C9E',
                               letterSpacing: '-0.03em', lineHeight: 1.2, marginTop: 2,
                             }}>
                               {formatTime(activeTimer!.remaining)}
@@ -454,7 +454,7 @@ export default function LiveSessionPage() {
                           {item.reps && !isTimerActive && (
                             <span style={{
                               fontSize: 12, fontWeight: 700,
-                              background: 'rgba(100,116,139,0.08)', color: '#475569',
+                              background: 'rgba(86,99,122,0.08)', color: '#56637A',
                               padding: '3px 8px', borderRadius: 9999,
                             }}>
                               🔁 {item.reps}
@@ -481,9 +481,9 @@ export default function LiveSessionPage() {
                                 style={{
                                   display: 'flex', alignItems: 'center', gap: 4,
                                   fontSize: 12, fontWeight: 700,
-                                  background: 'rgba(13,115,119,0.08)',
-                                  border: '1px solid rgba(13,115,119,0.15)',
-                                  color: '#0D7377',
+                                  background: 'rgba(43,92,158,0.08)',
+                                  border: '1px solid rgba(43,92,158,0.15)',
+                                  color: '#2B5C9E',
                                   padding: '5px 10px', borderRadius: 9999,
                                   cursor: 'pointer',
                                 }}
@@ -501,15 +501,15 @@ export default function LiveSessionPage() {
                               style={{
                                 display: 'flex', alignItems: 'center', gap: 4,
                                 fontSize: 12, fontWeight: 700,
-                                background: hasScores ? 'rgba(13,115,119,0.12)' : 'rgba(100,116,139,0.08)',
-                                border: `1px solid ${hasScores ? 'rgba(13,115,119,0.25)' : 'rgba(100,116,139,0.15)'}`,
-                                color: hasScores ? '#0D7377' : '#64748B',
+                                background: hasScores ? 'rgba(43,92,158,0.12)' : 'rgba(86,99,122,0.08)',
+                                border: `1px solid ${hasScores ? 'rgba(43,92,158,0.25)' : 'rgba(86,99,122,0.15)'}`,
+                                color: hasScores ? '#2B5C9E' : '#56637A',
                                 padding: '5px 10px', borderRadius: 9999,
                                 cursor: 'pointer',
                                 transition: 'all 0.15s',
                               }}
                             >
-                              <Star size={11} strokeWidth={hasScores ? 2.5 : 2} fill={hasScores ? '#0D7377' : 'none'} />
+                              <Star size={11} strokeWidth={hasScores ? 2.5 : 2} fill={hasScores ? '#2B5C9E' : 'none'} />
                               {hasScores ? itemScores.length : 'Score'}
                             </button>
                           )}
@@ -550,7 +550,7 @@ export default function LiveSessionPage() {
                 background: 'linear-gradient(135deg, #16A34A, #15803d)',
                 color: 'white', border: 'none', borderRadius: 12,
                 fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                boxShadow: '0 2px 8px rgba(22,163,74,0.3)',
+                boxShadow: 'none',
               }}
             >
               Avsluta pass
@@ -599,14 +599,14 @@ export default function LiveSessionPage() {
             }}
           >
             {/* Handle */}
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
 
             {/* Exercise title */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
+              <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
                 Scora övning
               </div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
+              <div style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
                 {scoringItem.name}
               </div>
             </div>
@@ -614,7 +614,7 @@ export default function LiveSessionPage() {
             {/* Athlete chips — hidden for athlete-block items (athlete is pre-assigned) */}
             {!scoringItem.assigned_athlete_id && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
                   Välj utövare
                 </div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
@@ -627,8 +627,8 @@ export default function LiveSessionPage() {
                         style={{
                           padding: '8px 16px', borderRadius: 9999, border: 'none', cursor: 'pointer',
                           fontSize: 14, fontWeight: 700,
-                          background: isSelected ? '#0D7377' : 'rgba(0,0,0,0.06)',
-                          color: isSelected ? 'white' : '#64748B',
+                          background: isSelected ? '#2B5C9E' : 'rgba(0,0,0,0.06)',
+                          color: isSelected ? 'white' : '#56637A',
                           transition: 'all 0.15s',
                         }}
                       >
@@ -640,7 +640,7 @@ export default function LiveSessionPage() {
               </div>
             )}
             {scoringItem.assigned_athlete_id && (
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 20 }}>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 20 }}>
                 {athletes.find(a => a.id === scoringItem.assigned_athlete_id)?.name}
               </div>
             )}
@@ -648,7 +648,7 @@ export default function LiveSessionPage() {
             {/* Score inputs for selected athletes */}
             {selectedAthletes.size > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
                   Poäng (0 – 10)
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -656,7 +656,7 @@ export default function LiveSessionPage() {
                     .filter(a => selectedAthletes.has(a.id))
                     .map(athlete => (
                       <div key={athlete.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#0F172A' }}>
+                        <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#1E2B42' }}>
                           {athlete.name}
                         </div>
                         <input
@@ -669,11 +669,11 @@ export default function LiveSessionPage() {
                           placeholder="—"
                           style={{
                             width: 90, padding: '10px 12px',
-                            border: '1.5px solid rgba(13,115,119,0.25)',
+                            border: '1.5px solid rgba(43,92,158,0.25)',
                             borderRadius: 12, fontSize: 18, fontWeight: 700,
                             textAlign: 'center',
-                            background: 'rgba(255,255,255,0.8)',
-                            color: '#0F172A', outline: 'none',
+                            background: '#FFFFFF',
+                            color: '#1E2B42', outline: 'none',
                           }}
                         />
                       </div>

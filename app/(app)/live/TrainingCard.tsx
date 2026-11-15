@@ -38,7 +38,7 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
   const mode = training.mode ?? 'training'
   const ms = MODE_STYLE[mode]
   const groupName = training.groups?.name
-  const groupColor = training.groups?.color ?? '#0D7377'
+  const groupColor = training.groups?.color ?? '#2B5C9E'
 
   const scheduledDate = training.scheduled_date
     ? new Date(training.scheduled_date + 'T12:00:00')
@@ -114,12 +114,12 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
         {/* Day + date */}
         <div style={{ flexShrink: 0, width: 52 }}>
           {dayLabel && (
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#64748B' }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A' }}>
               {dayLabel}
             </div>
           )}
           {dateLabel && (
-            <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500, marginTop: 2 }}>
+            <div style={{ fontSize: 11, color: '#56637A', fontWeight: 500, marginTop: 2 }}>
               {dateLabel}
             </div>
           )}
@@ -127,7 +127,7 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
 
         {/* Info */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 6, letterSpacing: '-0.01em' }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 6, letterSpacing: '-0.01em' }}>
             {training.title}
           </div>
           <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', alignItems: 'center' }}>
@@ -141,7 +141,7 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
             </span>
             {/* Group */}
             {groupName && (
-              <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>
+              <span style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
                 {groupName}
               </span>
             )}
@@ -149,7 +149,7 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
             {training.status === 'draft' && (
               <span style={{
                 fontSize: 11, fontWeight: 700,
-                background: 'rgba(100,116,139,0.1)', color: '#64748B',
+                background: 'rgba(86,99,122,0.1)', color: '#56637A',
                 padding: '3px 9px', borderRadius: 9999,
               }}>
                 Utkast
@@ -166,8 +166,8 @@ export default function TrainingCard({ training, onSessionStarted }: Props) {
               style={{
                 padding: '8px 12px', borderRadius: 12,
                 background: 'rgba(0,0,0,0.05)',
-                border: '1px solid rgba(0,0,0,0.08)',
-                fontSize: 13, fontWeight: 600, color: '#475569',
+                border: '1px solid #E1E8F0',
+                fontSize: 13, fontWeight: 600, color: '#56637A',
                 cursor: 'pointer',
               }}
             >

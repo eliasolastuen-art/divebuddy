@@ -22,7 +22,7 @@ export default function GroupAthletesPage() {
   const supabase = createClient()
 
   const [athletes, setAthletes]     = useState<Athlete[]>([])
-  const [groupColor, setGroupColor] = useState('#0D7377')
+  const [groupColor, setGroupColor] = useState('#2B5C9E')
   const [loading, setLoading]       = useState(true)
 
   // Invite state
@@ -93,8 +93,8 @@ export default function GroupAthletesPage() {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
         <div style={{
           width: 32, height: 32,
-          border: '3px solid rgba(13,115,119,0.2)',
-          borderTopColor: '#0D7377',
+          border: '3px solid rgba(43,92,158,0.2)',
+          borderTopColor: '#2B5C9E',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
@@ -112,7 +112,7 @@ export default function GroupAthletesPage() {
           top: 'max(16px, env(safe-area-inset-top, 16px))',
           left: '50%', transform: 'translateX(-50%)',
           zIndex: 999,
-          background: toast.type === 'success' ? '#0D7377' : '#DC2626',
+          background: toast.type === 'success' ? '#2B5C9E' : '#DC2626',
           color: 'white', borderRadius: 14,
           padding: '10px 20px', fontSize: 13, fontWeight: 600,
           boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
@@ -122,12 +122,12 @@ export default function GroupAthletesPage() {
         </div>
       )}
 
-      <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 16 }}>
+      <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 16 }}>
         Atleter
       </h2>
 
       {athletes.length === 0 ? (
-        <div className="glass-card" style={{ padding: 24, textAlign: 'center', color: '#94A3B8' }}>
+        <div className="glass-card" style={{ padding: 24, textAlign: 'center', color: '#56637A' }}>
           Inga atleter i denna grupp
         </div>
       ) : (
@@ -143,7 +143,7 @@ export default function GroupAthletesPage() {
                 style={{
                   display: 'flex', alignItems: 'center',
                   padding: '14px 18px',
-                  borderBottom: i < athletes.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                  borderBottom: i < athletes.length - 1 ? '1px solid #E1E8F0' : 'none',
                 }}
               >
                 {/* Avatar */}
@@ -167,11 +167,11 @@ export default function GroupAthletesPage() {
                   onClick={() => router.push(`/groups/${groupId}/athletes/${athlete.id}`)}
                   style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                 >
-                  <div style={{ fontSize: 15, fontWeight: 700, color: athlete.active ? '#0F172A' : '#94A3B8' }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: athlete.active ? '#1E2B42' : '#56637A' }}>
                     {athlete.name}
                   </div>
                   {athlete.email && (
-                    <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>{athlete.email}</div>
+                    <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>{athlete.email}</div>
                   )}
                 </div>
 
@@ -180,7 +180,7 @@ export default function GroupAthletesPage() {
                   wasSent ? (
                     <span style={{
                       fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 9999,
-                      background: 'rgba(148,163,184,0.1)', color: '#94A3B8', flexShrink: 0,
+                      background: 'rgba(148,163,184,0.1)', color: '#56637A', flexShrink: 0,
                     }}>
                       Skickad ✓
                     </span>
@@ -191,7 +191,7 @@ export default function GroupAthletesPage() {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 5,
                         padding: '6px 12px', borderRadius: 9999,
-                        background: 'rgba(13,115,119,0.08)', color: '#0D7377',
+                        background: 'rgba(43,92,158,0.08)', color: '#2B5C9E',
                         border: 'none', fontSize: 12, fontWeight: 700,
                         cursor: isSending ? 'not-allowed' : 'pointer',
                         opacity: isSending ? 0.6 : 1, flexShrink: 0,
@@ -204,8 +204,8 @@ export default function GroupAthletesPage() {
                 ) : (
                   <span style={{
                     fontSize: 11, fontWeight: 700, padding: '4px 10px', borderRadius: 9999,
-                    background: athlete.active ? 'rgba(13,115,119,0.1)' : 'rgba(0,0,0,0.05)',
-                    color: athlete.active ? '#0D7377' : '#94A3B8', flexShrink: 0,
+                    background: athlete.active ? 'rgba(43,92,158,0.1)' : 'rgba(0,0,0,0.05)',
+                    color: athlete.active ? '#2B5C9E' : '#56637A', flexShrink: 0,
                   }}>
                     {athlete.active ? 'Aktiv' : 'Inaktiv'}
                   </span>

@@ -55,24 +55,24 @@ function AppShell({ children }: { children: React.ReactNode }) {
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          borderBottom: '1px solid #E1E8F0',
         }}>
           <button
             onClick={() => setMenuOpen(true)}
             style={{
               width: 40, height: 40,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: '#FFFFFF',
+              border: '1px solid #E1E8F0',
               borderRadius: 12,
               cursor: 'pointer',
             }}
             aria-label="Open menu"
           >
-            <Menu size={18} color="#1E293B" strokeWidth={2.2} />
+            <Menu size={18} color="#1E2B42" strokeWidth={2.2} />
           </button>
           <RoleSwitcher />
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#0D7377', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#2B5C9E', letterSpacing: '-0.02em' }}>
             DiveBuddy
           </span>
         </div>

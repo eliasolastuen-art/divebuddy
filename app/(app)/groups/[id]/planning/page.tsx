@@ -19,7 +19,7 @@ export default function GroupPlanningPage() {
 
   const [trainings, setTrainings] = useState<Training[]>([])
   const [loading, setLoading] = useState(true)
-  const [groupColor, setGroupColor] = useState('#0D7377')
+  const [groupColor, setGroupColor] = useState('#2B5C9E')
 
   useEffect(() => {
     async function load() {
@@ -49,8 +49,8 @@ export default function GroupPlanningPage() {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
         <div style={{
           width: 32, height: 32,
-          border: '3px solid rgba(13,115,119,0.2)',
-          borderTopColor: '#0D7377',
+          border: '3px solid rgba(43,92,158,0.2)',
+          borderTopColor: '#2B5C9E',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
@@ -63,7 +63,7 @@ export default function GroupPlanningPage() {
 
       {/* Header row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>
           Pass
         </h2>
         <button
@@ -85,14 +85,14 @@ export default function GroupPlanningPage() {
         <div className="glass-card" style={{ padding: '48px 24px', textAlign: 'center' }}>
           <div style={{
             width: 56, height: 56, borderRadius: 18,
-            background: 'rgba(13,115,119,0.08)',
+            background: 'rgba(43,92,158,0.08)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
             margin: '0 auto 16px',
           }}>
-            <CalendarDays size={24} color="rgba(13,115,119,0.4)" />
+            <CalendarDays size={24} color="rgba(43,92,158,0.4)" />
           </div>
-          <p style={{ fontSize: 16, fontWeight: 700, color: '#0F172A', marginBottom: 6 }}>Inga pass ännu</p>
-          <p style={{ fontSize: 13, color: '#94A3B8' }}>Skapa ett pass för att komma igång</p>
+          <p style={{ fontSize: 16, fontWeight: 700, color: '#1E2B42', marginBottom: 6 }}>Inga pass ännu</p>
+          <p style={{ fontSize: 13, color: '#56637A' }}>Skapa ett pass för att komma igång</p>
         </div>
       ) : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
@@ -116,12 +116,12 @@ export default function GroupPlanningPage() {
                 </div>
                 <div style={{ minWidth: 0 }}>
                   <div style={{
-                    fontSize: 15, fontWeight: 700, color: '#0F172A',
+                    fontSize: 15, fontWeight: 700, color: '#1E2B42',
                     overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
                   }}>
                     {t.title}
                   </div>
-                  <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                  <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>
                     {formatDate(t.scheduled_date)}
                   </div>
                 </div>
@@ -130,7 +130,7 @@ export default function GroupPlanningPage() {
                 fontSize: 11, fontWeight: 700,
                 padding: '4px 10px', borderRadius: 9999, flexShrink: 0,
                 background: t.status === 'published' ? `${groupColor}15` : 'rgba(0,0,0,0.05)',
-                color: t.status === 'published' ? groupColor : '#94A3B8',
+                color: t.status === 'published' ? groupColor : '#56637A',
               }}>
                 {t.status === 'published' ? 'Publicerat' : 'Utkast'}
               </span>

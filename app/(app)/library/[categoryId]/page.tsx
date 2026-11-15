@@ -10,7 +10,7 @@ import Portal from '@/components/Portal'
 
 // Preset colors & emojis for block category editor
 const PRESET_COLORS = [
-  '#0D7377', '#D4A017', '#DC2626', '#16A34A',
+  '#2B5C9E', '#D4A017', '#DC2626', '#16A34A',
   '#F97316', '#6366F1', '#0EA5E9', '#EC4899',
 ]
 const EMOJI_SUGGESTIONS = ['💧', '🏃', '💪', '🧘', '🔥', '🏆', '🤸', '⚡', '🎯', '🌊', '🏋️', '🤽']
@@ -330,7 +330,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
 
   // ─── Derived ─────────────────────────────────────────────────────────────────
 
-  const accentColor = blockCatInfo?.color ?? '#0D7377'
+  const accentColor = blockCatInfo?.color ?? '#2B5C9E'
   const accentEmoji = blockCatInfo?.emoji ?? '📁'
   const accentName  = blockCatInfo?.name ?? (blockType ?? '')
 
@@ -378,7 +378,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
           <button
             onClick={() => router.push(parentHref)}
-            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)', border: 'none', borderRadius: 20, padding: '7px 14px 7px 10px', cursor: 'pointer' }}
+            style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'rgba(255,255,255,0.18)', border: 'none', borderRadius: 20, padding: '7px 14px 7px 10px', cursor: 'pointer' }}
           >
             <ChevronLeft size={16} color="white" strokeWidth={2.5} />
             <span style={{ fontSize: 13, fontWeight: 700, color: 'white' }}>{parentName ?? 'Tillbaka'}</span>
@@ -388,7 +388,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
           {blockCatInfo && (
             <button
               onClick={() => setShowEditBlockCat(true)}
-              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', backdropFilter: 'blur(8px)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
+              style={{ width: 36, height: 36, borderRadius: '50%', background: 'rgba(255,255,255,0.18)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
             >
               <MoreHorizontal size={18} color="white" strokeWidth={2} />
             </button>
@@ -411,9 +411,9 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
 
       {/* ── Filter bar ── */}
       {!loading && (codeGroups.length > 0 || isWaterCat) && (
-        <div style={{ background: 'white', position: 'sticky', top: 0, zIndex: 10, boxShadow: '0 1px 0 rgba(0,0,0,0.06)' }}>
+        <div style={{ background: 'white', position: 'sticky', top: 0, zIndex: 10, boxShadow: 'none' }}>
           {codeGroups.length > 0 && (
-            <div style={{ display: 'flex', overflowX: 'auto', padding: '0 16px', borderBottom: '1px solid rgba(0,0,0,0.04)' }}>
+            <div style={{ display: 'flex', overflowX: 'auto', padding: '0 16px', borderBottom: '1px solid #E1E8F0' }}>
               {['Alla', ...codeGroups].map(g => (
                 <button
                   key={g}
@@ -423,7 +423,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                     background: 'none', border: 'none',
                     borderBottom: activeGroup === g ? `2.5px solid ${accentColor}` : '2.5px solid transparent',
                     fontSize: 13, fontWeight: activeGroup === g ? 700 : 500,
-                    color: activeGroup === g ? accentColor : '#94A3B8', cursor: 'pointer',
+                    color: activeGroup === g ? accentColor : '#56637A', cursor: 'pointer',
                   }}
                 >
                   {g === 'Alla' ? 'Alla' : `Grupp ${g}`}
@@ -441,7 +441,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                     flexShrink: 0, padding: '5px 13px', borderRadius: 20, border: 'none', cursor: 'pointer',
                     fontSize: 12, fontWeight: 700,
                     background: activeHeight === h ? accentColor : 'rgba(0,0,0,0.06)',
-                    color: activeHeight === h ? 'white' : '#64748B',
+                    color: activeHeight === h ? 'white' : '#56637A',
                     transition: 'all 0.15s',
                   }}
                 >
@@ -456,13 +456,13 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
       {/* ── Content ─────────────────────────────────────────────────────────── */}
       <div style={{ padding: '12px 16px calc(90px + env(safe-area-inset-bottom, 0px) + 16px)' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8' }}>Laddar...</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#56637A' }}>Laddar...</div>
         ) : (
           <>
             {/* Block templates (only at block type root) */}
             {blockType && !search && templates.length > 0 && (
               <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Mallar</div>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Mallar</div>
                 <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 2 }}>
                   {templates.map(t => (
                     <button
@@ -470,8 +470,8 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                       onClick={() => router.push(`/library/blocks/${t.id}`)}
                       style={{ flexShrink: 0, padding: '8px 14px', borderRadius: 12, border: 'none', background: `${accentColor}12`, cursor: 'pointer', textAlign: 'left', minWidth: 110, maxWidth: 160, borderLeft: `3px solid ${accentColor}` }}
                     >
-                      <div style={{ fontSize: 12, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
-                      <div style={{ fontSize: 10, color: '#94A3B8', marginTop: 2 }}>{t.item_count} övn.</div>
+                      <div style={{ fontSize: 12, fontWeight: 700, color: '#1E2B42', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{t.name}</div>
+                      <div style={{ fontSize: 10, color: '#56637A', marginTop: 2 }}>{t.item_count} övn.</div>
                     </button>
                   ))}
                 </div>
@@ -482,10 +482,10 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
             {filteredFolders.length === 0 && filteredExercises.length === 0 && (
               <div style={{ textAlign: 'center', padding: '40px 20px' }}>
                 <div style={{ fontSize: 36, marginBottom: 12 }}>📁</div>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 6 }}>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 6 }}>
                   {activeGroup !== 'Alla' || activeHeight !== 'Alla höjder' ? 'Inga resultat' : 'Tom mapp'}
                 </p>
-                <p style={{ fontSize: 13, color: '#94A3B8' }}>
+                <p style={{ fontSize: 13, color: '#56637A' }}>
                   {activeGroup !== 'Alla' || activeHeight !== 'Alla höjder' ? 'Prova ett annat filter' : 'Tryck + för att skapa en mapp eller övning'}
                 </p>
               </div>
@@ -520,7 +520,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                           onClick={() => setEditingId(null)}
                           style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', flexShrink: 0 }}
                         >
-                          <X size={14} color="#64748B" strokeWidth={2.5} />
+                          <X size={14} color="#56637A" strokeWidth={2.5} />
                         </button>
                       </div>
 
@@ -532,12 +532,12 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                             Ta bort "{folder.name}"?
                           </div>
                           {folder.child_count > 0 && (
-                            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>
+                            <div style={{ fontSize: 11, color: '#56637A', marginTop: 1 }}>
                               {folder.child_count} objekt inuti raderas också
                             </div>
                           )}
                         </div>
-                        <button onClick={() => setConfirmDeleteId(null)} style={{ padding: '5px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#64748B', flexShrink: 0 }}>
+                        <button onClick={() => setConfirmDeleteId(null)} style={{ padding: '5px 10px', borderRadius: 8, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 12, fontWeight: 600, cursor: 'pointer', color: '#56637A', flexShrink: 0 }}>
                           Avbryt
                         </button>
                         <button onClick={() => deleteFolder(folder.id)} disabled={deleting} style={{ padding: '5px 12px', borderRadius: 8, background: '#DC2626', border: 'none', color: 'white', fontSize: 12, fontWeight: 700, cursor: 'pointer', flexShrink: 0 }}>
@@ -555,19 +555,19 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                             <span style={{ fontSize: 18 }}>📁</span>
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 15, fontWeight: 600, color: '#0F172A' }}>{folder.name}</div>
+                            <div style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42' }}>{folder.name}</div>
                             {folder.child_count > 0 && (
-                              <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 1 }}>{folder.child_count} objekt</div>
+                              <div style={{ fontSize: 11, color: '#56637A', marginTop: 1 }}>{folder.child_count} objekt</div>
                             )}
                           </div>
-                          <ChevronLeft size={15} color="#CBD5E1" strokeWidth={2.5} style={{ flexShrink: 0, transform: 'rotate(180deg)' }} />
+                          <ChevronLeft size={15} color="#E1E8F0" strokeWidth={2.5} style={{ flexShrink: 0, transform: 'rotate(180deg)' }} />
                         </button>
                         <div style={{ display: 'flex', gap: 2, paddingRight: 10, flexShrink: 0 }}>
                           <button
                             onClick={() => { setEditingId(folder.id); setRenameValue(folder.name); setConfirmDeleteId(null) }}
                             style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 7, borderRadius: 8, display: 'flex' }}
                           >
-                            <Pencil size={14} color="#CBD5E1" strokeWidth={2} />
+                            <Pencil size={14} color="#E1E8F0" strokeWidth={2} />
                           </button>
                           <button
                             onClick={() => { setConfirmDeleteId(folder.id); setEditingId(null) }}
@@ -608,16 +608,16 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                           style={{ flex: 1, minWidth: 0, cursor: 'pointer' }}
                           onClick={() => { setSelectedEx(ex as ExerciseData); setShowExModal(true) }}
                         >
-                          <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{ex.name}</div>
+                          <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42' }}>{ex.name}</div>
                           {(ex.dd != null || ex.tags.length > 0) && (
                             <div style={{ display: 'flex', gap: 4, marginTop: 4, flexWrap: 'wrap' }}>
                               {ex.dd != null && (
-                                <span style={{ fontSize: 10, fontWeight: 700, color: '#64748B', background: 'rgba(0,0,0,0.05)', borderRadius: 6, padding: '2px 7px' }}>
+                                <span style={{ fontSize: 10, fontWeight: 700, color: '#56637A', background: 'rgba(0,0,0,0.05)', borderRadius: 6, padding: '2px 7px' }}>
                                   DD {ex.dd.toFixed(1)}
                                 </span>
                               )}
                               {ex.tags.slice(0, 3).map(t => (
-                                <span key={t} style={{ fontSize: 10, fontWeight: 600, color: '#94A3B8', background: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: '2px 7px' }}>{t}</span>
+                                <span key={t} style={{ fontSize: 10, fontWeight: 600, color: '#56637A', background: 'rgba(0,0,0,0.04)', borderRadius: 6, padding: '2px 7px' }}>{t}</span>
                               ))}
                             </div>
                           )}
@@ -640,7 +640,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
             {activeGroup === 'Alla' && activeHeight === 'Alla höjder' && (
               <button
                 onClick={() => { setShowCreate(true); setCreateType('folder'); setCreateName('') }}
-                style={{ width: '100%', padding: '12px 16px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#94A3B8', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
+                style={{ width: '100%', padding: '12px 16px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#56637A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}
               >
                 <Plus size={14} strokeWidth={2.5} /> Ny mapp
               </button>
@@ -670,7 +670,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
           background: `linear-gradient(135deg, ${accentColor}, ${accentColor}cc)`,
           border: 'none', cursor: 'pointer',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
-          boxShadow: `0 4px 20px ${accentColor}44`,
+          boxShadow: 'none',
           zIndex: 50,
         }}
       >
@@ -685,19 +685,19 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
             className="glass-sheet"
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}
           >
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
 
             {/* Toggle */}
             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.05)', padding: 4, borderRadius: 12, gap: 4, marginBottom: 20 }}>
               <button
                 onClick={() => setCreateType('folder')}
-                style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', background: createType === 'folder' ? 'white' : 'transparent', color: createType === 'folder' ? '#0F172A' : '#94A3B8', boxShadow: createType === 'folder' ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s' }}
+                style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', background: createType === 'folder' ? 'white' : 'transparent', color: createType === 'folder' ? '#1E2B42' : '#56637A', boxShadow: createType === 'folder' ? 'none' : 'none', transition: 'all 0.15s' }}
               >
                 📁 Ny mapp
               </button>
               <button
                 onClick={() => { setShowCreate(false); setSelectedEx(null); setShowExModal(true) }}
-                style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', background: 'transparent', color: '#94A3B8', transition: 'all 0.15s' }}
+                style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 14, fontWeight: 700, cursor: 'pointer', background: 'transparent', color: '#56637A', transition: 'all 0.15s' }}
               >
                 🏊 Ny övning
               </button>
@@ -736,16 +736,16 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
             className="glass-sheet"
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '80vh', overflowY: 'auto' }}
           >
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
-            <h3 style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
+            <h3 style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 4 }}>
               Lägg till i pass
             </h3>
-            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>
+            <p style={{ fontSize: 13, color: '#56637A', marginBottom: 20 }}>
               {quickAddExercise.name}
             </p>
 
             {trainings.length === 0 ? (
-              <p style={{ fontSize: 14, color: '#94A3B8', textAlign: 'center', padding: '20px 0' }}>
+              <p style={{ fontSize: 14, color: '#56637A', textAlign: 'center', padding: '20px 0' }}>
                 Inga pass hittades
               </p>
             ) : (
@@ -758,9 +758,9 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                       style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
                     >
                       <div style={{ flex: 1, minWidth: 0, marginRight: 12 }}>
-                        <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{tr.title}</div>
+                        <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42' }}>{tr.title}</div>
                         {tr.scheduled_date && (
-                          <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                          <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>
                             {new Date(tr.scheduled_date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
                           </div>
                         )}
@@ -771,7 +771,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                         </div>
                       ) : (
                         <div style={{ width: 28, height: 28, borderRadius: '50%', border: '1.5px solid rgba(0,0,0,0.15)', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                          <Plus size={13} color="#94A3B8" strokeWidth={2.5} />
+                          <Plus size={13} color="#56637A" strokeWidth={2.5} />
                         </div>
                       )}
                     </button>
@@ -798,18 +798,18 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
         <Portal>
           <div onClick={() => { setShowEditBlockCat(false); setConfirmDeleteBc(false) }} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 24px' }} />
 
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 16, background: `${editBcColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>
                 {editBcEmoji}
               </div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>
                 Redigera kategori
               </h3>
             </div>
 
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
             <input
               value={editBcName}
               onChange={e => setEditBcName(e.target.value)}
@@ -817,7 +817,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
               style={{ width: '100%', padding: '12px 16px', fontSize: 15, marginBottom: 20 }}
             />
 
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Emoji</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Emoji</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
               {EMOJI_SUGGESTIONS.map(e => (
                 <button
@@ -830,7 +830,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
               ))}
             </div>
 
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Färg</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Färg</label>
             <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
               {PRESET_COLORS.map(c => (
                 <button
@@ -847,7 +847,7 @@ function FolderView({ blockType, categoryId }: { blockType?: string; categoryId?
                   Ta bort "{blockCatInfo.name}"? Alla mappar och övningar under denna kategori berörs.
                 </p>
                 <div style={{ display: 'flex', gap: 10 }}>
-                  <button onClick={() => setConfirmDeleteBc(false)} style={{ flex: 1, padding: '13px', borderRadius: 14, border: 'none', background: 'rgba(0,0,0,0.07)', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: '#64748B' }}>
+                  <button onClick={() => setConfirmDeleteBc(false)} style={{ flex: 1, padding: '13px', borderRadius: 14, border: 'none', background: 'rgba(0,0,0,0.07)', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: '#56637A' }}>
                     Avbryt
                   </button>
                   <button onClick={deleteBlockCat} style={{ flex: 1, padding: '13px', borderRadius: 14, border: 'none', background: '#DC2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: 'white' }}>

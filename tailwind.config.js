@@ -7,38 +7,20 @@ module.exports = {
   theme: {
     extend: {
       colors: {
-        teal: {
-          50:  '#e6f4f4',
-          100: '#b3dede',
-          200: '#80c8c8',
-          300: '#4db2b2',
-          400: '#26a0a0',
-          500: '#0D7377',
-          600: '#0b6669',
-          700: '#09595c',
-          800: '#074c4e',
-          900: '#053e40',
-        },
         brand: {
-          teal: '#0D7377',
-          dark: '#0F172A',
+          primary: "#2B5C9E",
+          "primary-soft": "#E3ECF7",
+          dark: "#1E2B42",
+          muted: "#56637A",
+          line: "#E1E8F0",
+          bg: "#EEF3F8",
         },
-      },
-      backdropBlur: {
-        glass: '24px',
-        nav: '32px',
       },
       borderRadius: {
-        card: '20px',
+        card: "18px",
+        button: "14px",
         pill: '9999px',
         sheet: '28px',
-      },
-      boxShadow: {
-        glass: '0 4px 24px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
-        float: '0 8px 32px rgba(13, 115, 119, 0.12), 0 2px 8px rgba(0,0,0,0.08)',
-        card: '0 2px 16px rgba(0,0,0,0.06), 0 1px 4px rgba(0,0,0,0.04)',
-        nav: '0 -1px 0 rgba(255,255,255,0.6), 0 8px 32px rgba(0,0,0,0.12)',
-        modal: '0 20px 60px rgba(0,0,0,0.2), 0 4px 16px rgba(0,0,0,0.12)',
       },
       keyframes: {
         'slide-up': {

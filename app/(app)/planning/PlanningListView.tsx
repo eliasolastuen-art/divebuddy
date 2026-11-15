@@ -39,11 +39,11 @@ interface WeekGroup {
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
-const FOLDER_COLORS = ['#0D7377','#D4A017','#6366F1','#EC4899','#10B981','#F97316','#3B82F6','#8B5CF6']
+const FOLDER_COLORS = ['#2B5C9E','#D4A017','#6366F1','#EC4899','#10B981','#F97316','#3B82F6','#8B5CF6']
 
 const STATUS: Record<string, { bg: string; text: string; dot: string; label: string }> = {
-  draft:     { bg: 'rgba(100,116,139,0.10)', text: '#64748B', dot: '#94A3B8', label: 'Utkast'    },
-  published: { bg: 'rgba(13,115,119,0.10)',  text: '#0D7377', dot: '#0D7377', label: 'Publicerad' },
+  draft:     { bg: 'rgba(86,99,122,0.10)', text: '#56637A', dot: '#56637A', label: 'Utkast'    },
+  published: { bg: 'rgba(43,92,158,0.10)',  text: '#2B5C9E', dot: '#2B5C9E', label: 'Publicerad' },
   completed: { bg: 'rgba(22,163,74,0.10)',   text: '#16A34A', dot: '#16A34A', label: 'Genomförd'  },
 }
 
@@ -146,7 +146,7 @@ function MiniCalendar({
       return day.toISOString().split('T')[0]
     })
     return (
-      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, padding: '8px 4px', background: 'rgba(255,255,255,0.6)', borderRadius: 16, backdropFilter: 'blur(8px)' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 12, padding: '8px 4px', background: '#FFFFFF', borderRadius: 16 }}>
         {days.map((date, i) => {
           const isToday = date === today
           const dots = dotsByDate[date] || []
@@ -154,13 +154,13 @@ function MiniCalendar({
           return (
             <div key={date} onClick={() => onDayClick(date)}
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2, cursor: 'pointer', flex: 1 }}>
-              <span style={{ fontSize: 10, fontWeight: 600, color: '#94A3B8' }}>{DAY_LABELS[i]}</span>
+              <span style={{ fontSize: 10, fontWeight: 600, color: '#56637A' }}>{DAY_LABELS[i]}</span>
               <div style={{
                 width: 30, height: 30, borderRadius: '50%',
-                background: isToday ? '#0D7377' : 'transparent',
+                background: isToday ? '#2B5C9E' : 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 13, fontWeight: isToday ? 800 : 500, color: isToday ? 'white' : '#0F172A' }}>
+                <span style={{ fontSize: 13, fontWeight: isToday ? 800 : 500, color: isToday ? 'white' : '#1E2B42' }}>
                   {dayNum}
                 </span>
               </div>
@@ -191,10 +191,10 @@ function MiniCalendar({
   while (cells.length % 7 !== 0) cells.push(null)
 
   return (
-    <div style={{ marginBottom: 12, padding: '8px 4px', background: 'rgba(255,255,255,0.6)', borderRadius: 16, backdropFilter: 'blur(8px)' }}>
+    <div style={{ marginBottom: 12, padding: '8px 4px', background: '#FFFFFF', borderRadius: 16 }}>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', marginBottom: 2 }}>
         {DAY_LABELS.map((l, i) => (
-          <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 600, color: '#94A3B8', padding: '2px 0' }}>{l}</div>
+          <div key={i} style={{ textAlign: 'center', fontSize: 10, fontWeight: 600, color: '#56637A', padding: '2px 0' }}>{l}</div>
         ))}
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)' }}>
@@ -208,10 +208,10 @@ function MiniCalendar({
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 1, cursor: 'pointer', padding: '2px 0' }}>
               <div style={{
                 width: 26, height: 26, borderRadius: '50%',
-                background: isToday ? '#0D7377' : 'transparent',
+                background: isToday ? '#2B5C9E' : 'transparent',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 11, fontWeight: isToday ? 800 : 400, color: isToday ? 'white' : '#0F172A' }}>
+                <span style={{ fontSize: 11, fontWeight: isToday ? 800 : 400, color: isToday ? 'white' : '#1E2B42' }}>
                   {dayNum}
                 </span>
               </div>
@@ -219,7 +219,7 @@ function MiniCalendar({
                 {dots.slice(0, 3).map((color, j) => (
                   <div key={j} style={{ width: 4, height: 4, borderRadius: '50%', background: color }} />
                 ))}
-                {dots.length > 3 && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#CBD5E1' }} />}
+                {dots.length > 3 && <div style={{ width: 4, height: 4, borderRadius: '50%', background: '#E1E8F0' }} />}
               </div>
             </div>
           )
@@ -313,15 +313,15 @@ function SwipeCard({
       {/* Right action (swipe left → duplicate) */}
       <div style={{
         position: 'absolute', right: 0, top: 0, bottom: 0, width: 100,
-        background: 'rgba(13,115,119,0.12)',
+        background: 'rgba(43,92,158,0.12)',
         display: 'flex', alignItems: 'center', justifyContent: 'center',
         transition: revealing === 'left' ? 'none' : 'opacity 0.2s',
         opacity: revealing === 'left' ? 1 : 0,
         borderRadius: '0 18px 18px 0',
       }}>
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 4 }}>
-          <Copy size={18} color="#0D7377" strokeWidth={2} />
-          <span style={{ fontSize: 10, fontWeight: 700, color: '#0D7377' }}>Duplicera</span>
+          <Copy size={18} color="#2B5C9E" strokeWidth={2} />
+          <span style={{ fontSize: 10, fontWeight: 700, color: '#2B5C9E' }}>Duplicera</span>
         </div>
       </div>
 
@@ -355,7 +355,7 @@ function SwipeCard({
 
         {/* Content */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em', marginBottom: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+          <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', letterSpacing: '-0.01em', marginBottom: 5, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
             {training.title}
           </div>
 
@@ -365,12 +365,12 @@ function SwipeCard({
               {s.label}
             </span>
             {(groupName || folder) && (
-              <span style={{ fontSize: 11, fontWeight: 600, color: groupColor || '#64748B' }}>
+              <span style={{ fontSize: 11, fontWeight: 600, color: groupColor || '#56637A' }}>
                 {[groupName, folder?.name].filter(Boolean).join(' · ')}
               </span>
             )}
             {training.scheduled_date && (
-              <span style={{ fontSize: 11, fontWeight: isToday ? 700 : 500, color: isToday ? '#0D7377' : '#64748B', display: 'flex', alignItems: 'center', gap: 3 }}>
+              <span style={{ fontSize: 11, fontWeight: isToday ? 700 : 500, color: isToday ? '#2B5C9E' : '#56637A', display: 'flex', alignItems: 'center', gap: 3 }}>
                 <Clock size={9} strokeWidth={2.5} />
                 {isToday ? 'Idag' : new Date(training.scheduled_date + 'T12:00:00').toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
               </span>
@@ -379,7 +379,7 @@ function SwipeCard({
 
           {/* Purpose */}
           {training.purpose && (
-            <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500, marginTop: 5, display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
+            <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500, marginTop: 5, display: 'flex', alignItems: 'center', gap: 4, overflow: 'hidden' }}>
               <span>🎯</span>
               <span style={{ whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                 {training.purpose}
@@ -389,7 +389,7 @@ function SwipeCard({
 
           {/* Notes preview */}
           {training.notes && (
-            <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+            <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500, marginTop: 4, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
               {training.notes}
             </div>
           )}
@@ -407,7 +407,7 @@ function SwipeCard({
           >
             <Trash2 size={14} color="#DC2626" strokeWidth={2} />
           </button>
-          <ChevronRight size={15} color="#CBD5E1" strokeWidth={2.5} />
+          <ChevronRight size={15} color="#E1E8F0" strokeWidth={2.5} />
         </div>
       </div>
     </div>
@@ -469,7 +469,7 @@ export default function PlanningListView() {
     ])
     if (f) setFolders(f)
     if (t) setTrainings(t as unknown as TrainingRow[])
-    if (g) setGroups(g.map((gr: any) => ({ id: gr.id, name: gr.name, color: gr.color ?? '#0D7377' })))
+    if (g) setGroups(g.map((gr: any) => ({ id: gr.id, name: gr.name, color: gr.color ?? '#2B5C9E' })))
     setLoading(false)
   }
 
@@ -630,7 +630,7 @@ export default function PlanningListView() {
   visible.forEach(t => {
     if (t.scheduled_date) {
       if (!dotsByDate[t.scheduled_date]) dotsByDate[t.scheduled_date] = []
-      dotsByDate[t.scheduled_date].push(t.groups?.color ?? '#0D7377')
+      dotsByDate[t.scheduled_date].push(t.groups?.color ?? '#2B5C9E')
     }
   })
 
@@ -654,7 +654,7 @@ export default function PlanningListView() {
           style={{
             padding: '12px 14px', fontSize: 13, cursor: 'pointer', borderRadius: 14,
             display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-            background: 'rgba(13,115,119,0.08)', border: 'none', color: '#0D7377', fontWeight: 700,
+            background: 'rgba(43,92,158,0.08)', border: 'none', color: '#2B5C9E', fontWeight: 700,
           }}
         >
           <Calendar size={14} strokeWidth={2.5} />
@@ -666,7 +666,7 @@ export default function PlanningListView() {
       {groups.length > 0 && (
         <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4, marginBottom: 20 }}>
           {[
-            { id: null as string | null, name: 'Alla', color: '#0F172A' },
+            { id: null as string | null, name: 'Alla', color: '#1E2B42' },
             ...groups,
           ].map(g => {
             const isActive = activeGroup === g.id
@@ -680,16 +680,15 @@ export default function PlanningListView() {
                   padding: '8px 16px',
                   borderRadius: 20,
                   border: 'none',
-                  background: isActive ? g.color : 'rgba(255,255,255,0.75)',
-                  backdropFilter: 'blur(8px)',
+                  background: isActive ? g.color : '#FFFFFF',
                   cursor: 'pointer',
-                  boxShadow: isActive ? `0 3px 12px ${g.color}44` : '0 1px 3px rgba(0,0,0,0.06)',
+                  boxShadow: isActive ? 'none' : 'none',
                   transition: 'all 0.18s ease',
                   display: 'flex', alignItems: 'center', gap: 6,
                 }}
               >
-                <span style={{ fontSize: 13, fontWeight: 800, color: isActive ? 'white' : '#0F172A' }}>{g.name}</span>
-                <span style={{ fontSize: 11, fontWeight: 600, color: isActive ? 'rgba(255,255,255,0.7)' : '#94A3B8', background: isActive ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.06)', borderRadius: 9999, padding: '1px 7px' }}>{count}</span>
+                <span style={{ fontSize: 13, fontWeight: 800, color: isActive ? 'white' : '#1E2B42' }}>{g.name}</span>
+                <span style={{ fontSize: 11, fontWeight: 600, color: isActive ? 'rgba(255,255,255,0.7)' : '#56637A', background: isActive ? 'rgba(255,255,255,0.18)' : 'rgba(0,0,0,0.06)', borderRadius: 9999, padding: '1px 7px' }}>{count}</span>
               </button>
             )
           })}
@@ -703,7 +702,7 @@ export default function PlanningListView() {
           {/* Idag-knapp */}
           <button
             onClick={() => { setNavMode('week'); setNavOffset(0) }}
-            style={{ padding: '6px 10px', borderRadius: 9, border: 'none', background: 'rgba(13,115,119,0.1)', fontSize: 12, fontWeight: 700, color: '#0D7377', cursor: 'pointer', flexShrink: 0 }}
+            style={{ padding: '6px 10px', borderRadius: 9, border: 'none', background: 'rgba(43,92,158,0.1)', fontSize: 12, fontWeight: 700, color: '#2B5C9E', cursor: 'pointer', flexShrink: 0 }}
           >
             Idag
           </button>
@@ -712,7 +711,7 @@ export default function PlanningListView() {
             {(['day', 'week', 'month'] as NavMode[]).map(m => (
               <button key={m}
                 onClick={() => { setNavMode(m); setNavOffset(0) }}
-                style={{ padding: '5px 9px', borderRadius: 9, border: 'none', background: navMode === m ? 'white' : 'transparent', fontSize: 11, fontWeight: 700, color: navMode === m ? '#0F172A' : '#94A3B8', cursor: 'pointer', boxShadow: navMode === m ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s', whiteSpace: 'nowrap' }}
+                style={{ padding: '5px 9px', borderRadius: 9, border: 'none', background: navMode === m ? 'white' : 'transparent', fontSize: 11, fontWeight: 700, color: navMode === m ? '#1E2B42' : '#56637A', cursor: 'pointer', boxShadow: navMode === m ? 'none' : 'none', transition: 'all 0.15s', whiteSpace: 'nowrap' }}
               >
                 {m === 'day' ? 'Dag' : m === 'week' ? 'Vecka' : 'Månad'}
               </button>
@@ -720,14 +719,14 @@ export default function PlanningListView() {
           </div>
           {/* Prev/Next + label */}
           <button onClick={() => setNavOffset(o => o - 1)}
-            style={{ width: 30, height: 30, borderRadius: 9, border: 'none', background: 'rgba(255,255,255,0.85)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#0F172A', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', flexShrink: 0 }}>
+            style={{ width: 30, height: 30, borderRadius: 9, border: 'none', background: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#1E2B42', boxShadow: 'none', flexShrink: 0 }}>
             ‹
           </button>
-          <div style={{ flex: 1, textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#0F172A', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <div style={{ flex: 1, textAlign: 'center', fontSize: 11, fontWeight: 700, color: '#1E2B42', minWidth: 0, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {getNavLabel(navMode, navOffset, today)}
           </div>
           <button onClick={() => setNavOffset(o => o + 1)}
-            style={{ width: 30, height: 30, borderRadius: 9, border: 'none', background: 'rgba(255,255,255,0.85)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#0F172A', boxShadow: '0 1px 3px rgba(0,0,0,0.08)', flexShrink: 0 }}>
+            style={{ width: 30, height: 30, borderRadius: 9, border: 'none', background: '#FFFFFF', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 16, color: '#1E2B42', boxShadow: 'none', flexShrink: 0 }}>
             ›
           </button>
         </div>
@@ -758,13 +757,13 @@ export default function PlanningListView() {
 
       ) : rangeFiltered.length === 0 && unscheduled.length === 0 ? (
         <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-          <div style={{ width: 64, height: 64, borderRadius: 20, background: 'rgba(13,115,119,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
-            <FileText size={28} color="#0D7377" strokeWidth={1.5} />
+          <div style={{ width: 64, height: 64, borderRadius: 20, background: 'rgba(43,92,158,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 16px' }}>
+            <FileText size={28} color="#2B5C9E" strokeWidth={1.5} />
           </div>
-          <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+          <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>
             {trainings.length === 0 ? 'Inga träningspass ännu' : 'Inga pass denna period'}
           </p>
-          <p style={{ fontSize: 13, color: '#94A3B8' }}>
+          <p style={{ fontSize: 13, color: '#56637A' }}>
             {trainings.length === 0 ? 'Tryck "Nytt pass" för att börja planera' : 'Bläddra till en annan period eller skapa ett nytt pass'}
           </p>
         </div>
@@ -788,10 +787,10 @@ export default function PlanningListView() {
                     padding: '4px 2px', marginBottom: isCollapsed ? 0 : 10, cursor: 'pointer',
                   }}
                 >
-                  <div style={{ flex: 1, height: 1, background: isPastWeek ? 'rgba(0,0,0,0.06)' : 'rgba(13,115,119,0.2)' }} />
+                  <div style={{ flex: 1, height: 1, background: isPastWeek ? 'rgba(0,0,0,0.06)' : 'rgba(43,92,158,0.2)' }} />
                   <span style={{
                     fontSize: 11, fontWeight: 800,
-                    color: isPastWeek ? '#94A3B8' : '#0D7377',
+                    color: isPastWeek ? '#56637A' : '#2B5C9E',
                     textTransform: 'uppercase', letterSpacing: '0.07em',
                     whiteSpace: 'nowrap',
                   }}>
@@ -799,11 +798,11 @@ export default function PlanningListView() {
                   </span>
                   <ChevronDown
                     size={13}
-                    color={isPastWeek ? '#94A3B8' : '#0D7377'}
+                    color={isPastWeek ? '#56637A' : '#2B5C9E'}
                     strokeWidth={2.5}
                     style={{ transform: isCollapsed ? 'rotate(-90deg)' : 'rotate(0deg)', transition: 'transform 0.2s ease', flexShrink: 0 }}
                   />
-                  <div style={{ flex: 1, height: 1, background: isPastWeek ? 'rgba(0,0,0,0.06)' : 'rgba(13,115,119,0.2)' }} />
+                  <div style={{ flex: 1, height: 1, background: isPastWeek ? 'rgba(0,0,0,0.06)' : 'rgba(43,92,158,0.2)' }} />
                 </button>
 
                 {/* Cards */}
@@ -831,7 +830,7 @@ export default function PlanningListView() {
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
                 <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.06)' }} />
-                <span style={{ fontSize: 11, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>
+                <span style={{ fontSize: 11, fontWeight: 800, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em', whiteSpace: 'nowrap' }}>
                   Utan datum  ·  {unscheduled.length} pass
                 </span>
                 <div style={{ flex: 1, height: 1, background: 'rgba(0,0,0,0.06)' }} />
@@ -857,13 +856,13 @@ export default function PlanningListView() {
       {/* ── New folder modal ────────────────────────────────────────────────── */}
       {showFolderModal && (
         <Portal>
-          <div onClick={() => setShowFolderModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
+          <div onClick={() => setShowFolderModal(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '20px 20px calc(var(--safe-bottom) + 100px)' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Ny mapp</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>Ny mapp</h2>
               <button onClick={() => setShowFolderModal(false)} style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <X size={16} color="#64748B" strokeWidth={2.5} />
+                <X size={16} color="#56637A" strokeWidth={2.5} />
               </button>
             </div>
             <input
@@ -899,10 +898,10 @@ export default function PlanningListView() {
       {!loading && (
         <div style={{ marginTop: 28 }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Mina mappar</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Mina mappar</span>
             <button
               onClick={() => setShowFolderModal(true)}
-              style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#0D7377' }}
+              style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 700, color: '#2B5C9E' }}
             >
               <Plus size={13} strokeWidth={2.5} /> Ny
             </button>
@@ -910,7 +909,7 @@ export default function PlanningListView() {
           <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
             {folders.map(f => {
               const isActive = activeFolder === f.id
-              const fColor = (f as any).color || '#0D7377'
+              const fColor = (f as any).color || '#2B5C9E'
               const fCount = trainings.filter(t => t.folder_id === f.id).length
               return (
                 <div key={f.id} style={{ flexShrink: 0, position: 'relative', minWidth: 110 }}>
@@ -921,18 +920,17 @@ export default function PlanningListView() {
                       padding: '10px 12px 28px',
                       borderRadius: 16,
                       border: 'none',
-                      background: isActive ? fColor : 'rgba(255,255,255,0.75)',
-                      backdropFilter: 'blur(8px)',
+                      background: isActive ? fColor : '#FFFFFF',
                       cursor: 'pointer',
                       textAlign: 'left',
-                      boxShadow: isActive ? `0 4px 14px ${fColor}40` : '0 1px 4px rgba(0,0,0,0.06)',
+                      boxShadow: isActive ? 'none' : 'none',
                       transition: 'all 0.18s ease',
                       borderLeft: isActive ? 'none' : `3px solid ${fColor}`,
                     }}
                   >
                     <div style={{ fontSize: 18, marginBottom: 4 }}>📁</div>
-                    <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? 'white' : '#0F172A', marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>{f.name}</div>
-                    <div style={{ fontSize: 11, color: isActive ? 'rgba(255,255,255,0.7)' : '#94A3B8', fontWeight: 500 }}>{fCount} pass</div>
+                    <div style={{ fontSize: 12, fontWeight: 700, color: isActive ? 'white' : '#1E2B42', marginBottom: 2, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis', maxWidth: 90 }}>{f.name}</div>
+                    <div style={{ fontSize: 11, color: isActive ? 'rgba(255,255,255,0.7)' : '#56637A', fontWeight: 500 }}>{fCount} pass</div>
                   </button>
                   {/* Edit/delete icons */}
                   <div style={{ position: 'absolute', bottom: 6, right: 6, display: 'flex', gap: 4 }}>
@@ -940,7 +938,7 @@ export default function PlanningListView() {
                       onClick={e => { e.stopPropagation(); setEditingFolder(f); setEditFolderName(f.name); setEditFolderColor((f as any).color || FOLDER_COLORS[0]) }}
                       style={{ width: 22, height: 22, borderRadius: 6, background: isActive ? 'rgba(255,255,255,0.2)' : 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
                     >
-                      <Pencil size={11} color={isActive ? 'white' : '#64748B'} strokeWidth={2.5} />
+                      <Pencil size={11} color={isActive ? 'white' : '#56637A'} strokeWidth={2.5} />
                     </button>
                     <button
                       onClick={e => { e.stopPropagation(); deleteFolder(f) }}
@@ -956,8 +954,8 @@ export default function PlanningListView() {
               onClick={() => setShowFolderModal(true)}
               style={{ flexShrink: 0, width: 80, borderRadius: 16, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', cursor: 'pointer', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 4, minHeight: 90 }}
             >
-              <FolderPlus size={18} color="#CBD5E1" strokeWidth={1.5} />
-              <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8' }}>Ny mapp</span>
+              <FolderPlus size={18} color="#E1E8F0" strokeWidth={1.5} />
+              <span style={{ fontSize: 11, fontWeight: 600, color: '#56637A' }}>Ny mapp</span>
             </button>
           </div>
         </div>
@@ -966,13 +964,13 @@ export default function PlanningListView() {
       {/* ── Redigera mapp ────────────────────────────────────────────────────── */}
       {editingFolder && (
         <Portal>
-          <div onClick={() => setEditingFolder(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
+          <div onClick={() => setEditingFolder(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '20px 20px calc(var(--safe-bottom) + 100px)' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 20 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Redigera mapp</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>Redigera mapp</h2>
               <button onClick={() => setEditingFolder(null)} style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <X size={16} color="#64748B" strokeWidth={2.5} />
+                <X size={16} color="#56637A" strokeWidth={2.5} />
               </button>
             </div>
             <input

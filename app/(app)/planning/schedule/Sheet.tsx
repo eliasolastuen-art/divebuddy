@@ -22,7 +22,7 @@ export default function Sheet({ title, subtitle, onClose, children, footer, zInd
 
   return (
     <Portal>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, zIndex, background: 'rgba(30,43,66,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }} />
       <div role="dialog" aria-modal="true" className="glass-sheet" style={{
         position: 'fixed', left: 0, right: 0, bottom: 0, zIndex: zIndex + 1, maxWidth: 600, margin: '0 auto',
         maxHeight: '90dvh', display: 'flex', flexDirection: 'column',
@@ -32,7 +32,7 @@ export default function Sheet({ title, subtitle, onClose, children, footer, zInd
             {subtitle && <div style={{ fontSize: 13, fontWeight: 600, color: UI.muted }}>{subtitle}</div>}
             <h2 style={{ margin: '2px 0 0', fontSize: 21, fontWeight: 900, letterSpacing: '-0.03em', color: UI.text }}>{title}</h2>
           </div>
-          <button onClick={onClose} aria-label="Stäng" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
+          <button onClick={onClose} aria-label="Stäng" style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: '1px solid #E1E8F0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer' }}>
             <X size={18} color={UI.text} />
           </button>
         </div>
@@ -52,7 +52,7 @@ export default function Sheet({ title, subtitle, onClose, children, footer, zInd
 
 export const inputStyle: React.CSSProperties = {
   width: '100%', minHeight: 44, boxSizing: 'border-box', padding: '0 12px', borderRadius: 12,
-  border: '1.5px solid rgba(0,0,0,0.1)', background: '#fff', color: UI.text,
+  border: '1px solid #E1E8F0', background: '#fff', color: UI.text,
   fontFamily: 'inherit', fontSize: 15,
 }
 
@@ -102,10 +102,10 @@ export function Button({ children, onClick, variant = 'secondary', disabled, gro
   type?: 'button' | 'submit'
 }) {
   const styles: Record<string, React.CSSProperties> = {
-    primary: { background: UI.teal, color: '#fff', border: `1px solid ${UI.teal}` },
-    secondary: { background: '#fff', color: UI.text, border: '1px solid rgba(0,0,0,0.1)' },
+    primary: { background: UI.primary, color: '#fff', border: `1px solid ${UI.primary}` },
+    secondary: { background: '#fff', color: UI.text, border: '1px solid #E1E8F0' },
     danger: { background: '#fff', color: '#B91C1C', border: '1px solid #FECACA' },
-    ghost: { background: 'transparent', color: UI.tealDark, border: '1px solid transparent' },
+    ghost: { background: 'transparent', color: UI.primary, border: '1px solid transparent' },
   }
   return (
     <button type={type} onClick={onClick} disabled={disabled} style={{

@@ -51,7 +51,7 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
     data: { training },
   })
 
-  const groupColor = training.groups?.color ?? '#0D7377'
+  const groupColor = training.groups?.color ?? '#2B5C9E'
   const mode = training.mode ?? 'training'
   const state = training.sessionState
 
@@ -119,7 +119,7 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
   // ── LIVE pulse animation ───────────────────────────────────────────────────
 
   const liveGlow = state === 'live' ? {
-    boxShadow: '0 0 0 2px #0D7377, 0 4px 20px rgba(13,115,119,0.25)',
+    boxShadow: '0 0 0 2px #2B5C9E',
   } : {}
 
   return (
@@ -129,9 +129,8 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
         ...dragStyle,
         borderRadius: 12,
         overflow: 'hidden',
-        background: state === 'completed' ? 'rgba(255,255,255,0.4)' : 'rgba(255,255,255,0.75)',
-        backdropFilter: 'blur(8px)',
-        border: '1px solid rgba(0,0,0,0.07)',
+        background: state === 'completed' ? '#FFFFFF' : 'rgba(255,255,255,0.75)',
+        border: '1px solid #E1E8F0',
         opacity: state === 'completed' ? 0.6 : (isDragging ? 0.45 : 1),
         marginBottom: 6,
         ...liveGlow,
@@ -149,7 +148,7 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
           <div style={{
             fontSize: compact ? 12 : 13,
             fontWeight: 700,
-            color: state === 'completed' ? '#94A3B8' : '#0F172A',
+            color: state === 'completed' ? '#56637A' : '#1E2B42',
             lineHeight: 1.3,
             flex: 1,
             textDecoration: state === 'completed' ? 'line-through' : 'none',
@@ -191,13 +190,13 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
             </span>
             {/* Time chip */}
             {(training.start_time || training.end_time) && (
-              <span style={{ fontSize: 10, color: '#64748B', fontWeight: 500 }}>
+              <span style={{ fontSize: 10, color: '#56637A', fontWeight: 500 }}>
                 {training.start_time}{training.end_time ? `–${training.end_time}` : ''}
               </span>
             )}
             {/* Group name */}
             {training.groups?.name && (
-              <span style={{ fontSize: 10, color: '#64748B', fontWeight: 500 }}>
+              <span style={{ fontSize: 10, color: '#56637A', fontWeight: 500 }}>
                 {training.groups.name}
               </span>
             )}
@@ -212,7 +211,7 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
             disabled={loading}
             style={{
               width: '100%', padding: '6px 0',
-              background: 'linear-gradient(135deg, #0D7377, #0a5c60)',
+              background: 'var(--gradient-hero)',
               color: 'white', border: 'none', borderRadius: 8,
               fontSize: 12, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
               opacity: loading ? 0.6 : 1,
@@ -228,9 +227,9 @@ export default function SessionCard({ training, compact = false, onRefresh }: Pr
             disabled={loading}
             style={{
               width: '100%', padding: '6px 0',
-              background: 'rgba(13,115,119,0.1)',
-              border: '1px solid rgba(13,115,119,0.3)',
-              color: '#0D7377', borderRadius: 8,
+              background: 'rgba(43,92,158,0.1)',
+              border: '1px solid rgba(43,92,158,0.3)',
+              color: '#2B5C9E', borderRadius: 8,
               fontSize: 12, fontWeight: 700, cursor: loading ? 'default' : 'pointer',
             }}
           >

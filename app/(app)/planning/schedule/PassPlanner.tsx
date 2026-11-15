@@ -66,9 +66,9 @@ function StartOption({ icon, title, text, onClick }: { icon: React.ReactNode; ti
   return (
     <button onClick={onClick} style={{
       width: '100%', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 16px',
-      borderRadius: 16, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', cursor: 'pointer', fontFamily: 'inherit',
+      borderRadius: 16, border: '1px solid #E1E8F0', background: '#fff', cursor: 'pointer', fontFamily: 'inherit',
     }}>
-      <span style={{ width: 44, height: 44, borderRadius: 13, background: UI.tealLight, color: UI.tealDark, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</span>
+      <span style={{ width: 44, height: 44, borderRadius: 13, background: UI.primarySoft, color: UI.primary, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>{icon}</span>
       <span style={{ minWidth: 0 }}>
         <span style={{ display: 'block', fontSize: 15, fontWeight: 800, color: UI.text }}>{title}</span>
         <span style={{ display: 'block', fontSize: 12.5, color: UI.muted, marginTop: 2 }}>{text}</span>
@@ -103,7 +103,7 @@ function TemplatePicker({ groupIds, onPick, onBack }: { groupIds: string[]; onPi
         </p>
       )}
       {list.map(t => (
-        <button key={t.id} onClick={() => onPick(t)} style={{ width: '100%', textAlign: 'left', minHeight: 52, padding: '10px 14px', borderRadius: 14, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
+        <button key={t.id} onClick={() => onPick(t)} style={{ width: '100%', textAlign: 'left', minHeight: 52, padding: '10px 14px', borderRadius: 14, border: '1px solid #E1E8F0', background: '#fff', cursor: 'pointer', fontFamily: 'inherit' }}>
           <span style={{ display: 'block', fontSize: 14.5, fontWeight: 800, color: UI.text }}>{t.name}</span>
           <span style={{ display: 'block', fontSize: 12.5, color: UI.muted }}>
             {t.blockCount} block · {t.content.blocks.map(b => CATEGORY_BY_ID[b.category]?.label).filter(Boolean).join(', ')}
@@ -184,7 +184,7 @@ function BlockCard({ block, library, onChange, onRemove }: {
   }
 
   return (
-    <div style={{ borderRadius: 16, background: '#fff', border: '1px solid rgba(0,0,0,0.07)', borderLeft: `4px solid ${cat.color}`, padding: 12, display: 'grid', gap: 8 }}>
+    <div style={{ borderRadius: 16, background: '#fff', border: '1px solid #E1E8F0', borderLeft: `4px solid ${cat.color}`, padding: 12, display: 'grid', gap: 8 }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontSize: 11, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: cat.color, flexShrink: 0 }}>{cat.label}</span>
         <input aria-label="Blockets namn" value={block.name} onChange={e => onChange({ name: e.target.value })}
@@ -217,19 +217,19 @@ function BlockCard({ block, library, onChange, onRemove }: {
         <div style={{ display: 'grid', gap: 6 }}>
           <SearchInput value={q} onChange={setQ} placeholder="Sök i biblioteket eller skriv egen övning" autoFocus />
           {matches.map(m => (
-            <button key={m.id} onClick={() => addItem(m.name, m.id)} style={{ textAlign: 'left', minHeight: 40, padding: '6px 10px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.06)', background: '#F8FAFC', fontFamily: 'inherit', cursor: 'pointer', fontSize: 14 }}>
+            <button key={m.id} onClick={() => addItem(m.name, m.id)} style={{ textAlign: 'left', minHeight: 40, padding: '6px 10px', borderRadius: 10, border: '1px solid #E1E8F0', background: '#EEF3F8', fontFamily: 'inherit', cursor: 'pointer', fontSize: 14 }}>
               <strong>{m.name}</strong>{m.code && <span style={{ color: UI.muted }}> · {m.code}</span>}{m.category && <span style={{ color: UI.muted }}> · {m.category}</span>}
             </button>
           ))}
           {q.trim() && (
-            <button onClick={() => addItem(q.trim(), null)} style={{ textAlign: 'left', minHeight: 40, padding: '6px 10px', borderRadius: 10, border: `1px dashed ${UI.teal}`, background: '#fff', fontFamily: 'inherit', cursor: 'pointer', fontSize: 14, color: UI.tealDark, fontWeight: 700 }}>
+            <button onClick={() => addItem(q.trim(), null)} style={{ textAlign: 'left', minHeight: 40, padding: '6px 10px', borderRadius: 10, border: `1px dashed ${UI.primary}`, background: '#fff', fontFamily: 'inherit', cursor: 'pointer', fontSize: 14, color: UI.primary, fontWeight: 700 }}>
               + Lägg till ”{q.trim()}” som egen övning
             </button>
           )}
           <Button variant="ghost" onClick={() => { setAdding(false); setQ('') }}>Klar</Button>
         </div>
       ) : (
-        <button onClick={() => setAdding(true)} style={{ justifySelf: 'start', minHeight: 38, padding: '0 10px', borderRadius: 10, border: 'none', background: UI.tealLight, color: UI.tealDark, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
+        <button onClick={() => setAdding(true)} style={{ justifySelf: 'start', minHeight: 38, padding: '0 10px', borderRadius: 10, border: 'none', background: UI.primarySoft, color: UI.primary, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700, cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 5 }}>
           <Plus size={14} />Övning
         </button>
       )}

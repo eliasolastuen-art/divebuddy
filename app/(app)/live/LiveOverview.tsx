@@ -10,7 +10,7 @@ import UpcomingTrainings from './UpcomingTrainings'
 function SectionHeader({ label }: { label: string }) {
   return (
     <div style={{
-      fontSize: 11, fontWeight: 700, color: '#94A3B8',
+      fontSize: 11, fontWeight: 700, color: '#56637A',
       textTransform: 'uppercase', letterSpacing: '0.08em',
       marginBottom: 12,
     }}>
@@ -82,7 +82,7 @@ export default function LiveOverview() {
 
   if (loading) {
     return (
-      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#94A3B8', fontSize: 15 }}>
+      <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#56637A', fontSize: 15 }}>
         Laddar…
       </div>
     )
@@ -93,7 +93,7 @@ export default function LiveOverview() {
 
       {/* Page header */}
       <div style={{ padding: '20px 16px 24px' }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em' }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.04em' }}>
           Live
         </h1>
       </div>

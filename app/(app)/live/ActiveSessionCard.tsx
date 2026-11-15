@@ -25,16 +25,16 @@ export default function ActiveSessionCard({ session, onOpen, onEnd, ending }: Pr
       <div style={{ textAlign: 'center', padding: '32px 20px' }}>
         <div style={{
           width: 64, height: 64, borderRadius: 20,
-          background: 'rgba(13,115,119,0.08)',
+          background: 'rgba(43,92,158,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 14px',
         }}>
-          <Radio size={28} color="#0D7377" strokeWidth={1.5} />
+          <Radio size={28} color="#2B5C9E" strokeWidth={1.5} />
         </div>
-        <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+        <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>
           Inget aktivt träningspass
         </p>
-        <p style={{ fontSize: 13, color: '#94A3B8' }}>
+        <p style={{ fontSize: 13, color: '#56637A' }}>
           Starta ett pass från dagens schema nedan.
         </p>
       </div>
@@ -45,7 +45,7 @@ export default function ActiveSessionCard({ session, onOpen, onEnd, ending }: Pr
     hour: '2-digit', minute: '2-digit',
   })
   const groupName = session.groups?.name ?? 'Okänd grupp'
-  const groupColor = session.groups?.color ?? '#0D7377'
+  const groupColor = session.groups?.color ?? '#2B5C9E'
 
   return (
     <div
@@ -67,10 +67,10 @@ export default function ActiveSessionCard({ session, onOpen, onEnd, ending }: Pr
 
       {/* Info */}
       <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 3 }}>
+        <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 3 }}>
           {groupName}
         </div>
-        <div style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>
+        <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
           Startade {startTime}
         </div>
       </div>

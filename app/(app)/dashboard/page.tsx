@@ -56,9 +56,9 @@ function darkenHex(hex: string, amt = 0.25): string {
 
 // ── Status config ─────────────────────────────────────────────
 const statusConfig: Record<string, { label: string; dot: string; pill: string; text: string }> = {
-  draft:     { label: 'Utkast',     dot: '#94A3B8', pill: 'rgba(148,163,184,0.15)', text: '#64748B' },
+  draft:     { label: 'Utkast',     dot: '#56637A', pill: 'rgba(148,163,184,0.15)', text: '#56637A' },
   published: { label: 'Publicerat', dot: '#22C55E', pill: 'rgba(34,197,94,0.12)',   text: '#16A34A' },
-  completed: { label: 'Genomfört', dot: '#0D7377', pill: 'rgba(13,115,119,0.12)',  text: '#0D7377' },
+  completed: { label: 'Genomfört', dot: '#2B5C9E', pill: 'rgba(43,92,158,0.12)',  text: '#2B5C9E' },
   active:    { label: 'Live',       dot: '#F97316', pill: 'rgba(249,115,22,0.12)',  text: '#EA580C' },
 }
 
@@ -133,7 +133,7 @@ export default function DashboardPage() {
 
       {/* ── Hero Header ──────────────────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(160deg, #0D7377 0%, #064d50 100%)',
+        background: 'var(--gradient-hero)',
         padding: '20px 20px 28px',
         position: 'relative',
         overflow: 'hidden',
@@ -195,12 +195,12 @@ export default function DashboardPage() {
         <div
           onClick={() => router.push('/ai')}
           style={{
-            background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+            background: 'var(--gradient-hero)',
             borderRadius: 18,
             padding: '16px 18px',
             display: 'flex', alignItems: 'center', gap: 14,
             cursor: 'pointer',
-            boxShadow: '0 4px 16px rgba(13,115,119,0.25)',
+            boxShadow: 'none',
           }}
         >
           <div style={{
@@ -227,8 +227,8 @@ export default function DashboardPage() {
         {/* ── Groups ─────────────────────────────────────────────── */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Grupper</span>
-            <Link href="/groups" style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8', textDecoration: 'none' }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>Grupper</span>
+            <Link href="/groups" style={{ fontSize: 13, fontWeight: 600, color: '#56637A', textDecoration: 'none' }}>
               Alla →
             </Link>
           </div>
@@ -243,7 +243,7 @@ export default function DashboardPage() {
                   background: `linear-gradient(160deg, ${group.color} 0%, ${darkenHex(group.color)} 100%)`,
                   padding: '18px 14px 14px',
                   display: 'flex', flexDirection: 'column', gap: 2,
-                  boxShadow: `0 4px 16px ${group.color}40`,
+                  boxShadow: 'none',
                 }}>
                   <span style={{ fontSize: 28, fontWeight: 900, color: 'white', letterSpacing: '-0.04em', lineHeight: 1 }}>
                     {athleteCounts[group.id] ?? 0}
@@ -263,8 +263,8 @@ export default function DashboardPage() {
                 padding: '14px',
                 display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 6,
               }}>
-                <Plus size={20} color="#94A3B8" strokeWidth={2} />
-                <span style={{ fontSize: 12, fontWeight: 600, color: '#94A3B8', textAlign: 'center' }}>Ny grupp</span>
+                <Plus size={20} color="#56637A" strokeWidth={2} />
+                <span style={{ fontSize: 12, fontWeight: 600, color: '#56637A', textAlign: 'center' }}>Ny grupp</span>
               </div>
             </Link>
           </div>
@@ -273,15 +273,15 @@ export default function DashboardPage() {
         {/* ── Today's Sessions ────────────────────────────────────── */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Idag</span>
-            <Link href="/planning" style={{ fontSize: 13, fontWeight: 600, color: '#94A3B8', textDecoration: 'none' }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>Idag</span>
+            <Link href="/planning" style={{ fontSize: 13, fontWeight: 600, color: '#56637A', textDecoration: 'none' }}>
               Alla →
             </Link>
           </div>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             {todaySessions.length === 0 ? (
               <div className="glass-card" style={{ padding: '16px 18px' }}>
-                <p style={{ fontSize: 14, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                <p style={{ fontSize: 14, color: '#56637A', fontWeight: 500, margin: 0 }}>
                   Inga pass schemalagda idag
                 </p>
               </div>
@@ -296,12 +296,12 @@ export default function DashboardPage() {
                     <div style={{ width: 8, height: 8, borderRadius: '50%', background: sc.dot, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{
-                        fontSize: 14, fontWeight: 700, color: '#0F172A', letterSpacing: '-0.01em',
+                        fontSize: 14, fontWeight: 700, color: '#1E2B42', letterSpacing: '-0.01em',
                         margin: '0 0 2px', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis',
                       }}>
                         {session.title}
                       </p>
-                      <p style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, margin: 0 }}>
+                      <p style={{ fontSize: 12, color: '#56637A', fontWeight: 500, margin: 0 }}>
                         {session.groups?.[0]?.name ?? '—'}{session.start_time ? ` · ${session.start_time.slice(0, 5)}` : ''}
                       </p>
                     </div>
@@ -318,22 +318,22 @@ export default function DashboardPage() {
         {/* ── Quick Stats ─────────────────────────────────────────── */}
         <div>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 12 }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>Statistik</span>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>Statistik</span>
           </div>
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 12 }}>
             <div className="glass-card" style={{ padding: '18px 16px' }}>
-              <p style={{ fontSize: 32, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.04em', margin: '0 0 2px', lineHeight: 1 }}>
+              <p style={{ fontSize: 32, fontWeight: 900, color: '#1E2B42', letterSpacing: '-0.04em', margin: '0 0 2px', lineHeight: 1 }}>
                 {totalSessions}
               </p>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#64748B', margin: '0 0 8px' }}>Pass denna säsong</p>
-              <p style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8' }}>↑ Bra jobbat</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#56637A', margin: '0 0 8px' }}>Pass denna säsong</p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: '#56637A' }}>↑ Bra jobbat</p>
             </div>
             <div className="glass-card" style={{ padding: '18px 16px' }}>
-              <p style={{ fontSize: 32, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.04em', margin: '0 0 2px', lineHeight: 1 }}>
+              <p style={{ fontSize: 32, fontWeight: 900, color: '#1E2B42', letterSpacing: '-0.04em', margin: '0 0 2px', lineHeight: 1 }}>
                 2.6
               </p>
-              <p style={{ fontSize: 12, fontWeight: 600, color: '#64748B', margin: '0 0 8px' }}>Snitt DD</p>
-              <p style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8' }}>↑ +0.3 sedan förra månaden</p>
+              <p style={{ fontSize: 12, fontWeight: 600, color: '#56637A', margin: '0 0 8px' }}>Snitt DD</p>
+              <p style={{ fontSize: 11, fontWeight: 500, color: '#56637A' }}>↑ +0.3 sedan förra månaden</p>
             </div>
           </div>
         </div>

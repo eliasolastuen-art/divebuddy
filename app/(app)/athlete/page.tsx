@@ -208,7 +208,7 @@ export default function AthletePage() {
   if (loading || dataLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <div style={{ width: 28, height: 28, border: '3px solid rgba(13,115,119,0.2)', borderTopColor: '#0D7377', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 28, height: 28, border: '3px solid rgba(43,92,158,0.2)', borderTopColor: '#2B5C9E', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     )
   }
@@ -217,9 +217,9 @@ export default function AthletePage() {
   if (!athlete) {
     return (
       <div style={{ padding: 32, textAlign: 'center' }}>
-        <Waves size={40} color="rgba(13,115,119,0.3)" style={{ margin: '0 auto 16px' }} />
-        <p style={{ fontSize: 16, fontWeight: 600, color: '#0F172A', marginBottom: 8 }}>Ingen atletprofil hittad</p>
-        <p style={{ fontSize: 14, color: '#94A3B8' }}>Kontakta din coach för att bli tillagd.</p>
+        <Waves size={40} color="rgba(43,92,158,0.3)" style={{ margin: '0 auto 16px' }} />
+        <p style={{ fontSize: 16, fontWeight: 600, color: '#1E2B42', marginBottom: 8 }}>Ingen atletprofil hittad</p>
+        <p style={{ fontSize: 14, color: '#56637A' }}>Kontakta din coach för att bli tillagd.</p>
       </div>
     )
   }
@@ -233,7 +233,7 @@ export default function AthletePage() {
 
       {/* ── Hero Header ──────────────────────────────────────────── */}
       <div style={{
-        background: 'linear-gradient(160deg, #0F172A, #1e293b)',
+        background: 'linear-gradient(160deg, #1E2B42, #1E2B42)',
         padding: '20px 20px 24px',
         position: 'relative',
         overflow: 'hidden',
@@ -263,7 +263,7 @@ export default function AthletePage() {
           <div style={{ display: 'flex', gap: 10, marginTop: 20 }}>
             <button
               onClick={() => router.push('/athlete/session')}
-              style={{ background: 'white', color: '#0F172A', borderRadius: 999, padding: '10px 18px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', flexGrow: 1 }}
+              style={{ background: 'white', color: '#1E2B42', borderRadius: 999, padding: '10px 18px', fontSize: 13, fontWeight: 700, border: 'none', cursor: 'pointer', flexGrow: 1 }}
             >
               ▶ Starta pass
             </button>
@@ -281,21 +281,21 @@ export default function AthletePage() {
       <div style={{ padding: '0 16px', maxWidth: 520, margin: '0 auto', width: '100%', display: 'flex', flexDirection: 'column', gap: 20, paddingTop: 20 }}>
 
         {/* ── Season Progress ──────────────────────────────────── */}
-        <div style={{ background: 'white', borderRadius: 20, padding: 16, boxShadow: '0 2px 12px rgba(0,0,0,0.06)' }}>
+        <div style={{ background: 'white', borderRadius: 20, padding: 16, boxShadow: 'none' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A' }}>Säsongsresa</span>
-            <span style={{ background: '#0D7377', color: 'white', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
+            <span style={{ fontSize: 14, fontWeight: 800, color: '#1E2B42' }}>Säsongsresa</span>
+            <span style={{ background: '#2B5C9E', color: 'white', borderRadius: 999, padding: '3px 10px', fontSize: 11, fontWeight: 700 }}>
               Comp prep
             </span>
           </div>
 
           <div style={{ marginTop: 20 }}>
-            <div style={{ position: 'relative', height: 4, background: '#E2E8F0', borderRadius: 2, overflow: 'visible' }}>
+            <div style={{ position: 'relative', height: 4, background: '#E1E8F0', borderRadius: 2, overflow: 'visible' }}>
               {/* Filled bar */}
               <div style={{
                 position: 'absolute', left: 0, top: 0, bottom: 0,
                 width: `${(activeIndex / (phases.length - 1)) * 100}%`,
-                background: '#0D7377', borderRadius: 2,
+                background: '#2B5C9E', borderRadius: 2,
               }} />
               {/* Dots */}
               {phases.map((_, i) => (
@@ -305,8 +305,8 @@ export default function AthletePage() {
                   left: `${(i / (phases.length - 1)) * 100}%`,
                   transform: 'translateX(-50%)',
                   width: 16, height: 16, borderRadius: '50%',
-                  background: i <= activeIndex ? '#0D7377' : '#E2E8F0',
-                  boxShadow: i === activeIndex ? '0 0 0 3px rgba(13,115,119,0.2)' : 'none',
+                  background: i <= activeIndex ? '#2B5C9E' : '#E1E8F0',
+                  boxShadow: i === activeIndex ? '0 0 0 3px rgba(43,92,158,0.2)' : 'none',
                 }} />
               ))}
             </div>
@@ -316,7 +316,7 @@ export default function AthletePage() {
                 <span key={i} style={{
                   fontSize: 11,
                   fontWeight: i === activeIndex ? 700 : 600,
-                  color: i === activeIndex ? '#0D7377' : '#94A3B8',
+                  color: i === activeIndex ? '#2B5C9E' : '#56637A',
                 }}>
                   {phase}
                 </span>
@@ -332,10 +332,10 @@ export default function AthletePage() {
           {upcomingTrainings.length === 0 ? (
             <div style={{ textAlign: 'center', paddingTop: 16, paddingBottom: 8 }}>
               <div style={{ fontSize: 28 }}>🌊</div>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', margin: '8px 0 4px' }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42', margin: '8px 0 4px' }}>
                 Inga kommande pass
               </p>
-              <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>
+              <p style={{ fontSize: 12, color: '#56637A', margin: 0 }}>
                 Din tränare schemalägger nästa pass snart
               </p>
             </div>
@@ -353,20 +353,20 @@ export default function AthletePage() {
                     style={{
                       background: 'white', borderRadius: 16, padding: '12px 14px',
                       display: 'flex', alignItems: 'center', gap: 12,
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.06)', cursor: 'pointer',
+                      boxShadow: 'none', cursor: 'pointer',
                     }}
                   >
                     <div style={{ minWidth: 32, textAlign: 'center' }}>
-                      <div style={{ fontSize: 22, fontWeight: 800, color: '#0D7377', lineHeight: 1 }}>{dayNum}</div>
-                      <div style={{ fontSize: 11, fontWeight: 500, color: '#94A3B8' }}>{monthAbbr}</div>
+                      <div style={{ fontSize: 22, fontWeight: 800, color: '#2B5C9E', lineHeight: 1 }}>{dayNum}</div>
+                      <div style={{ fontSize: 11, fontWeight: 500, color: '#56637A' }}>{monthAbbr}</div>
                     </div>
                     <div style={{ width: 1, height: 32, background: 'rgba(0,0,0,0.08)', marginLeft: 4, marginRight: 4, flexShrink: 0 }} />
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                         {t.title}
                       </div>
                       {t.group_name && (
-                        <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>{t.group_name}</div>
+                        <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>{t.group_name}</div>
                       )}
                     </div>
                     {todaySession ? (
@@ -374,7 +374,7 @@ export default function AthletePage() {
                         <span style={{ fontSize: 11, fontWeight: 700, color: '#16A34A' }}>Idag</span>
                       </div>
                     ) : (
-                      <ChevronRight size={16} color="#CBD5E1" strokeWidth={2.5} />
+                      <ChevronRight size={16} color="#E1E8F0" strokeWidth={2.5} />
                     )}
                   </div>
                 )
@@ -399,15 +399,15 @@ export default function AthletePage() {
                 return (
                   <div key={dive.id} style={{
                     minWidth: 100, height: 90, background: 'white', borderRadius: 14,
-                    border: '0.5px solid rgba(13,115,119,0.4)', padding: 10,
+                    border: '0.5px solid rgba(43,92,158,0.4)', padding: 10,
                     display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                     flexShrink: 0,
                   }}>
                     {code && (
-                      <div style={{ fontSize: 11, fontWeight: 700, color: '#0D7377' }}>{code}</div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: '#2B5C9E' }}>{code}</div>
                     )}
                     <div style={{
-                      fontSize: 12, fontWeight: 600, color: '#0F172A',
+                      fontSize: 12, fontWeight: 600, color: '#1E2B42',
                       overflow: 'hidden', textOverflow: 'ellipsis',
                       display: '-webkit-box', WebkitLineClamp: 2,
                       WebkitBoxOrient: 'vertical' as const,
@@ -430,10 +430,10 @@ export default function AthletePage() {
             </div>
           ) : (
             <div style={{ paddingTop: 8, paddingBottom: 8 }}>
-              <p style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', margin: '0 0 4px' }}>
+              <p style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42', margin: '0 0 4px' }}>
                 Inga hopp tilldelade än
               </p>
-              <p style={{ fontSize: 12, color: '#94A3B8', margin: 0 }}>
+              <p style={{ fontSize: 12, color: '#56637A', margin: 0 }}>
                 Din tränare lägger till dina hopp
               </p>
             </div>
@@ -452,16 +452,16 @@ export default function AthletePage() {
                   style={{
                     display: 'flex', alignItems: 'center', gap: 10,
                     padding: '8px 0',
-                    borderBottom: i < recentSessions.length - 1 ? '1px solid rgba(0,0,0,0.05)' : 'none',
+                    borderBottom: i < recentSessions.length - 1 ? '1px solid #E1E8F0' : 'none',
                     cursor: 'pointer',
                   }}
                 >
                   <div style={{ width: 8, height: 8, borderRadius: '50%', background: '#16A34A', flexShrink: 0 }} />
-                  <span style={{ fontSize: 14, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                  <span style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42', flex: 1 }}>
                     {session.training_title ??
                       new Date(session.started_at).toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'long' })}
                   </span>
-                  <span style={{ fontSize: 12, color: '#94A3B8', flexShrink: 0 }}>
+                  <span style={{ fontSize: 12, color: '#56637A', flexShrink: 0 }}>
                     {formatSwedishDate(session.started_at)}
                   </span>
                 </div>
@@ -472,29 +472,29 @@ export default function AthletePage() {
 
         {/* ── Coach Message ─────────────────────────────────────── */}
         <div style={{
-          background: 'rgba(13,115,119,0.06)',
-          border: '1px solid rgba(13,115,119,0.15)',
+          background: 'rgba(43,92,158,0.06)',
+          border: '1px solid rgba(43,92,158,0.15)',
           borderRadius: 16, padding: 14,
           display: 'flex', gap: 12, alignItems: 'flex-start',
         }}>
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: '#0D7377', flexShrink: 0,
+            background: '#2B5C9E', flexShrink: 0,
             display: 'flex', alignItems: 'center', justifyContent: 'center',
           }}>
             <span style={{ fontSize: 14, fontWeight: 700, color: 'white' }}>T</span>
           </div>
           <div style={{ flex: 1 }}>
-            <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>
+            <div style={{ fontSize: 13, fontWeight: 700, color: '#1E2B42', marginBottom: 4 }}>
               Meddelande från tränaren
             </div>
-            <div style={{ fontSize: 13, fontWeight: 500, color: '#64748B' }}>
+            <div style={{ fontSize: 13, fontWeight: 500, color: '#56637A' }}>
               Bra jobbat senaste veckan! Fokus nu på inlopp.
             </div>
             <div style={{ marginTop: 8, display: 'flex', alignItems: 'center', gap: 6 }}>
               <span style={{ fontSize: 10 }}>🔒</span>
               <span style={{
-                background: 'rgba(13,115,119,0.1)', color: '#0D7377',
+                background: 'rgba(43,92,158,0.1)', color: '#2B5C9E',
                 borderRadius: 999, padding: '2px 8px', fontSize: 11, fontWeight: 600,
               }}>
                 Privat

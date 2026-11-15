@@ -14,9 +14,9 @@ import { PassTile, WeekFocusEditor } from './planningUi'
 import { RepeatWeekSheet, SaveTemplateSheet } from './WeekTools'
 
 const toolButton: React.CSSProperties = {
-  minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff',
+  minHeight: 44, padding: '0 14px', borderRadius: 12, border: '1px solid #E1E8F0', background: '#fff',
   display: 'inline-flex', alignItems: 'center', gap: 7, fontFamily: 'inherit', fontSize: 13.5, fontWeight: 700,
-  color: UI.tealDark, cursor: 'pointer',
+  color: UI.primary, cursor: 'pointer',
 }
 
 // Planning → Vecka: my groups × the days they train, what each pass contains
@@ -70,10 +70,10 @@ export default function WeekView({ initialWeek, initialPass }: { initialWeek?: s
         <NavButton label="Föregående vecka" onClick={() => setMonday(addDays(monday, -7))}><ChevronLeft size={20} /></NavButton>
         <div style={{ flex: 1, textAlign: 'center', minWidth: 0 }}>
           <div style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em', color: UI.text }}>Vecka {weekNumber(monday)}</div>
-          <div style={{ fontSize: 12.5, fontWeight: 600, color: relative ? UI.teal : UI.muted }}>{relative ? `${relative} · ` : ''}{weekRangeLabel(monday)}</div>
+          <div style={{ fontSize: 12.5, fontWeight: 600, color: relative ? UI.primary : UI.muted }}>{relative ? `${relative} · ` : ''}{weekRangeLabel(monday)}</div>
         </div>
         {monday !== thisMonday && (
-          <button onClick={() => setMonday(thisMonday)} style={{ minHeight: 44, padding: '0 12px', borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: UI.text, cursor: 'pointer' }}>Idag</button>
+          <button onClick={() => setMonday(thisMonday)} style={{ minHeight: 44, padding: '0 12px', borderRadius: 12, border: '1px solid #E1E8F0', background: '#fff', fontFamily: 'inherit', fontSize: 13, fontWeight: 700, color: UI.text, cursor: 'pointer' }}>Idag</button>
         )}
         <NavButton label="Nästa vecka" onClick={() => setMonday(addDays(monday, 7))}><ChevronRight size={20} /></NavButton>
       </div>
@@ -81,7 +81,7 @@ export default function WeekView({ initialWeek, initialPass }: { initialWeek?: s
       {/* Gruppfilter: Alla först, sedan en eller flera grupper */}
       {myGroupIds.length > 1 && (
         <div role="group" aria-label="Visa grupper" className="no-print" style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 2 }}>
-          <GroupChip label="Alla" color={UI.teal} on={activeSelection.length === 0} onClick={() => setSelected([])} />
+          <GroupChip label="Alla" color={UI.primary} on={activeSelection.length === 0} onClick={() => setSelected([])} />
           {data.groups.filter(g => myGroupIds.includes(g.id)).map(g => (
             <GroupChip key={g.id} label={g.name} color={g.color} on={activeSelection.includes(g.id)} onClick={() => toggleGroup(g.id)} />
           ))}
@@ -141,7 +141,7 @@ export default function WeekView({ initialWeek, initialPass }: { initialWeek?: s
             <div role="row" style={{ display: 'contents' }}>
               <div role="columnheader" />
               {days.map(d => (
-                <div key={d} role="columnheader" style={{ padding: '2px 4px 6px', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: d === today ? UI.teal : UI.muted }}>
+                <div key={d} role="columnheader" style={{ padding: '2px 4px 6px', fontSize: 12, fontWeight: 800, textTransform: 'uppercase', letterSpacing: '0.04em', color: d === today ? UI.primary : UI.muted }}>
                   {DAY_SHORT[weekdayIndex(d)]} {dateNum(d)}{d === today ? ' · idag' : ''}
                 </div>
               ))}
@@ -158,7 +158,7 @@ export default function WeekView({ initialWeek, initialPass }: { initialWeek?: s
                   {days.map(d => {
                     const cell = passes.filter(p => p.date === d && p.groupIds.includes(g.id))
                     return (
-                      <div key={d} role="cell" style={{ padding: 6, borderTop: `1px solid ${UI.line}`, display: 'flex', flexDirection: 'column', gap: 6, background: d === today ? 'rgba(13,115,119,0.03)' : 'transparent' }}>
+                      <div key={d} role="cell" style={{ padding: 6, borderTop: `1px solid ${UI.line}`, display: 'flex', flexDirection: 'column', gap: 6, background: d === today ? 'rgba(43,92,158,0.03)' : 'transparent' }}>
                         {cell.map(p => <PassTile key={p.id} pass={p} onOpen={() => setOpenPass(p.id)} />)}
                       </div>
                     )
@@ -219,7 +219,7 @@ function GroupChip({ label, color, on, onClick }: { label: string; color: string
 
 function NavButton({ label, onClick, children }: { label: string; onClick: () => void; children: React.ReactNode }) {
   return (
-    <button onClick={onClick} aria-label={label} style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: '1px solid rgba(0,0,0,0.08)', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: UI.text }}>
+    <button onClick={onClick} aria-label={label} style={{ width: 44, height: 44, flexShrink: 0, borderRadius: 12, border: '1px solid #E1E8F0', background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: UI.text }}>
       {children}
     </button>
   )

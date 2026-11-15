@@ -101,7 +101,7 @@ export default function StaffView() {
                   const others = p.staffIds.filter(id => id !== s.id)
                   const st = STATUS_STYLE[passStatus(p)]
                   return (
-                    <button key={p.id} onClick={() => setOpenPass(p.id)} className="sess-row" style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 12, background: '#fff', border: '1px solid rgba(0,0,0,0.06)', borderLeft: `4px solid ${gm[p.groupIds[0]]?.color}` }}>
+                    <button key={p.id} onClick={() => setOpenPass(p.id)} className="sess-row" style={{ width: '100%', textAlign: 'left', fontFamily: 'inherit', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 10, padding: '8px 10px', borderRadius: 12, background: '#fff', border: '1px solid #E1E8F0', borderLeft: `4px solid ${gm[p.groupIds[0]]?.color}` }}>
                       <DateBadge date={p.date} small />
                       <div style={{ flex: 1, minWidth: 0, display: 'flex', flexDirection: 'column', gap: 3 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 7, flexWrap: 'wrap' }}>

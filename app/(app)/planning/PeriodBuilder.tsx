@@ -86,7 +86,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
       supabase.from('groups').select('id, name, color').eq('club_id', profile?.club_id ?? '').order('name'),
     ])
 
-    if (g) setGroups(g.map((gr: any) => ({ id: gr.id, name: gr.name, color: gr.color ?? '#0D7377' })))
+    if (g) setGroups(g.map((gr: any) => ({ id: gr.id, name: gr.name, color: gr.color ?? '#2B5C9E' })))
 
     if (tpls) {
       const full: PeriodTemplate[] = []
@@ -312,21 +312,21 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
       <Portal>
       <div className="glass-sheet" style={{
         position: 'fixed', inset: 0, zIndex: 9999,
-        background: 'rgba(248,250,252,0.97)', backdropFilter: 'blur(20px)',
+        background: 'rgba(248,250,252,0.97)',
         overflowY: 'auto', WebkitOverflowScrolling: 'touch',
       }}>
         <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px' }}>
           {/* Header */}
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 24 }}>
-            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+            <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>
               Periodisering
             </h1>
             <button onClick={onClose} style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <X size={18} color="#64748B" />
+              <X size={18} color="#56637A" />
             </button>
           </div>
 
-          <p style={{ fontSize: 13, color: '#64748B', lineHeight: 1.6, marginBottom: 20 }}>
+          <p style={{ fontSize: 13, color: '#56637A', lineHeight: 1.6, marginBottom: 20 }}>
             Skapa veckocykel-mallar med progression. Varje mall har N veckor med pass fördelade på veckodagar. Applicera en mall på kalendern för att skapa riktiga pass.
           </p>
 
@@ -343,7 +343,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           ) : (
             <div className="glass-card" style={{ padding: 18, marginBottom: 20 }}>
               <div style={{ marginBottom: 14 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
                   Namn
                 </label>
                 <input
@@ -353,13 +353,13 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                   autoFocus
                   style={{
                     width: '100%', padding: '10px 12px', borderRadius: 10,
-                    border: '1px solid rgba(0,0,0,0.1)', fontSize: 14,
-                    background: 'rgba(255,255,255,0.8)',
+                    border: '1px solid #E1E8F0', fontSize: 14,
+                    background: '#FFFFFF',
                   }}
                 />
               </div>
               <div style={{ marginBottom: 16 }}>
-                <label style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
                   Antal veckor
                 </label>
                 <div style={{ display: 'flex', gap: 6 }}>
@@ -369,8 +369,8 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                       onClick={() => setNewWeeks(n)}
                       style={{
                         padding: '8px 14px', borderRadius: 10, border: 'none',
-                        background: newWeeks === n ? '#0D7377' : 'rgba(0,0,0,0.06)',
-                        color: newWeeks === n ? 'white' : '#0F172A',
+                        background: newWeeks === n ? '#2B5C9E' : 'rgba(0,0,0,0.06)',
+                        color: newWeeks === n ? 'white' : '#1E2B42',
                         fontSize: 13, fontWeight: 700, cursor: 'pointer',
                       }}
                     >
@@ -380,7 +380,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                 </div>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                <button onClick={() => setShowCreate(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: 'rgba(0,0,0,0.06)', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}>
+                <button onClick={() => setShowCreate(false)} style={{ flex: 1, padding: '12px', borderRadius: 12, border: 'none', background: 'rgba(0,0,0,0.06)', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#56637A' }}>
                   Avbryt
                 </button>
                 <button onClick={createTemplate} disabled={!newName.trim()} className="btn-primary" style={{ flex: 1, padding: '12px', borderRadius: 12, fontSize: 14, cursor: 'pointer', opacity: newName.trim() ? 1 : 0.4 }}>
@@ -393,10 +393,10 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           {/* Template list */}
           {loading ? (
             <div style={{ display: 'flex', justifyContent: 'center', padding: 40 }}>
-              <div style={{ width: 28, height: 28, border: '3px solid rgba(13,115,119,0.2)', borderTopColor: '#0D7377', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+              <div style={{ width: 28, height: 28, border: '3px solid rgba(43,92,158,0.2)', borderTopColor: '#2B5C9E', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
             </div>
           ) : templates.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8', fontSize: 14 }}>
+            <div style={{ textAlign: 'center', padding: 40, color: '#56637A', fontSize: 14 }}>
               Inga mallar ännu. Skapa din första veckocykel-mall!
             </div>
           ) : (
@@ -408,10 +408,10 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                       onClick={() => setActive(tpl)}
                       style={{ background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left', flex: 1 }}
                     >
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 3 }}>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 3 }}>
                         {tpl.name}
                       </div>
-                      <div style={{ fontSize: 12, color: '#64748B' }}>
+                      <div style={{ fontSize: 12, color: '#56637A' }}>
                         {tpl.weeks} veckor · {tpl.entries.length} pass
                       </div>
                     </button>
@@ -438,7 +438,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
     <Portal>
     <div className="glass-sheet" style={{
       position: 'fixed', inset: 0, zIndex: 9999,
-      background: 'rgba(248,250,252,0.97)', backdropFilter: 'blur(20px)',
+      background: 'rgba(248,250,252,0.97)',
       overflowY: 'auto', WebkitOverflowScrolling: 'touch',
     }}>
       <div style={{ maxWidth: 600, margin: '0 auto', padding: '20px 16px' }}>
@@ -446,7 +446,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 4 }}>
           <button
             onClick={() => setActive(null)}
-            style={{ fontSize: 13, fontWeight: 600, color: '#0D7377', background: 'none', border: 'none', cursor: 'pointer' }}
+            style={{ fontSize: 13, fontWeight: 600, color: '#2B5C9E', background: 'none', border: 'none', cursor: 'pointer' }}
           >
             ← Tillbaka
           </button>
@@ -460,10 +460,10 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           </button>
         </div>
 
-        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 4 }}>
+        <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 4 }}>
           {active.name}
         </h2>
-        <p style={{ fontSize: 12, color: '#64748B', marginBottom: 20 }}>
+        <p style={{ fontSize: 12, color: '#56637A', marginBottom: 20 }}>
           {active.weeks} veckor · Klicka på en cell för att lägga till pass
         </p>
 
@@ -475,13 +475,13 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
           return (
             <div key={weekNum} style={{ marginBottom: 16 }}>
               <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
-                <div style={{ fontSize: 12, fontWeight: 800, color: '#0D7377', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
+                <div style={{ fontSize: 12, fontWeight: 800, color: '#2B5C9E', textTransform: 'uppercase', letterSpacing: '0.06em' }}>
                   Vecka {weekNum}
                 </div>
                 {weekNum < active.weeks && (
                   <button
                     onClick={() => copyWeek(weekNum, weekNum + 1)}
-                    style={{ fontSize: 11, fontWeight: 600, color: '#64748B', background: 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', padding: '4px 10px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4 }}
+                    style={{ fontSize: 11, fontWeight: 600, color: '#56637A', background: 'rgba(0,0,0,0.04)', border: 'none', cursor: 'pointer', padding: '4px 10px', borderRadius: 8, display: 'flex', alignItems: 'center', gap: 4 }}
                   >
                     <Copy size={11} /> Kopiera → v.{weekNum + 1}
                   </button>
@@ -492,7 +492,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
               <div style={{ display: 'grid', gridTemplateColumns: 'repeat(7, 1fr)', gap: 4 }}>
                 {/* Day headers */}
                 {DAY_LABELS_SHORT.map((d, i) => (
-                  <div key={i} style={{ fontSize: 10, fontWeight: 700, color: '#94A3B8', textAlign: 'center', paddingBottom: 4 }}>
+                  <div key={i} style={{ fontSize: 10, fontWeight: 700, color: '#56637A', textAlign: 'center', paddingBottom: 4 }}>
                     {d}
                   </div>
                 ))}
@@ -515,8 +515,8 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                       style={{
                         minHeight: 52,
                         borderRadius: 10,
-                        background: isAddingHere ? 'rgba(13,115,119,0.08)' : 'rgba(255,255,255,0.7)',
-                        border: isAddingHere ? '2px solid rgba(13,115,119,0.3)' : '1px solid rgba(0,0,0,0.06)',
+                        background: isAddingHere ? 'rgba(43,92,158,0.08)' : 'rgba(255,255,255,0.7)',
+                        border: isAddingHere ? '2px solid rgba(43,92,158,0.3)' : '1px solid #E1E8F0',
                         padding: 4,
                         cursor: 'pointer',
                         transition: 'all 0.15s',
@@ -530,7 +530,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                             style={{
                               fontSize: 9,
                               fontWeight: 700,
-                              color: group?.color || '#0F172A',
+                              color: group?.color || '#1E2B42',
                               background: group ? `${group.color}18` : 'rgba(0,0,0,0.04)',
                               borderRadius: 6,
                               padding: '3px 4px',
@@ -568,7 +568,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
             boxShadow: '0 -4px 24px rgba(0,0,0,0.12)',
             borderRadius: 18,
           }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', marginBottom: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', marginBottom: 8 }}>
               Vecka {addingCell.week} · {DAY_LABELS[addingCell.day - 1]}
             </div>
             <input
@@ -579,8 +579,8 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
               onKeyDown={e => { if (e.key === 'Enter') addEntry() }}
               style={{
                 width: '100%', padding: '10px 12px', borderRadius: 10,
-                border: '1px solid rgba(0,0,0,0.1)', fontSize: 14,
-                background: 'rgba(255,255,255,0.8)', marginBottom: 10,
+                border: '1px solid #E1E8F0', fontSize: 14,
+                background: '#FFFFFF', marginBottom: 10,
               }}
             />
             {groups.length > 0 && (
@@ -592,7 +592,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                     style={{
                       padding: '5px 10px', borderRadius: 8, border: 'none',
                       background: entryGroupId === g.id ? g.color : 'rgba(0,0,0,0.06)',
-                      color: entryGroupId === g.id ? 'white' : '#0F172A',
+                      color: entryGroupId === g.id ? 'white' : '#1E2B42',
                       fontSize: 11, fontWeight: 700, cursor: 'pointer',
                     }}
                   >
@@ -604,7 +604,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
             <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => setAddingCell(null)}
-                style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'rgba(0,0,0,0.06)', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}
+                style={{ flex: 1, padding: '10px', borderRadius: 10, border: 'none', background: 'rgba(0,0,0,0.06)', fontSize: 13, fontWeight: 600, cursor: 'pointer', color: '#56637A' }}
               >
                 Avbryt
               </button>
@@ -635,14 +635,14 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
             boxShadow: '0 -8px 40px rgba(0,0,0,0.15)',
             maxHeight: '85vh', overflowY: 'auto',
           }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', marginBottom: 4 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', marginBottom: 4 }}>
               Applicera mall
             </h3>
-            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 16 }}>
+            <p style={{ fontSize: 13, color: '#56637A', marginBottom: 16 }}>
               Välj startdatum (bör vara en måndag). {active.entries.length} pass skapas som utkast över {active.weeks} veckor.
             </p>
 
-            <label style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+            <label style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
               Startdatum
             </label>
             <input
@@ -651,14 +651,14 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
               onChange={e => setApplyDate(e.target.value)}
               style={{
                 width: '100%', padding: '12px', borderRadius: 12,
-                border: '1px solid rgba(0,0,0,0.1)', fontSize: 15,
+                border: '1px solid #E1E8F0', fontSize: 15,
                 marginBottom: 16,
               }}
             />
 
             {groups.length > 0 && (
               <>
-                <label style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
+                <label style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, display: 'block' }}>
                   Standardgrupp (för pass utan grupp)
                 </label>
                 <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
@@ -669,7 +669,7 @@ export default function PeriodBuilder({ onClose }: { onClose: () => void }) {
                       style={{
                         padding: '8px 14px', borderRadius: 10, border: 'none',
                         background: applyGroupId === g.id ? g.color : 'rgba(0,0,0,0.06)',
-                        color: applyGroupId === g.id ? 'white' : '#0F172A',
+                        color: applyGroupId === g.id ? 'white' : '#1E2B42',
                         fontSize: 13, fontWeight: 700, cursor: 'pointer',
                       }}
                     >

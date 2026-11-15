@@ -30,7 +30,7 @@ function seedDD(id: string): string {
 function seedTrend(id: string): { symbol: string; bg: string; color: string } {
   const t = id.charCodeAt(1) % 3
   if (t === 0) return { symbol: '↑', bg: 'rgba(34,197,94,0.12)', color: '#16A34A' }
-  if (t === 1) return { symbol: '=', bg: 'rgba(148,163,184,0.12)', color: '#64748B' }
+  if (t === 1) return { symbol: '=', bg: 'rgba(148,163,184,0.12)', color: '#56637A' }
   return { symbol: '↓', bg: 'rgba(239,68,68,0.12)', color: '#DC2626' }
 }
 
@@ -79,8 +79,8 @@ export default function GroupDashboardPage() {
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
         <div style={{
           width: 32, height: 32,
-          border: '3px solid rgba(13,115,119,0.2)',
-          borderTopColor: '#0D7377',
+          border: '3px solid rgba(43,92,158,0.2)',
+          borderTopColor: '#2B5C9E',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />
@@ -90,13 +90,13 @@ export default function GroupDashboardPage() {
 
   if (!group) {
     return (
-      <div style={{ textAlign: 'center', padding: 60, color: '#94A3B8' }}>
+      <div style={{ textAlign: 'center', padding: 60, color: '#56637A' }}>
         Gruppen hittades inte
       </div>
     )
   }
 
-  const groupColor = group.color || '#0D7377'
+  const groupColor = group.color || '#2B5C9E'
   const nextSession = trainings.find(t => t.status === 'published')
 
   const formatDate = (d: string) =>
@@ -130,7 +130,7 @@ export default function GroupDashboardPage() {
 
       {/* ── Gradient Hero ── */}
       <div style={{
-        background: 'linear-gradient(160deg, #0D7377 0%, #064d50 100%)',
+        background: 'var(--gradient-hero)',
         padding: '20px 20px 56px',
         position: 'relative',
         overflow: 'hidden',
@@ -179,12 +179,12 @@ export default function GroupDashboardPage() {
             borderRadius: 16,
             padding: '14px 12px',
             textAlign: 'center',
-            boxShadow: '0 4px 16px rgba(0,0,0,0.10)',
+            boxShadow: 'none',
           }}>
-            <div style={{ fontSize: 22, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.03em' }}>
+            <div style={{ fontSize: 22, fontWeight: 900, color: '#1E2B42', letterSpacing: '-0.03em' }}>
               {value}
             </div>
-            <div style={{ fontSize: 10, fontWeight: 600, color: '#94A3B8', textTransform: 'uppercase', marginTop: 2, letterSpacing: '0.04em' }}>
+            <div style={{ fontSize: 10, fontWeight: 600, color: '#56637A', textTransform: 'uppercase', marginTop: 2, letterSpacing: '0.04em' }}>
               {label}
             </div>
           </div>
@@ -200,7 +200,7 @@ export default function GroupDashboardPage() {
             onClick={() => router.push(`/groups/${groupId}/planning`)}
             style={{
               marginTop: 16,
-              background: 'linear-gradient(135deg, #0D7377 0%, #064d50 100%)',
+              background: 'var(--gradient-hero)',
               borderRadius: 16,
               padding: '14px 16px',
               display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -220,7 +220,7 @@ export default function GroupDashboardPage() {
             </div>
             <div style={{
               background: 'white',
-              color: '#0D7377',
+              color: '#2B5C9E',
               borderRadius: 9999,
               padding: '8px 16px',
               fontSize: 13,
@@ -234,7 +234,7 @@ export default function GroupDashboardPage() {
 
         {/* ── Athlete Section ── */}
         <div style={{ marginTop: 24 }}>
-          <p style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>
+          <p style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.08em', margin: '0 0 12px' }}>
             Atleter
           </p>
 
@@ -252,7 +252,7 @@ export default function GroupDashboardPage() {
                     padding: '14px 16px',
                     display: 'flex', alignItems: 'center', gap: 12,
                     cursor: 'pointer',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                    boxShadow: 'none',
                   }}
                 >
                   <div style={{
@@ -266,16 +266,16 @@ export default function GroupDashboardPage() {
                   </div>
 
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                    <div style={{ fontSize: 15, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                       {a.name}
                     </div>
-                    <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>
+                    <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>
                       — hopp · Sist aktiv —
                     </div>
                   </div>
 
                   <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, flexShrink: 0 }}>
-                    <span style={{ fontSize: 17, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.02em' }}>
+                    <span style={{ fontSize: 17, fontWeight: 900, color: '#1E2B42', letterSpacing: '-0.02em' }}>
                       {dd}
                     </span>
                     <span style={{
@@ -303,7 +303,7 @@ export default function GroupDashboardPage() {
                 padding: '14px 16px',
                 display: 'flex', alignItems: 'center', gap: 12,
                 cursor: 'pointer',
-                boxShadow: '0 2px 12px rgba(0,0,0,0.07)',
+                boxShadow: 'none',
                 opacity: 0.5,
               }}
             >
@@ -312,11 +312,11 @@ export default function GroupDashboardPage() {
                 background: 'rgba(0,0,0,0.08)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
               }}>
-                <span style={{ fontSize: 20, color: '#64748B', lineHeight: 1 }}>+</span>
+                <span style={{ fontSize: 20, color: '#56637A', lineHeight: 1 }}>+</span>
               </div>
               <div>
-                <div style={{ fontSize: 15, fontWeight: 800, color: '#0F172A' }}>Bjud in atlet</div>
-                <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Skicka inbjudan via mail</div>
+                <div style={{ fontSize: 15, fontWeight: 800, color: '#1E2B42' }}>Bjud in atlet</div>
+                <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>Skicka inbjudan via mail</div>
               </div>
             </div>
           </div>
@@ -345,10 +345,10 @@ export default function GroupDashboardPage() {
           >
             <div style={{ width: 36, height: 4, borderRadius: 2, background: 'rgba(0,0,0,0.12)', margin: '0 auto 20px' }} />
 
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 6 }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 6 }}>
               Bjud in atlet
             </h3>
-            <p style={{ fontSize: 13, color: '#64748B', marginBottom: 20 }}>
+            <p style={{ fontSize: 13, color: '#56637A', marginBottom: 20 }}>
               Atleten får ett mail med länk för att skapa konto.
             </p>
 

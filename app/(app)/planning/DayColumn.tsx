@@ -35,19 +35,19 @@ export default function DayColumn({ date, dayIndex, trainings, isToday, onRefres
       <div style={{
         marginBottom: 8, paddingBottom: 8,
         borderBottom: isToday
-          ? '2px solid #0D7377'
-          : '1px solid rgba(0,0,0,0.08)',
+          ? '2px solid #2B5C9E'
+          : '1px solid #E1E8F0',
       }}>
         <div style={{
           fontSize: 11, fontWeight: 800,
-          color: isToday ? '#0D7377' : '#64748B',
+          color: isToday ? '#2B5C9E' : '#56637A',
           textTransform: 'uppercase', letterSpacing: '0.06em',
         }}>
           {DAY_NAMES_SHORT[dayIndex]}
         </div>
         <div style={{
           fontSize: 18, fontWeight: 800,
-          color: isToday ? '#0D7377' : '#0F172A',
+          color: isToday ? '#2B5C9E' : '#1E2B42',
           letterSpacing: '-0.03em', lineHeight: 1,
           marginTop: 2,
         }}>
@@ -63,8 +63,8 @@ export default function DayColumn({ date, dayIndex, trainings, isToday, onRefres
           minHeight: 80,
           borderRadius: 10,
           padding: 4,
-          background: isOver ? 'rgba(13,115,119,0.06)' : 'transparent',
-          border: isOver ? '1px dashed rgba(13,115,119,0.3)' : '1px solid transparent',
+          background: isOver ? 'rgba(43,92,158,0.06)' : 'transparent',
+          border: isOver ? '1px dashed rgba(43,92,158,0.3)' : '1px solid transparent',
           transition: 'background 0.15s ease, border-color 0.15s ease',
         }}
       >

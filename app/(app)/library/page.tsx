@@ -10,7 +10,7 @@ import type { BlockCategoryRecord } from '@/types'
 import Portal from '@/components/Portal'
 
 const PRESET_COLORS = [
-  '#0D7377', '#D4A017', '#DC2626', '#16A34A',
+  '#2B5C9E', '#D4A017', '#DC2626', '#16A34A',
   '#F97316', '#6366F1', '#0EA5E9', '#EC4899',
 ]
 
@@ -27,7 +27,7 @@ const MOOD_CHIPS = [
 
 const AI_QUICK_PROMPTS = ['Teknikfokus 90 min', 'Lätt återhämtning', 'Tävlingsförberedelse', 'Styrkepass']
 
-const TEAL = '#0D7377'
+const TEAL = '#2B5C9E'
 
 interface BlockCategoryStat extends BlockCategoryRecord {
   subCategoryCount: number
@@ -297,12 +297,11 @@ export default function LibraryPage() {
       {/* ── Sticky page header ── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 50,
-        background: 'rgba(245,244,241,0.92)',
-        backdropFilter: 'blur(20px)', WebkitBackdropFilter: 'blur(20px)',
-        borderBottom: '1px solid rgba(0,0,0,0.05)',
+        background: '#EEF3F8',
+        borderBottom: '1px solid #E1E8F0',
       }}>
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 16px 10px' }}>
-          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', margin: 0 }}>Library</h1>
+          <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', margin: 0 }}>Library</h1>
           <button
             onClick={openNewExercise}
             style={{ display: 'flex', alignItems: 'center', gap: 5, padding: '7px 13px', borderRadius: 20, background: TEAL, border: 'none', cursor: 'pointer' }}
@@ -313,7 +312,7 @@ export default function LibraryPage() {
         </div>
 
         <div style={{ padding: '0 16px 10px', position: 'relative' }}>
-          <Search size={15} color="#94A3B8" strokeWidth={2} style={{ position: 'absolute', left: 30, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+          <Search size={15} color="#56637A" strokeWidth={2} style={{ position: 'absolute', left: 30, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
           <input
             value={search}
             onChange={e => setSearch(e.target.value)}
@@ -323,7 +322,7 @@ export default function LibraryPage() {
           />
           {search && (
             <button onClick={() => setSearch('')} style={{ position: 'absolute', right: 26, top: '50%', transform: 'translateY(-50%)', background: 'none', border: 'none', cursor: 'pointer', padding: 4, display: 'flex' }}>
-              <X size={14} color="#94A3B8" strokeWidth={2.5} />
+              <X size={14} color="#56637A" strokeWidth={2.5} />
             </button>
           )}
         </div>
@@ -340,7 +339,7 @@ export default function LibraryPage() {
                   style={{
                     flex: 1, padding: '8px 4px', borderRadius: 10, border: 'none', cursor: 'pointer',
                     fontSize: 13, fontWeight: active ? 700 : 500,
-                    color: active ? 'white' : '#64748B',
+                    color: active ? 'white' : '#56637A',
                     background: active ? TEAL : 'transparent',
                     transition: 'all 0.15s ease',
                   }}
@@ -358,13 +357,13 @@ export default function LibraryPage() {
 
         {search.trim() ? (
           <div>
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
               {searchResults.length} resultat
             </div>
             {searchResults.length === 0 ? (
               <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-                <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga resultat</p>
-                <p style={{ fontSize: 13, color: '#94A3B8' }}>Prova ett annat sökord</p>
+                <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga resultat</p>
+                <p style={{ fontSize: 13, color: '#56637A' }}>Prova ett annat sökord</p>
               </div>
             ) : (
               <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -376,8 +375,8 @@ export default function LibraryPage() {
                     style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 18, border: 'none', cursor: 'pointer' }}
                   >
                     {item.code && <div style={{ fontSize: 11, fontWeight: 700, color: TEAL, letterSpacing: '0.06em', marginBottom: 3 }}>{item.code}</div>}
-                    <div style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', marginBottom: item.category_name ? 4 : 0 }}>{item.name}</div>
-                    {item.category_name && <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>{item.category_name}</div>}
+                    <div style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42', marginBottom: item.category_name ? 4 : 0 }}>{item.name}</div>
+                    {item.category_name && <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>{item.category_name}</div>}
                   </button>
                 ))}
               </div>
@@ -385,7 +384,7 @@ export default function LibraryPage() {
           </div>
 
         ) : loading ? (
-          <div style={{ textAlign: 'center', padding: 40, color: '#94A3B8' }}>Laddar...</div>
+          <div style={{ textAlign: 'center', padding: 40, color: '#56637A' }}>Laddar...</div>
 
         ) : (
           <>
@@ -398,10 +397,10 @@ export default function LibraryPage() {
                 <button
                   onClick={() => setShowAISheet(true)}
                   style={{
-                    width: '100%', background: 'linear-gradient(135deg, #0D7377 0%, #064d50 100%)',
+                    width: '100%', background: 'var(--gradient-hero)',
                     borderRadius: 18, padding: '16px 18px', border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20, textAlign: 'left',
-                    boxShadow: '0 4px 20px rgba(13,115,119,0.25)',
+                    boxShadow: 'none',
                   }}
                 >
                   <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -425,7 +424,7 @@ export default function LibraryPage() {
                         style={{
                           flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: 'none', cursor: 'pointer',
                           fontSize: 13, fontWeight: active ? 700 : 500,
-                          color: active ? 'white' : '#64748B',
+                          color: active ? 'white' : '#56637A',
                           background: active ? TEAL : 'rgba(0,0,0,0.06)',
                           transition: 'all 0.15s ease', whiteSpace: 'nowrap',
                         }}
@@ -438,7 +437,7 @@ export default function LibraryPage() {
 
                 {/* Inspiration cards */}
                 <div style={{ marginBottom: 24 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
                     Inspiration idag
                   </div>
                   <div style={{ display: 'flex', gap: 10, overflowX: 'auto', paddingBottom: 4 }}>
@@ -451,7 +450,7 @@ export default function LibraryPage() {
                           textAlign: 'left', overflow: 'hidden', position: 'relative',
                           background: `linear-gradient(145deg, ${stat.color}dd 0%, ${stat.color}99 100%)`,
                           padding: '16px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
-                          boxShadow: `0 4px 16px ${stat.color}33`,
+                          boxShadow: 'none',
                         }}
                       >
                         <div style={{ position: 'absolute', top: -16, right: -16, width: 80, height: 80, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', pointerEvents: 'none' }} />
@@ -469,7 +468,7 @@ export default function LibraryPage() {
 
                 {/* Recent exercises */}
                 <div style={{ marginBottom: 20 }}>
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
                     Senast tillagda
                   </div>
                   {recentItems.length > 0 ? (
@@ -482,17 +481,17 @@ export default function LibraryPage() {
                             width: '100%', display: 'flex', alignItems: 'center', gap: 12,
                             padding: '12px 14px', borderRadius: 12,
                             background: 'white', border: 'none', cursor: 'pointer', textAlign: 'left',
-                            boxShadow: '0 1px 4px rgba(0,0,0,0.06)',
+                            boxShadow: 'none',
                           }}
                         >
-                          <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'rgba(13,115,119,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                          <div style={{ width: 36, height: 36, borderRadius: 10, flexShrink: 0, background: 'rgba(43,92,158,0.1)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                             <span style={{ fontSize: 10, fontWeight: 700, color: TEAL, textAlign: 'center', lineHeight: 1.2 }}>
                               {item.code ?? item.category_name?.slice(0, 3) ?? '—'}
                             </span>
                           </div>
                           <div style={{ flex: 1, minWidth: 0 }}>
-                            <div style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
-                            <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2 }}>
+                            <div style={{ fontSize: 13, fontWeight: 700, color: '#1E2B42', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{item.name}</div>
+                            <div style={{ fontSize: 11, color: '#56637A', marginTop: 2 }}>
                               {[item.category_name, item.dd != null ? `DD ${item.dd}` : null].filter(Boolean).join(' · ') || '—'}
                             </div>
                           </div>
@@ -504,7 +503,7 @@ export default function LibraryPage() {
                     </div>
                   ) : (
                     <div style={{ textAlign: 'center', padding: '24px 16px', borderRadius: 14, background: 'white' }}>
-                      <p style={{ fontSize: 13, color: '#94A3B8' }}>Inga övningar matchar</p>
+                      <p style={{ fontSize: 13, color: '#56637A' }}>Inga övningar matchar</p>
                     </div>
                   )}
                 </div>
@@ -514,7 +513,7 @@ export default function LibraryPage() {
                   onClick={openNewExercise}
                   style={{
                     width: '100%', padding: 16, borderRadius: 18, background: 'transparent',
-                    border: `1.5px dashed rgba(13,115,119,0.4)`, cursor: 'pointer',
+                    border: `1.5px dashed rgba(43,92,158,0.4)`, cursor: 'pointer',
                     color: TEAL, fontSize: 14, fontWeight: 700, opacity: 0.75,
                   }}
                 >
@@ -531,10 +530,10 @@ export default function LibraryPage() {
                 <button
                   onClick={() => setShowAISheet(true)}
                   style={{
-                    width: '100%', background: 'linear-gradient(135deg, #0D7377 0%, #064d50 100%)',
+                    width: '100%', background: 'var(--gradient-hero)',
                     borderRadius: 18, padding: '16px 18px', border: 'none', cursor: 'pointer',
                     display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24, textAlign: 'left',
-                    boxShadow: '0 4px 20px rgba(13,115,119,0.25)',
+                    boxShadow: 'none',
                   }}
                 >
                   <div style={{ width: 40, height: 40, borderRadius: 12, flexShrink: 0, background: 'rgba(255,255,255,0.18)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -548,14 +547,14 @@ export default function LibraryPage() {
                 </button>
 
                 {/* Träningsmallar section */}
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12 }}>
                   Träningsmallar
                 </div>
 
                 {trainingTemplates.length === 0 ? (
                   <div style={{ padding: '20px 16px', borderRadius: 16, background: 'white', border: '0.5px solid rgba(0,0,0,0.08)', textAlign: 'center', marginBottom: 24 }}>
-                    <p style={{ fontSize: 13, fontWeight: 600, color: '#475569', marginBottom: 4 }}>Inga mallar än</p>
-                    <p style={{ fontSize: 12, color: '#94A3B8' }}>Skapa ditt första pass i Planning och spara som mall</p>
+                    <p style={{ fontSize: 13, fontWeight: 600, color: '#56637A', marginBottom: 4 }}>Inga mallar än</p>
+                    <p style={{ fontSize: 12, color: '#56637A' }}>Skapa ditt första pass i Planning och spara som mall</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 24 }}>
@@ -569,8 +568,8 @@ export default function LibraryPage() {
                         >
                           {/* Top row */}
                           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-                            <span style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>{tmpl.name}</span>
-                            <span style={{ fontSize: 11, fontWeight: 700, color: TEAL, background: 'rgba(13,115,119,0.1)', padding: '3px 9px', borderRadius: 20 }}>
+                            <span style={{ fontSize: 14, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>{tmpl.name}</span>
+                            <span style={{ fontSize: 11, fontWeight: 700, color: TEAL, background: 'rgba(43,92,158,0.1)', padding: '3px 9px', borderRadius: 20 }}>
                               {tmpl.blocks.length} block
                             </span>
                           </div>
@@ -580,7 +579,7 @@ export default function LibraryPage() {
                             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginTop: 10 }}>
                               {visibleBlocks.map(block => {
                                 const cat = blockStats.find(b => b.id === block.category)
-                                const color = cat?.color ?? '#64748B'
+                                const color = cat?.color ?? '#56637A'
                                 return (
                                   <span
                                     key={block.id}
@@ -596,7 +595,7 @@ export default function LibraryPage() {
                                 )
                               })}
                               {overflow > 0 && (
-                                <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8', padding: '4px 8px' }}>
+                                <span style={{ fontSize: 11, fontWeight: 600, color: '#56637A', padding: '4px 8px' }}>
                                   +{overflow} till
                                 </span>
                               )}
@@ -604,8 +603,8 @@ export default function LibraryPage() {
                           )}
 
                           {/* Footer */}
-                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTop: '1px solid rgba(0,0,0,0.06)' }}>
-                            <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>Skapad {daysAgo(tmpl.created_at)}</span>
+                          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTop: '1px solid #E1E8F0' }}>
+                            <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500 }}>Skapad {daysAgo(tmpl.created_at)}</span>
                             <button
                               onClick={() => router.push(`/planning?templateId=${tmpl.id}`)}
                               style={{ fontSize: 12, fontWeight: 700, color: TEAL, background: 'none', border: 'none', cursor: 'pointer', padding: 0 }}
@@ -620,19 +619,19 @@ export default function LibraryPage() {
                 )}
 
                 {/* Blockmallar section */}
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12, marginTop: 4 }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 12, marginTop: 4 }}>
                   Blockmallar
                 </div>
 
                 {fullBlockTemplates.length === 0 ? (
                   <div style={{ padding: '16px', borderRadius: 14, background: 'white', border: '0.5px solid rgba(0,0,0,0.08)', textAlign: 'center', marginBottom: 20 }}>
-                    <p style={{ fontSize: 13, color: '#94A3B8' }}>Inga blockmallar än</p>
+                    <p style={{ fontSize: 13, color: '#56637A' }}>Inga blockmallar än</p>
                   </div>
                 ) : (
                   <div style={{ display: 'flex', flexDirection: 'column', gap: 8, marginBottom: 20 }}>
                     {fullBlockTemplates.map(tmpl => {
                       const cat = blockStats.find(b => b.id === tmpl.category)
-                      const dotColor = cat?.color ?? '#94A3B8'
+                      const dotColor = cat?.color ?? '#56637A'
                       return (
                         <button
                           key={tmpl.id}
@@ -645,10 +644,10 @@ export default function LibraryPage() {
                           }}
                         >
                           <div style={{ width: 8, height: 8, borderRadius: '50%', background: dotColor, flexShrink: 0 }} />
-                          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#0F172A', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+                          <span style={{ flex: 1, fontSize: 13, fontWeight: 700, color: '#1E2B42', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
                             {tmpl.name}
                           </span>
-                          <span style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', background: 'rgba(0,0,0,0.05)', padding: '3px 9px', borderRadius: 20, flexShrink: 0 }}>
+                          <span style={{ fontSize: 11, fontWeight: 700, color: '#56637A', background: 'rgba(0,0,0,0.05)', padding: '3px 9px', borderRadius: 20, flexShrink: 0 }}>
                             {tmpl.itemCount} övningar
                           </span>
                         </button>
@@ -662,12 +661,12 @@ export default function LibraryPage() {
                   onClick={() => router.push('/planning')}
                   style={{
                     width: '100%', padding: '16px 16px 12px', borderRadius: 18,
-                    background: 'transparent', border: `1.5px dashed rgba(13,115,119,0.4)`,
+                    background: 'transparent', border: `1.5px dashed rgba(43,92,158,0.4)`,
                     cursor: 'pointer', textAlign: 'center',
                   }}
                 >
                   <div style={{ fontSize: 14, fontWeight: 700, color: TEAL }}>+ Spara nuvarande pass som mall</div>
-                  <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 5, fontWeight: 500 }}>
+                  <div style={{ fontSize: 11, color: '#56637A', marginTop: 5, fontWeight: 500 }}>
                     Bygg ett pass i Planning och tryck "Spara som mall"
                   </div>
                 </button>
@@ -682,13 +681,13 @@ export default function LibraryPage() {
                     onClick={() => { setEditMode(e => !e); setEditingCat(null) }}
                     style={{ background: editMode ? TEAL : 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 12, padding: '7px 12px', display: 'flex', alignItems: 'center', gap: 6, cursor: 'pointer' }}
                   >
-                    <Settings size={14} color={editMode ? 'white' : '#64748B'} strokeWidth={2} />
-                    <span style={{ fontSize: 12, fontWeight: 700, color: editMode ? 'white' : '#64748B' }}>{editMode ? 'Klar' : 'Hantera'}</span>
+                    <Settings size={14} color={editMode ? 'white' : '#56637A'} strokeWidth={2} />
+                    <span style={{ fontSize: 12, fontWeight: 700, color: editMode ? 'white' : '#56637A' }}>{editMode ? 'Klar' : 'Hantera'}</span>
                   </button>
                 </div>
 
                 {editMode && (
-                  <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
+                  <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 12 }}>
                     Kategorier — tryck för att redigera
                   </div>
                 )}
@@ -702,7 +701,7 @@ export default function LibraryPage() {
                         position: 'relative', height: 140, borderRadius: 20, border: 'none', cursor: 'pointer',
                         textAlign: 'left', overflow: 'hidden',
                         background: `linear-gradient(145deg, ${stat.color}dd 0%, ${stat.color}99 100%)`,
-                        boxShadow: `0 4px 20px ${stat.color}44`,
+                        boxShadow: 'none',
                         padding: '18px 16px', display: 'flex', flexDirection: 'column', justifyContent: 'space-between',
                       }}
                     >
@@ -728,9 +727,9 @@ export default function LibraryPage() {
                       style={{ height: 140, borderRadius: 20, border: '2px dashed rgba(0,0,0,0.15)', cursor: 'pointer', background: 'rgba(0,0,0,0.03)', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8 }}
                     >
                       <div style={{ width: 36, height: 36, borderRadius: 12, background: 'rgba(0,0,0,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <Plus size={18} color="#94A3B8" strokeWidth={2.5} />
+                        <Plus size={18} color="#56637A" strokeWidth={2.5} />
                       </div>
-                      <span style={{ fontSize: 13, fontWeight: 700, color: '#94A3B8' }}>Ny kategori</span>
+                      <span style={{ fontSize: 13, fontWeight: 700, color: '#56637A' }}>Ny kategori</span>
                     </button>
                   )}
                 </div>
@@ -752,13 +751,13 @@ export default function LibraryPage() {
       {/* ── AI Sheet ── */}
       {showAISheet && (
         <Portal>
-          <div onClick={() => setShowAISheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
+          <div onClick={() => setShowAISheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.45)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, padding: '16px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxHeight: '85vh', overflowY: 'auto' }}>
             <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 16 }}>
-              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Generera pass med AI</h2>
+              <h2 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>Generera pass med AI</h2>
               <button onClick={() => setShowAISheet(false)} style={{ width: 32, height: 32, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                <X size={15} color="#64748B" strokeWidth={2.5} />
+                <X size={15} color="#56637A" strokeWidth={2.5} />
               </button>
             </div>
             <textarea
@@ -778,8 +777,8 @@ export default function LibraryPage() {
                   style={{
                     padding: '7px 12px', borderRadius: 20, cursor: 'pointer', fontSize: 13, fontWeight: 600,
                     border: `1.5px solid ${aiPrompt === p ? TEAL : 'rgba(0,0,0,0.1)'}`,
-                    background: aiPrompt === p ? 'rgba(13,115,119,0.08)' : 'transparent',
-                    color: aiPrompt === p ? TEAL : '#64748B',
+                    background: aiPrompt === p ? 'rgba(43,92,158,0.08)' : 'transparent',
+                    color: aiPrompt === p ? TEAL : '#56637A',
                   }}
                 >
                   {p}
@@ -796,7 +795,7 @@ export default function LibraryPage() {
             </button>
             <button
               onClick={() => setShowAISheet(false)}
-              style={{ width: '100%', padding: 13, borderRadius: 14, background: 'rgba(0,0,0,0.05)', border: 'none', fontSize: 14, fontWeight: 600, color: '#64748B', cursor: 'pointer' }}
+              style={{ width: '100%', padding: 13, borderRadius: 14, background: 'rgba(0,0,0,0.05)', border: 'none', fontSize: 14, fontWeight: 600, color: '#56637A', cursor: 'pointer' }}
             >
               Avbryt
             </button>
@@ -809,20 +808,20 @@ export default function LibraryPage() {
         <Portal>
           <div onClick={() => setEditingCat(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 24px' }} />
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
               <div style={{ width: 48, height: 48, borderRadius: 16, background: `${editColor}22`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 24 }}>{editEmoji}</div>
-              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>Redigera kategori</h3>
+              <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>Redigera kategori</h3>
             </div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
             <input value={editName} onChange={e => setEditName(e.target.value)} className="glass-input" style={{ width: '100%', padding: '12px 16px', fontSize: 15, marginBottom: 20 }} />
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Emoji</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Emoji</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
               {EMOJI_SUGGESTIONS.map(e => (
                 <button key={e} onClick={() => setEditEmoji(e)} style={{ width: 44, height: 44, borderRadius: 12, border: editEmoji === e ? `2px solid ${editColor}` : '2px solid transparent', background: editEmoji === e ? `${editColor}18` : 'rgba(0,0,0,0.05)', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{e}</button>
               ))}
             </div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Färg</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Färg</label>
             <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
               {PRESET_COLORS.map(c => (
                 <button key={c} onClick={() => setEditColor(c)} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer', background: c, boxShadow: editColor === c ? `0 0 0 3px white, 0 0 0 5px ${c}` : 'none', transition: 'box-shadow 0.15s' }} />
@@ -830,7 +829,7 @@ export default function LibraryPage() {
             </div>
             {confirmDeleteCatId === editingCat.id ? (
               <div style={{ display: 'flex', gap: 10 }}>
-                <button onClick={() => setConfirmDeleteCatId(null)} style={{ flex: 1, padding: 13, borderRadius: 14, border: 'none', background: 'rgba(0,0,0,0.07)', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: '#64748B' }}>Avbryt</button>
+                <button onClick={() => setConfirmDeleteCatId(null)} style={{ flex: 1, padding: 13, borderRadius: 14, border: 'none', background: 'rgba(0,0,0,0.07)', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: '#56637A' }}>Avbryt</button>
                 <button onClick={() => deleteBlockCat(editingCat.id)} style={{ flex: 1, padding: 13, borderRadius: 14, border: 'none', background: '#DC2626', fontSize: 14, fontWeight: 700, cursor: 'pointer', color: 'white' }}>Ja, ta bort</button>
               </div>
             ) : (
@@ -853,17 +852,17 @@ export default function LibraryPage() {
         <Portal>
           <div onClick={() => setShowAddCat(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(var(--safe-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto', maxHeight: '85vh', overflowY: 'auto' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 24px' }} />
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 24 }}>Ny kategori</h3>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 24px' }} />
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 24 }}>Ny kategori</h3>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 6 }}>Namn</label>
             <input autoFocus value={newCatName} onChange={e => setNewCatName(e.target.value)} placeholder="Kategorinamn..." className="glass-input" style={{ width: '100%', padding: '12px 16px', fontSize: 15, marginBottom: 20 }} onKeyDown={e => e.key === 'Enter' && createBlockCat()} />
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Emoji</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Emoji</label>
             <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', marginBottom: 20 }}>
               {EMOJI_SUGGESTIONS.map(e => (
                 <button key={e} onClick={() => setNewCatEmoji(e)} style={{ width: 44, height: 44, borderRadius: 12, border: newCatEmoji === e ? `2px solid ${newCatColor}` : '2px solid transparent', background: newCatEmoji === e ? `${newCatColor}18` : 'rgba(0,0,0,0.05)', fontSize: 22, cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>{e}</button>
               ))}
             </div>
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Färg</label>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', display: 'block', marginBottom: 8 }}>Färg</label>
             <div style={{ display: 'flex', gap: 10, marginBottom: 24 }}>
               {PRESET_COLORS.map(c => (
                 <button key={c} onClick={() => setNewCatColor(c)} style={{ width: 36, height: 36, borderRadius: '50%', border: 'none', cursor: 'pointer', background: c, boxShadow: newCatColor === c ? `0 0 0 3px white, 0 0 0 5px ${c}` : 'none', transition: 'box-shadow 0.15s' }} />

@@ -20,8 +20,8 @@ export function SegTabs<T extends string>({ value, options, onChange, label }: {
           <button key={k} role="tab" aria-selected={active} onClick={() => onChange(k)} style={{
             flex: '1 0 auto', minHeight: 40, padding: '0 14px', borderRadius: 11, border: 'none',
             background: active ? '#fff' : 'transparent',
-            boxShadow: active ? '0 1px 4px rgba(0,0,0,0.08)' : 'none',
-            color: active ? UI.tealDark : UI.muted,
+            boxShadow: active ? 'none' : 'none',
+            color: active ? UI.primary : UI.muted,
             fontSize: 14, fontWeight: active ? 700 : 600, cursor: 'pointer', fontFamily: 'inherit',
             whiteSpace: 'nowrap',
           }}>{l}</button>

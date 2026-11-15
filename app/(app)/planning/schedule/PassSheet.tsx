@@ -59,7 +59,7 @@ function Details({ pass, variant }: { pass: SchedulePass; variant: 'plan' | 'sch
         {variant === 'plan' && <StatusTag status={passStatus(pass)} />}
         {variant === 'schema' && cancelled && <StatusTag status="cancelled" />}
         {pass.isExtra && <Tag bg="#D1FAE5" fg="#065F46">Extrapass</Tag>}
-        {pass.removed && <Tag bg="#F1F5F9" fg="#475569">Borttaget</Tag>}
+        {pass.removed && <Tag bg="#EEF3F8" fg="#56637A">Borttaget</Tag>}
       </div>
       <dl style={{ margin: '16px 0 0', display: 'grid', gap: 12 }}>
         <Row icon={<Clock size={16} />} label="Tid">{timeText(pass)}</Row>
@@ -109,7 +109,7 @@ function PlanSection({ pass, onPlan }: { pass: SchedulePass; onPlan: () => void 
       {focus.length > 0 && (
         <div style={{ marginTop: 16, display: 'grid', gap: 6 }}>
           {focus.map(f => (
-            <div key={f.groupId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: UI.tealLight, color: UI.tealDark, fontSize: 13.5, fontWeight: 700 }}>
+            <div key={f.groupId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: UI.primarySoft, color: UI.primary, fontSize: 13.5, fontWeight: 700 }}>
               <Target size={16} aria-hidden />Veckans fokus{focus.length > 1 ? ` (${gm[f.groupId]?.name})` : ''}: {f.text}
             </div>
           ))}
@@ -120,7 +120,7 @@ function PlanSection({ pass, onPlan }: { pass: SchedulePass; onPlan: () => void 
         <section style={{ marginTop: 20 }}>
           <SectionHeading>Innehåll</SectionHeading>
           {hasContent(pass.content) ? (
-            <div style={{ borderRadius: 16, background: '#fff', border: '1px solid rgba(0,0,0,0.07)', padding: 12, display: 'grid', gap: 8 }}>
+            <div style={{ borderRadius: 16, background: '#fff', border: '1px solid #E1E8F0', padding: 12, display: 'grid', gap: 8 }}>
               <div style={{ fontSize: 12.5, color: UI.muted }}>{pass.content!.source} · {contentSummary(pass.content)}</div>
               {pass.content!.blocks.map(b => (
                 <div key={b.id} style={{ borderLeft: `3px solid ${CATEGORY_BY_ID[b.category]?.color}`, paddingLeft: 10 }}>
@@ -153,7 +153,7 @@ function PlanSection({ pass, onPlan }: { pass: SchedulePass; onPlan: () => void 
 
       {isPast && !cancelled && !pass.removed && <ReviewSection pass={pass} />}
 
-      <Link href="/schema" style={{ marginTop: 20, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.tealDark, textDecoration: 'none', minHeight: 40 }}>
+      <Link href="/schema" style={{ marginTop: 20, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.primary, textDecoration: 'none', minHeight: 40 }}>
         Se passet i schemat <ArrowRight size={15} />
       </Link>
     </>
@@ -175,7 +175,7 @@ function ReviewSection({ pass }: { pass: SchedulePass }) {
         <Toggle on={r.rating === 'down'} onClick={() => set({ rating: r.rating === 'down' ? null : 'down' })} color="#B91C1C" bg="#FEE2E2">
           <ThumbsDown size={16} />Behöver ändras
         </Toggle>
-        <Toggle on={r.repeat} onClick={() => set({ repeat: !r.repeat })} color={UI.tealDark} bg={UI.tealLight}>
+        <Toggle on={r.repeat} onClick={() => set({ repeat: !r.repeat })} color={UI.primary} bg={UI.primarySoft}>
           <Repeat size={16} />Kör igen
         </Toggle>
       </div>
@@ -240,7 +240,7 @@ function ScheduleSection({ pass, onEdit, onClosed }: { pass: SchedulePass; onEdi
         )}
       </section>
       {!pass.removed && !cancelled && (
-        <Link href={`/planning?view=vecka&week=${mondayOf(pass.date)}&pass=${pass.id}`} style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.tealDark, textDecoration: 'none', minHeight: 40 }}>
+        <Link href={`/planning?view=vecka&week=${mondayOf(pass.date)}&pass=${pass.id}`} style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.primary, textDecoration: 'none', minHeight: 40 }}>
           Planera passet i Planning <ArrowRight size={15} />
         </Link>
       )}

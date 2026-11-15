@@ -77,11 +77,11 @@ function InviteContent() {
       <div style={{ marginBottom: 36, textAlign: 'center' }}>
         <div style={{
           width: 56, height: 56,
-          background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+          background: 'var(--gradient-hero)',
           borderRadius: 18,
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 14px',
-          boxShadow: '0 4px 20px rgba(13,115,119,0.35)',
+          boxShadow: 'none',
         }}>
           <svg width="26" height="26" viewBox="0 0 24 24" fill="none">
             <path d="M8 6C8 4.9 8.9 4 10 4h4c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2V6zM3 9a1 1 0 0 1 1-1h2v8H4a1 1 0 0 1-1-1V9zm14-1h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2V8z" fill="white" />
@@ -89,7 +89,7 @@ function InviteContent() {
         </div>
         <h1 style={{
           fontSize: 28, fontWeight: 800, letterSpacing: '-0.04em',
-          background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+          background: 'var(--gradient-hero)',
           WebkitBackgroundClip: 'text',
           WebkitTextFillColor: 'transparent',
           backgroundClip: 'text',
@@ -97,7 +97,7 @@ function InviteContent() {
         }}>
           DiveBuddy
         </h1>
-        <p style={{ color: '#64748B', fontSize: 14, marginTop: 4, fontWeight: 500 }}>
+        <p style={{ color: '#56637A', fontSize: 14, marginTop: 4, fontWeight: 500 }}>
           Poolside coaching app
         </p>
       </div>
@@ -106,12 +106,12 @@ function InviteContent() {
       <div className="glass-card" style={{ width: '100%', maxWidth: 380, padding: 28 }}>
 
         <h2 style={{
-          fontSize: 20, fontWeight: 800, color: '#0F172A',
+          fontSize: 20, fontWeight: 800, color: '#1E2B42',
           margin: '0 0 4px', letterSpacing: '-0.03em',
         }}>
           Du är inbjuden! 🎉
         </h2>
-        <p style={{ fontSize: 13, color: '#64748B', margin: '0 0 20px' }}>
+        <p style={{ fontSize: 13, color: '#56637A', margin: '0 0 20px' }}>
           Skapa ditt konto för att komma igång
         </p>
 
@@ -122,9 +122,9 @@ function InviteContent() {
             fontSize: 13, fontWeight: 500,
             background: message.type === 'error'
               ? 'rgba(239,68,68,0.08)'
-              : 'rgba(13,115,119,0.08)',
-            color: message.type === 'error' ? '#DC2626' : '#0D7377',
-            border: `1px solid ${message.type === 'error' ? 'rgba(239,68,68,0.2)' : 'rgba(13,115,119,0.2)'}`,
+              : 'rgba(43,92,158,0.08)',
+            color: message.type === 'error' ? '#DC2626' : '#2B5C9E',
+            border: `1px solid ${message.type === 'error' ? 'rgba(239,68,68,0.2)' : 'rgba(43,92,158,0.2)'}`,
           }}>
             {message.text}
           </div>
@@ -188,8 +188,8 @@ export default function InvitePage() {
       }}>
         <div style={{
           width: 28, height: 28,
-          border: '3px solid rgba(13,115,119,0.2)',
-          borderTopColor: '#0D7377',
+          border: '3px solid rgba(43,92,158,0.2)',
+          borderTopColor: '#2B5C9E',
           borderRadius: '50%',
           animation: 'spin 0.8s linear infinite',
         }} />

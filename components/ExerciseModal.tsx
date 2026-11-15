@@ -125,7 +125,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
         style={{
           position: 'fixed',
           inset: 0,
-          background: 'rgba(15,23,42,0.4)',
+          background: 'rgba(30,43,66,0.4)',
           backdropFilter: 'blur(4px)',
           WebkitBackdropFilter: 'blur(4px)',
           zIndex: 9998, // ✅ FIX
@@ -147,14 +147,14 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
         <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
 
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: 24 }}>
-          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em' }}>
+          <h2 style={{ fontSize: 22, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em' }}>
             {exercise ? 'Edit Exercise' : 'New Exercise'}
           </h2>
           <button
             onClick={onClose}
             style={{ width: 34, height: 34, borderRadius: 10, background: 'rgba(0,0,0,0.06)', border: 'none', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center' }}
           >
-            <X size={16} color="#64748B" strokeWidth={2.5} />
+            <X size={16} color="#56637A" strokeWidth={2.5} />
           </button>
         </div>
 
@@ -196,8 +196,8 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
                     cursor: 'pointer',
                     fontSize: 14,
                     fontWeight: 700,
-                    background: form.group_name === g ? '#0D7377' : 'rgba(0,0,0,0.06)',
-                    color: form.group_name === g ? 'white' : '#64748B',
+                    background: form.group_name === g ? '#2B5C9E' : 'rgba(0,0,0,0.06)',
+                    color: form.group_name === g ? 'white' : '#56637A',
                     transition: 'all 0.12s ease',
                   }}
                 >
@@ -264,7 +264,7 @@ export default function ExerciseModal({ open, onClose, onSaved, categories, init
             <div style={{ display: 'flex', gap: 8 }}>
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#64748B' }}
+                style={{ flex: 1, padding: '11px', borderRadius: 12, background: 'rgba(0,0,0,0.06)', border: 'none', fontSize: 14, fontWeight: 600, cursor: 'pointer', color: '#56637A' }}
               >
                 Cancel
               </button>

@@ -40,24 +40,24 @@ export default function AthleteLayout({ children }: { children: React.ReactNode 
           display: 'flex',
           alignItems: 'center',
           justifyContent: 'space-between',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          borderBottom: '1px solid #E1E8F0',
         }}>
           <button
             onClick={() => setMenuOpen(true)}
             style={{
               width: 40, height: 40,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: '#FFFFFF',
+              border: '1px solid #E1E8F0',
               borderRadius: 12,
               cursor: 'pointer',
             }}
             aria-label="Open menu"
           >
-            <Menu size={18} color="#1E293B" strokeWidth={2.2} />
+            <Menu size={18} color="#1E2B42" strokeWidth={2.2} />
           </button>
           <RoleSwitcher />
-          <span style={{ fontSize: 18, fontWeight: 800, color: '#0D7377', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: 18, fontWeight: 800, color: '#2B5C9E', letterSpacing: '-0.02em' }}>
             DiveBuddy
           </span>
         </div>
@@ -80,9 +80,7 @@ export default function AthleteLayout({ children }: { children: React.ReactNode 
         flexShrink: 0,
         paddingBottom: 'var(--safe-bottom)',
         background: 'var(--glass-bg-strong)',
-        backdropFilter: 'blur(20px)',
-        WebkitBackdropFilter: 'blur(20px)',
-        borderTop: '1px solid rgba(0,0,0,0.06)',
+        borderTop: '1px solid #E1E8F0',
         zIndex: 40,
       }}>
         <div style={{
@@ -118,20 +116,20 @@ export default function AthleteLayout({ children }: { children: React.ReactNode 
                 <div style={{
                   width: 32, height: 32,
                   borderRadius: 10,
-                  background: active ? 'rgba(13,115,119,0.12)' : 'transparent',
+                  background: active ? 'rgba(43,92,158,0.12)' : 'transparent',
                   display: 'flex', alignItems: 'center', justifyContent: 'center',
                   transition: 'background 0.15s',
                 }}>
                   <Icon
                     size={20}
                     strokeWidth={active ? 2.5 : 1.8}
-                    color={active ? '#0D7377' : '#94A3B8'}
+                    color={active ? '#2B5C9E' : '#56637A'}
                   />
                 </div>
                 <span style={{
                   fontSize: 10,
                   fontWeight: active ? 700 : 500,
-                  color: active ? '#0D7377' : '#94A3B8',
+                  color: active ? '#2B5C9E' : '#56637A',
                   letterSpacing: '0.01em',
                 }}>
                   {tab.label}

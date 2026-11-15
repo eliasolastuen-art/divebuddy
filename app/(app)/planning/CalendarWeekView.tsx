@@ -125,14 +125,14 @@ export default function CalendarWeekView() {
         {/* Header */}
         <div style={{ padding: '20px 16px 16px' }}>
           <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 16 }}>
-            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em' }}>
+            <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.04em' }}>
               Planning
             </h1>
             <button
               onClick={() => setShowBuilder(true)}
               style={{
                 display: 'flex', alignItems: 'center', gap: 6,
-                background: 'linear-gradient(135deg, #0D7377, #0a5c60)',
+                background: 'var(--gradient-hero)',
                 color: 'white', border: 'none', borderRadius: 12,
                 padding: '9px 14px', fontSize: 13, fontWeight: 700, cursor: 'pointer',
               }}
@@ -153,7 +153,7 @@ export default function CalendarWeekView() {
         {/* Unscheduled drafts strip */}
         {unscheduled.length > 0 && (
           <div style={{ padding: '0 16px 12px' }}>
-            <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
+            <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em', marginBottom: 8 }}>
               Ej schemalagda utkast
             </div>
             <div style={{ display: 'flex', gap: 8, overflowX: 'auto', paddingBottom: 4 }}>
@@ -168,7 +168,7 @@ export default function CalendarWeekView() {
 
         {/* Calendar grid */}
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#94A3B8', fontSize: 14 }}>
+          <div style={{ textAlign: 'center', padding: '40px 20px', color: '#56637A', fontSize: 14 }}>
             Laddar…
           </div>
         ) : (
@@ -201,16 +201,16 @@ export default function CalendarWeekView() {
           <div style={{ textAlign: 'center', padding: '20px 20px 40px' }}>
             <div style={{
               width: 56, height: 56, borderRadius: 18,
-              background: 'rgba(13,115,119,0.08)',
+              background: 'rgba(43,92,158,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 12px',
             }}>
-              <CalendarDays size={24} color="#0D7377" strokeWidth={1.5} />
+              <CalendarDays size={24} color="#2B5C9E" strokeWidth={1.5} />
             </div>
-            <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+            <p style={{ fontSize: 14, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>
               Inga pass denna veckan
             </p>
-            <p style={{ fontSize: 13, color: '#94A3B8' }}>
+            <p style={{ fontSize: 13, color: '#56637A' }}>
               Skapa ett nytt pass med knappen ovan.
             </p>
           </div>

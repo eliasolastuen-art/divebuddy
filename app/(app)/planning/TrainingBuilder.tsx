@@ -13,7 +13,7 @@ import Portal from '@/components/Portal'
 // ─── Constants ────────────────────────────────────────────────────────────────
 
 const BLOCK_CATEGORIES = [
-  { id: 'vatten'      as BlockCategory, label: 'Vatten',      emoji: '💧', color: '#0D7377' },
+  { id: 'vatten'      as BlockCategory, label: 'Vatten',      emoji: '💧', color: '#2B5C9E' },
   { id: 'land'        as BlockCategory, label: 'Land',        emoji: '🏃', color: '#D4A017' },
   { id: 'styrka'      as BlockCategory, label: 'Styrka',      emoji: '💪', color: '#DC2626' },
   { id: 'rorlighet'   as BlockCategory, label: 'Rörlighet',   emoji: '🧘', color: '#16A34A' },
@@ -132,13 +132,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
   const [purposeTypes, setPurposeTypes] = useState<{ id: string; name: string; color: string; group_id: string | null; block_category: string | null }[]>([])
   const [showNewPurposeSheet, setShowNewPurposeSheet] = useState(false)
   const [newPurposeName, setNewPurposeName]           = useState('')
-  const [newPurposeColor, setNewPurposeColor]         = useState('#0D7377')
+  const [newPurposeColor, setNewPurposeColor]         = useState('#2B5C9E')
   const [savingPurpose, setSavingPurpose]             = useState(false)
 
   // Edit existing purpose type
   const [editingPurposeType, setEditingPurposeType] = useState<{ id: string; name: string; color: string; group_id: string | null; block_category: string | null } | null>(null)
   const [editPurposeName,    setEditPurposeName]    = useState('')
-  const [editPurposeColor,   setEditPurposeColor]   = useState('#0D7377')
+  const [editPurposeColor,   setEditPurposeColor]   = useState('#2B5C9E')
   const [editPurposeGroup,   setEditPurposeGroup]   = useState<string | null>(null)
   const [editPurposeCat,     setEditPurposeCat]     = useState<string | null>(null)
   const [savingEditPurpose,  setSavingEditPurpose]  = useState(false)
@@ -604,7 +604,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
     setSavingPurpose(false)
     setShowNewPurposeSheet(false)
     setNewPurposeName('')
-    setNewPurposeColor('#0D7377')
+    setNewPurposeColor('#2B5C9E')
   }
 
   // ── Edit / delete existing purpose type ───────────────────────────────────
@@ -743,11 +743,11 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
   return (
     <Portal>
-      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.5)', zIndex: 10099, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }} />
+      <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.5)', zIndex: 10099, backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)' }} />
       <div style={{
         position: 'fixed', inset: 0, zIndex: 10100,
         background: 'var(--surface-bg)',
-        backgroundImage: 'radial-gradient(ellipse at 20% 0%, rgba(13,115,119,0.06) 0%, transparent 60%)',
+        backgroundImage: 'radial-gradient(ellipse at 20% 0%, rgba(43,92,158,0.06) 0%, transparent 60%)',
         overflowY: 'auto',
       }}>
         {/* Top bar */}
@@ -759,25 +759,25 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           display: 'flex', justifyContent: 'space-between', alignItems: 'flex-end',
           paddingBottom: 12,
           borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          borderBottom: '1px solid #E1E8F0',
         }}>
-          <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 12px', fontSize: 14, fontWeight: 600, color: '#64748B', cursor: 'pointer' }}>
+          <button onClick={onClose} style={{ display: 'flex', alignItems: 'center', gap: 6, background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 12px', fontSize: 14, fontWeight: 600, color: '#56637A', cursor: 'pointer' }}>
             <X size={14} strokeWidth={2.5} /> Avbryt
           </button>
-          <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+          <span style={{ fontSize: 16, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>
             {existingTraining ? 'Redigera pass' : 'Nytt träningspass'}
           </span>
           <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
             {blocks.length > 0 && (
               <button
                 onClick={() => { setTrainingTmplName(title); setTrainingTmplGroup(null); setShowSaveTrainingSheet(true) }}
-                style={{ display: 'flex', alignItems: 'center', gap: 5, background: trainingSaved ? 'rgba(22,163,74,0.12)' : 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 12px', fontSize: 14, fontWeight: 600, color: trainingSaved ? '#16A34A' : '#64748B', cursor: 'pointer', transition: 'all 0.2s' }}
+                style={{ display: 'flex', alignItems: 'center', gap: 5, background: trainingSaved ? 'rgba(22,163,74,0.12)' : 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 12px', fontSize: 14, fontWeight: 600, color: trainingSaved ? '#16A34A' : '#56637A', cursor: 'pointer', transition: 'all 0.2s' }}
                 title="Spara hela träningen som mall"
               >
                 {trainingSaved ? <Check size={14} strokeWidth={2.5} /> : <Bookmark size={14} strokeWidth={2} />}
               </button>
             )}
-            <button onClick={handleSave} disabled={saving || !title.trim()} style={{ display: 'flex', alignItems: 'center', gap: 6, background: title.trim() ? 'linear-gradient(135deg, #0D7377, #0a5c60)' : 'rgba(0,0,0,0.08)', color: title.trim() ? 'white' : '#94A3B8', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 14, fontWeight: 700, cursor: title.trim() ? 'pointer' : 'default', boxShadow: title.trim() ? '0 2px 8px rgba(13,115,119,0.3)' : 'none', transition: 'all 0.15s ease' }}>
+            <button onClick={handleSave} disabled={saving || !title.trim()} style={{ display: 'flex', alignItems: 'center', gap: 6, background: title.trim() ? 'var(--gradient-hero)' : 'rgba(0,0,0,0.08)', color: title.trim() ? 'white' : '#56637A', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 14, fontWeight: 700, cursor: title.trim() ? 'pointer' : 'default', boxShadow: title.trim() ? 'none' : 'none', transition: 'all 0.15s ease' }}>
               <Check size={14} strokeWidth={2.5} />
               {saving ? '...' : 'Spara'}
             </button>
@@ -798,7 +798,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               value={title}
               onChange={e => setTitle(e.target.value)}
               placeholder="Namn på träningspasset..."
-              style={{ width: '100%', fontSize: 22, fontWeight: 800, color: '#0F172A', border: 'none', outline: 'none', background: 'none', marginBottom: 18, letterSpacing: '-0.03em' }}
+              style={{ width: '100%', fontSize: 22, fontWeight: 800, color: '#1E2B42', border: 'none', outline: 'none', background: 'none', marginBottom: 18, letterSpacing: '-0.03em' }}
               autoFocus
             />
 
@@ -809,11 +809,11 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
                   <button
                     onClick={() => setGroupId('')}
-                    style={{ padding: '7px 14px', borderRadius: 20, border: `2px solid ${!groupId ? '#0F172A' : 'rgba(0,0,0,0.1)'}`, background: !groupId ? '#0F172A' : 'rgba(0,0,0,0.04)', fontSize: 13, fontWeight: 700, color: !groupId ? 'white' : '#64748B', cursor: 'pointer', transition: 'all 0.15s ease' }}
+                    style={{ padding: '7px 14px', borderRadius: 20, border: `2px solid ${!groupId ? '#1E2B42' : 'rgba(0,0,0,0.1)'}`, background: !groupId ? '#1E2B42' : 'rgba(0,0,0,0.04)', fontSize: 13, fontWeight: 700, color: !groupId ? 'white' : '#56637A', cursor: 'pointer', transition: 'all 0.15s ease' }}
                   >Ingen</button>
                   {groups.map(g => {
                     const active = groupId === g.id
-                    const c = g.color ?? '#0D7377'
+                    const c = g.color ?? '#2B5C9E'
                     return (
                       <button key={g.id} onClick={() => setGroupId(active ? '' : g.id)}
                         style={{ padding: '7px 14px', borderRadius: 20, border: `2px solid ${active ? c : c + '50'}`, background: active ? c : c + '18', fontSize: 13, fontWeight: 700, color: active ? 'white' : c, cursor: 'pointer', transition: 'all 0.15s ease' }}
@@ -858,7 +858,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                 <div style={{ marginBottom: 16 }}>
                   <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 8 }}>
                     <div className="text-label">Fokus</div>
-                    <button onClick={() => setShowNewPurposeSheet(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#0D7377', padding: '2px 6px' }}>
+                    <button onClick={() => setShowNewPurposeSheet(true)} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#2B5C9E', padding: '2px 6px' }}>
                       <Plus size={12} strokeWidth={2.5} /> Ny typ
                     </button>
                   </div>
@@ -881,7 +881,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                       )
                     })}
                     {visible.length === 0 && (
-                      <span style={{ fontSize: 13, color: '#94A3B8' }}>Tryck "Ny typ" för att skapa fokustyper</span>
+                      <span style={{ fontSize: 13, color: '#56637A' }}>Tryck "Ny typ" för att skapa fokustyper</span>
                     )}
                   </div>
                 </div>
@@ -890,7 +890,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
             <div style={{ display: 'flex', background: 'rgba(0,0,0,0.05)', padding: 4, borderRadius: 12, gap: 4 }}>
               {(['draft', 'published'] as const).map(s => (
-                <button key={s} onClick={() => setStatus(s)} style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: status === s ? (s === 'published' ? 'linear-gradient(135deg, #0D7377, #0a5c60)' : 'white') : 'transparent', color: status === s ? (s === 'published' ? 'white' : '#0F172A') : '#94A3B8', boxShadow: status === s ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s ease' }}>
+                <button key={s} onClick={() => setStatus(s)} style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: status === s ? (s === 'published' ? 'var(--gradient-hero)' : 'white') : 'transparent', color: status === s ? (s === 'published' ? 'white' : '#1E2B42') : '#56637A', boxShadow: status === s ? 'none' : 'none', transition: 'all 0.15s ease' }}>
                   {s === 'draft' ? '📝 Utkast' : '✅ Publicera'}
                 </button>
               ))}
@@ -901,7 +901,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           <DndContext sensors={blockSensors} collisionDetection={closestCenter} onDragEnd={handleBlockDragEnd}>
             <SortableContext items={blocks.map(b => b.id)} strategy={verticalListSortingStrategy}>
           {blocks.map((block) => {
-            const cat = CAT_BY_ID[block.category] || { color: '#64748B', emoji: '📋', label: block.name }
+            const cat = CAT_BY_ID[block.category] || { color: '#56637A', emoji: '📋', label: block.name }
             const collapsed = collapsedBlocks.has(block.id)
             return (
               <SortableBlockWrapper key={block.id} id={block.id}>
@@ -971,7 +971,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     />
                   ) : null}
                   {block.block_type !== 'athlete' && block.items.length === 0 && (
-                    <div style={{ textAlign: 'center', padding: '10px 0', color: '#94A3B8', fontSize: 13 }}>
+                    <div style={{ textAlign: 'center', padding: '10px 0', color: '#56637A', fontSize: 13 }}>
                       {block.block_type === 'test'
                         ? '📊 Poäng registreras per atlet under passet'
                         : 'Inga övningar ännu'}
@@ -995,7 +995,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     if (item.height) summaryParts.push(item.height)
                     if (item.duration_seconds) summaryParts.push(durStr)
                     const summary = summaryParts.join(' · ')
-                    const accentCol = cat?.color ?? '#0D7377'
+                    const accentCol = cat?.color ?? '#2B5C9E'
                     return (
                     <div key={item.id} style={{ background: isEditing ? 'rgba(0,0,0,0.05)' : 'rgba(0,0,0,0.03)', borderRadius: 12, marginBottom: ii < block.items.length - 1 ? 6 : 0, overflow: 'hidden' }}>
 
@@ -1008,10 +1008,10 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                             {item.isFromLibrary ? (
                               <div style={{ flex: 1 }}>
                                 {item.libraryItem?.code && <div style={{ fontSize: 10, fontWeight: 700, color: accentCol, letterSpacing: '0.06em' }}>{item.libraryItem.code}{item.libraryItem.group_name || ''}</div>}
-                                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{item.libraryItem?.name || item.custom_name}</div>
+                                <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42' }}>{item.libraryItem?.name || item.custom_name}</div>
                               </div>
                             ) : (
-                              <input value={item.custom_name} onChange={e => updateItem(block.id, item.id, 'custom_name', e.target.value)} placeholder="Namn på övning..." autoFocus style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#0F172A', border: 'none', borderBottom: '1.5px solid rgba(0,0,0,0.12)', outline: 'none', paddingBottom: 3, background: 'transparent' }} />
+                              <input value={item.custom_name} onChange={e => updateItem(block.id, item.id, 'custom_name', e.target.value)} placeholder="Namn på övning..." autoFocus style={{ flex: 1, fontSize: 14, fontWeight: 600, color: '#1E2B42', border: 'none', borderBottom: '1.5px solid rgba(0,0,0,0.12)', outline: 'none', paddingBottom: 3, background: 'transparent' }} />
                             )}
                             <button onClick={() => setEditingItemId(null)} style={{ background: accentCol, border: 'none', borderRadius: 8, padding: '5px 10px', fontSize: 12, fontWeight: 700, color: 'white', cursor: 'pointer', flexShrink: 0 }}>Klar</button>
                           </div>
@@ -1024,7 +1024,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                               { field: 'height', label: 'Höjd',      type: 'text',   placeholder: '3m',   inputMode: 'text' },
                             ] as const).map(({ field, label, type, placeholder, inputMode }) => (
                               <div key={field}>
-                                <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
+                                <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>{label}</div>
                                 <input
                                   type={type}
                                   inputMode={inputMode as any}
@@ -1041,7 +1041,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                               </div>
                             ))}
                             <div>
-                              <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tid (mm:ss)</div>
+                              <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Tid (mm:ss)</div>
                               <input
                                 type="text"
                                 inputMode="numeric"
@@ -1055,7 +1055,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                           </div>
 
                           {/* Notes — always visible in edit mode */}
-                          <div style={{ fontSize: 11, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Anteckning</div>
+                          <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.05em', marginBottom: 4 }}>Anteckning</div>
                           <textarea
                             value={item.notes}
                             onChange={e => updateItem(block.id, item.id, 'notes', e.target.value)}
@@ -1078,41 +1078,41 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                               {item.libraryItem?.code && (
                                 <span style={{ fontSize: 10, fontWeight: 700, color: accentCol, letterSpacing: '0.06em', flexShrink: 0 }}>{item.libraryItem.code}{item.libraryItem.group_name || ''}</span>
                               )}
-                              <span style={{ fontSize: 13, fontWeight: 700, color: '#0F172A', minWidth: 0 }}>{item.libraryItem?.name || item.custom_name || <span style={{ color: '#94A3B8' }}>Namnlös övning</span>}</span>
+                              <span style={{ fontSize: 13, fontWeight: 700, color: '#1E2B42', minWidth: 0 }}>{item.libraryItem?.name || item.custom_name || <span style={{ color: '#56637A' }}>Namnlös övning</span>}</span>
                             </div>
                             {summary && (
-                              <div style={{ fontSize: 12, color: '#64748B', marginTop: 3, fontWeight: 600 }}>{summary}</div>
+                              <div style={{ fontSize: 12, color: '#56637A', marginTop: 3, fontWeight: 600 }}>{summary}</div>
                             )}
                             {item.notes && (
-                              <div style={{ fontSize: 11, color: '#94A3B8', marginTop: 2, fontStyle: 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes}</div>
+                              <div style={{ fontSize: 11, color: '#56637A', marginTop: 2, fontStyle: 'italic', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes}</div>
                             )}
                           </button>
                           <div style={{ display: 'flex', flexDirection: 'column', gap: 1, padding: '6px 8px 6px 0', flexShrink: 0 }}>
                             <button onClick={() => moveItem(block.id, ii, -1)} disabled={ii === 0} style={{ background: 'none', border: 'none', cursor: ii === 0 ? 'default' : 'pointer', opacity: ii === 0 ? 0.2 : 0.45, padding: 3, display: 'flex' }}>
-                              <ChevronUp size={12} color="#64748B" strokeWidth={2.5} />
+                              <ChevronUp size={12} color="#56637A" strokeWidth={2.5} />
                             </button>
                             <button onClick={() => moveItem(block.id, ii, 1)} disabled={ii === block.items.length - 1} style={{ background: 'none', border: 'none', cursor: ii === block.items.length - 1 ? 'default' : 'pointer', opacity: ii === block.items.length - 1 ? 0.2 : 0.45, padding: 3, display: 'flex' }}>
-                              <ChevronDown size={12} color="#64748B" strokeWidth={2.5} />
+                              <ChevronDown size={12} color="#56637A" strokeWidth={2.5} />
                             </button>
                             <button onClick={() => setCopyingItemId(copyingItemId === item.id ? null : item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, display: 'flex', opacity: 0.45 }}>
-                              <Copy size={12} color="#64748B" strokeWidth={2} />
+                              <Copy size={12} color="#56637A" strokeWidth={2} />
                             </button>
                             <button onClick={() => removeItem(block.id, item.id)} style={{ background: 'none', border: 'none', cursor: 'pointer', padding: 3, display: 'flex' }}>
-                              <Trash2 size={12} color="#CBD5E1" strokeWidth={2} />
+                              <Trash2 size={12} color="#E1E8F0" strokeWidth={2} />
                             </button>
                           </div>
                         </div>
                         {/* Copy target picker */}
                         {copyingItemId === item.id && blocks.filter(b2 => b2.id !== block.id && b2.block_type !== 'athlete').length > 0 && (
                           <div style={{ display: 'flex', gap: 6, padding: '4px 12px 8px', flexWrap: 'wrap' }}>
-                            <span style={{ fontSize: 11, color: '#94A3B8', fontWeight: 600, alignSelf: 'center' }}>Kopiera till:</span>
+                            <span style={{ fontSize: 11, color: '#56637A', fontWeight: 600, alignSelf: 'center' }}>Kopiera till:</span>
                             {blocks.filter(b2 => b2.id !== block.id && b2.block_type !== 'athlete').map(b2 => {
                               const targetCat = CAT_BY_ID[b2.category as BlockCategory]
                               return (
                                 <button
                                   key={b2.id}
                                   onClick={() => copyItemToBlock(block.id, item.id, b2.id)}
-                                  style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid rgba(0,0,0,0.08)', background: 'rgba(0,0,0,0.03)', fontSize: 12, fontWeight: 600, color: targetCat?.color ?? '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
+                                  style={{ padding: '4px 10px', borderRadius: 8, border: '1px solid #E1E8F0', background: 'rgba(0,0,0,0.03)', fontSize: 12, fontWeight: 600, color: targetCat?.color ?? '#56637A', cursor: 'pointer', display: 'flex', alignItems: 'center', gap: 4 }}
                                 >
                                   {targetCat?.emoji ?? '📋'} {b2.name}
                                 </button>
@@ -1127,10 +1127,10 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
                   {/* Add exercise row — hidden for athlete blocks (managed by editor) */}
                   {block.block_type !== 'athlete' && <div style={{ display: 'flex', gap: 8, marginTop: 12 }}>
-                    <button onClick={() => { setPickerBlockId(block.id); setPickerSearch(''); setPickerCategory('all') }} style={{ flex: 1, padding: '11px', borderRadius: 12, border: '1.5px dashed rgba(13,115,119,0.4)', background: 'rgba(13,115,119,0.06)', fontSize: 13, fontWeight: 600, color: '#0D7377', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <button onClick={() => { setPickerBlockId(block.id); setPickerSearch(''); setPickerCategory('all') }} style={{ flex: 1, padding: '11px', borderRadius: 12, border: '1.5px dashed rgba(43,92,158,0.4)', background: 'rgba(43,92,158,0.06)', fontSize: 13, fontWeight: 600, color: '#2B5C9E', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <Search size={13} /> Från bibliotek
                     </button>
-                    <button onClick={() => addCustomItem(block.id)} style={{ flex: 1, padding: '11px', borderRadius: 12, border: '1.5px dashed rgba(0,0,0,0.1)', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#64748B', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
+                    <button onClick={() => addCustomItem(block.id)} style={{ flex: 1, padding: '11px', borderRadius: 12, border: '1.5px dashed rgba(0,0,0,0.1)', background: 'transparent', fontSize: 13, fontWeight: 600, color: '#56637A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6 }}>
                       <Plus size={13} /> Egen övning
                     </button>
                   </div>}
@@ -1144,10 +1144,10 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           </DndContext>
 
           {/* Add block — inline category grid */}
-          <div style={{ background: 'rgba(255,255,255,0.4)', backdropFilter: 'blur(8px)', WebkitBackdropFilter: 'blur(8px)', borderRadius: 20, padding: '14px 14px 10px', border: '1px solid rgba(0,0,0,0.06)' }}>
+          <div style={{ background: '#FFFFFF', borderRadius: 20, padding: '14px 14px 10px', border: '1px solid #E1E8F0' }}>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Lägg till block</span>
-              <button onClick={() => { setShowBlockPicker(true); setBlockPickerTab('template') }} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#0D7377' }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em' }}>Lägg till block</span>
+              <button onClick={() => { setShowBlockPicker(true); setBlockPickerTab('template') }} style={{ display: 'flex', alignItems: 'center', gap: 4, background: 'none', border: 'none', cursor: 'pointer', fontSize: 12, fontWeight: 600, color: '#2B5C9E' }}>
                 <LayoutList size={12} /> Från mall
               </button>
             </div>
@@ -1163,14 +1163,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               <span style={{ fontSize: 18 }}>📊</span>
               <div style={{ textAlign: 'left' }}>
                 <div style={{ fontSize: 13, fontWeight: 700, color: '#6366F1' }}>Testblock</div>
-                <div style={{ fontSize: 11, color: '#94A3B8' }}>Poäng per atlet</div>
+                <div style={{ fontSize: 11, color: '#56637A' }}>Poäng per atlet</div>
               </div>
             </button>
-            <button onClick={addAthleteBlock} style={{ width: '100%', marginTop: 4, padding: '11px 14px', borderRadius: 14, border: '1.5px solid rgba(13,115,119,0.3)', background: 'rgba(13,115,119,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+            <button onClick={addAthleteBlock} style={{ width: '100%', marginTop: 4, padding: '11px 14px', borderRadius: 14, border: '1.5px solid rgba(43,92,158,0.3)', background: 'rgba(43,92,158,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
               <span style={{ fontSize: 18 }}>🏊</span>
               <div style={{ textAlign: 'left' }}>
-                <div style={{ fontSize: 13, fontWeight: 700, color: '#0D7377' }}>Atlet-block</div>
-                <div style={{ fontSize: 11, color: '#94A3B8' }}>Individuella hopp per atlet</div>
+                <div style={{ fontSize: 13, fontWeight: 700, color: '#2B5C9E' }}>Atlet-block</div>
+                <div style={{ fontSize: 11, color: '#56637A' }}>Individuella hopp per atlet</div>
               </div>
             </button>
           </div>
@@ -1179,14 +1179,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         {/* ── Block picker modal ─────────────────────────────────────────── */}
         {showBlockPicker && (
           <>
-            <div onClick={() => setShowBlockPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
+            <div onClick={() => setShowBlockPicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
             <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 100px)', maxHeight: '85dvh', overflowY: 'auto' }}>
               <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
 
               {/* Tabs */}
               <div style={{ display: 'flex', background: 'rgba(0,0,0,0.05)', padding: 4, borderRadius: 12, gap: 4, marginBottom: 20 }}>
                 {([['new', '➕ Nytt block'], ['template', '📋 Från mall']] as const).map(([tab, label]) => (
-                  <button key={tab} onClick={() => { setBlockPickerTab(tab); if (tab === 'template') loadTemplates() }} style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: blockPickerTab === tab ? 'white' : 'transparent', color: blockPickerTab === tab ? '#0F172A' : '#94A3B8', boxShadow: blockPickerTab === tab ? '0 1px 4px rgba(0,0,0,0.1)' : 'none', transition: 'all 0.15s ease' }}>
+                  <button key={tab} onClick={() => { setBlockPickerTab(tab); if (tab === 'template') loadTemplates() }} style={{ flex: 1, padding: '9px', borderRadius: 9, border: 'none', fontSize: 13, fontWeight: 700, cursor: 'pointer', background: blockPickerTab === tab ? 'white' : 'transparent', color: blockPickerTab === tab ? '#1E2B42' : '#56637A', boxShadow: blockPickerTab === tab ? 'none' : 'none', transition: 'all 0.15s ease' }}>
                     {label}
                   </button>
                 ))}
@@ -1194,7 +1194,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
 
               {blockPickerTab === 'new' ? (
                 <>
-                  <h3 style={{ fontSize: 15, fontWeight: 700, color: '#64748B', marginBottom: 14, textAlign: 'center' }}>Välj kategori</h3>
+                  <h3 style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 14, textAlign: 'center' }}>Välj kategori</h3>
                   <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: 10, marginBottom: 10 }}>
                     {BLOCK_CATEGORIES.map(cat => (
                       <button key={cat.id} onClick={() => addBlock(cat.id)} style={{ padding: '18px 8px', borderRadius: 18, border: `1.5px solid ${cat.color}30`, background: `${cat.color}0d`, cursor: 'pointer', textAlign: 'center', transition: 'all 0.15s ease' }}>
@@ -1207,40 +1207,40 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                     <span style={{ fontSize: 22 }}>📊</span>
                     <div style={{ textAlign: 'left' }}>
                       <div style={{ fontSize: 13, fontWeight: 700, color: '#6366F1' }}>Testblock</div>
-                      <div style={{ fontSize: 11, color: '#94A3B8' }}>Poäng per atlet under passet</div>
+                      <div style={{ fontSize: 11, color: '#56637A' }}>Poäng per atlet under passet</div>
                     </div>
                   </button>
-                  <button onClick={addAthleteBlock} style={{ width: '100%', marginTop: 8, padding: '14px', borderRadius: 18, border: '1.5px solid rgba(13,115,119,0.3)', background: 'rgba(13,115,119,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
+                  <button onClick={addAthleteBlock} style={{ width: '100%', marginTop: 8, padding: '14px', borderRadius: 18, border: '1.5px solid rgba(43,92,158,0.3)', background: 'rgba(43,92,158,0.06)', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 10 }}>
                     <span style={{ fontSize: 22 }}>🏊</span>
                     <div style={{ textAlign: 'left' }}>
-                      <div style={{ fontSize: 13, fontWeight: 700, color: '#0D7377' }}>Atlet-block</div>
-                      <div style={{ fontSize: 11, color: '#94A3B8' }}>Individuella hopp per atlet</div>
+                      <div style={{ fontSize: 13, fontWeight: 700, color: '#2B5C9E' }}>Atlet-block</div>
+                      <div style={{ fontSize: 11, color: '#56637A' }}>Individuella hopp per atlet</div>
                     </div>
                   </button>
                 </>
               ) : (
                 <div>
                   {loadingTemplates ? (
-                    <div style={{ textAlign: 'center', padding: 32, color: '#94A3B8', fontSize: 14 }}>Laddar mallar...</div>
+                    <div style={{ textAlign: 'center', padding: 32, color: '#56637A', fontSize: 14 }}>Laddar mallar...</div>
                   ) : templates.length === 0 ? (
                     <div style={{ textAlign: 'center', padding: '40px 20px' }}>
-                      <div style={{ width: 50, height: 50, borderRadius: 14, background: 'rgba(13,115,119,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
-                        <LayoutList size={22} color="#0D7377" strokeWidth={1.5} />
+                      <div style={{ width: 50, height: 50, borderRadius: 14, background: 'rgba(43,92,158,0.08)', display: 'flex', alignItems: 'center', justifyContent: 'center', margin: '0 auto 12px' }}>
+                        <LayoutList size={22} color="#2B5C9E" strokeWidth={1.5} />
                       </div>
-                      <p style={{ fontSize: 14, fontWeight: 700, color: '#475569', marginBottom: 4 }}>Inga mallar än</p>
-                      <p style={{ fontSize: 13, color: '#94A3B8' }}>Spara ett block som mall med 🔖</p>
+                      <p style={{ fontSize: 14, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga mallar än</p>
+                      <p style={{ fontSize: 13, color: '#56637A' }}>Spara ett block som mall med 🔖</p>
                     </div>
                   ) : (
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
                       {templates.map(tmpl => {
-                        const cat = CAT_BY_ID[tmpl.category as BlockCategory] || { color: '#64748B', emoji: '📋' }
+                        const cat = CAT_BY_ID[tmpl.category as BlockCategory] || { color: '#56637A', emoji: '📋' }
                         return (
                           <button key={tmpl.id} onClick={() => addBlockFromTemplate(tmpl)} className="glass-card" style={{ width: '100%', textAlign: 'left', padding: '14px 16px', borderRadius: 16, border: 'none', cursor: 'pointer', borderLeft: `3px solid ${cat.color}` }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 4 }}>
                               <span style={{ fontSize: 16 }}>{cat.emoji}</span>
-                              <span style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>{tmpl.name}</span>
+                              <span style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42' }}>{tmpl.name}</span>
                             </div>
-                            <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>
+                            <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
                               {tmpl.items.length} övning{tmpl.items.length !== 1 ? 'ar' : ''}
                             </div>
                           </button>
@@ -1257,14 +1257,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         {/* ── Athlete picker for athlete block ───────────────────────────── */}
         {showAthletePicker && (
           <>
-            <div onClick={() => setShowAthletePicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(15,23,42,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
+            <div onClick={() => setShowAthletePicker(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.4)', backdropFilter: 'blur(4px)', WebkitBackdropFilter: 'blur(4px)', zIndex: 300 }} />
             <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 301, padding: '16px 20px calc(var(--safe-bottom) + 100px)', maxHeight: '70dvh', overflowY: 'auto' }}>
               <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 16px' }} />
-              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', marginBottom: 4, textAlign: 'center' }}>Välj atleter</h3>
-              <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16, textAlign: 'center' }}>Vilka atleter ska ha individuella hopp?</p>
+              <h3 style={{ fontSize: 16, fontWeight: 800, color: '#1E2B42', marginBottom: 4, textAlign: 'center' }}>Välj atleter</h3>
+              <p style={{ fontSize: 13, color: '#56637A', marginBottom: 16, textAlign: 'center' }}>Vilka atleter ska ha individuella hopp?</p>
 
               {groupAthletes.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '20px', color: '#94A3B8', fontSize: 13 }}>
+                <div style={{ textAlign: 'center', padding: '20px', color: '#56637A', fontSize: 13 }}>
                   Välj en grupp först för att se atleter
                 </div>
               ) : (
@@ -1273,13 +1273,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                   <div style={{ display: 'flex', gap: 8, marginBottom: 12 }}>
                     <button
                       onClick={() => setAthletePickerSelected(new Set(groupAthletes.map(a => a.id)))}
-                      style={{ flex: 1, padding: '8px', borderRadius: 10, border: '1px solid rgba(13,115,119,0.2)', background: 'rgba(13,115,119,0.04)', fontSize: 12, fontWeight: 600, color: '#0D7377', cursor: 'pointer' }}
+                      style={{ flex: 1, padding: '8px', borderRadius: 10, border: '1px solid rgba(43,92,158,0.2)', background: 'rgba(43,92,158,0.04)', fontSize: 12, fontWeight: 600, color: '#2B5C9E', cursor: 'pointer' }}
                     >
                       Välj alla
                     </button>
                     <button
                       onClick={() => setAthletePickerSelected(new Set())}
-                      style={{ flex: 1, padding: '8px', borderRadius: 10, border: '1px solid rgba(0,0,0,0.08)', background: 'transparent', fontSize: 12, fontWeight: 600, color: '#64748B', cursor: 'pointer' }}
+                      style={{ flex: 1, padding: '8px', borderRadius: 10, border: '1px solid #E1E8F0', background: 'transparent', fontSize: 12, fontWeight: 600, color: '#56637A', cursor: 'pointer' }}
                     >
                       Avmarkera alla
                     </button>
@@ -1300,8 +1300,8 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                           style={{
                             padding: '9px 16px', borderRadius: 9999, border: 'none', cursor: 'pointer',
                             fontSize: 14, fontWeight: 700,
-                            background: sel ? '#0D7377' : 'rgba(0,0,0,0.06)',
-                            color: sel ? 'white' : '#64748B',
+                            background: sel ? '#2B5C9E' : 'rgba(0,0,0,0.06)',
+                            color: sel ? 'white' : '#56637A',
                             transition: 'all 0.15s',
                           }}
                         >
@@ -1336,17 +1336,17 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           <div style={{
             position: 'fixed', inset: 0, zIndex: 10000,
             background: 'var(--surface-bg)',
-            backgroundImage: 'radial-gradient(ellipse at 20% 0%, rgba(13,115,119,0.05) 0%, transparent 60%)',
+            backgroundImage: 'radial-gradient(ellipse at 20% 0%, rgba(43,92,158,0.05) 0%, transparent 60%)',
             display: 'flex', flexDirection: 'column',
           }}>
             {/* Header */}
-            <div style={{ padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid rgba(0,0,0,0.06)', flexShrink: 0 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+            <div style={{ padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E1E8F0', flexShrink: 0 }}>
+              <span style={{ fontSize: 16, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>
                 {pickerBlockCategory !== 'all' ? `${CAT_BY_ID[pickerBlockCategory as BlockCategory]?.emoji ?? ''} ${CAT_BY_ID[pickerBlockCategory as BlockCategory]?.label ?? 'Övningar'}` : 'Alla övningar'}
               </span>
               <button
                 onClick={() => { setPickerBlockId(null); setPickerForAthleteId(null) }}
-                style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 14, fontWeight: 700, color: '#64748B', cursor: 'pointer' }}
+                style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 14, fontWeight: 700, color: '#56637A', cursor: 'pointer' }}
               >
                 Klar
               </button>
@@ -1356,7 +1356,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px 0', flexShrink: 0 }}>
               <button
                 onClick={() => { setPickerBlockCategory('all'); setPickerCategory('all') }}
-                style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: 'none', background: pickerBlockCategory === 'all' ? '#0F172A' : 'rgba(0,0,0,0.05)', fontSize: 12, fontWeight: 700, color: pickerBlockCategory === 'all' ? 'white' : '#64748B', cursor: 'pointer', transition: 'all 0.15s' }}
+                style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: 'none', background: pickerBlockCategory === 'all' ? '#1E2B42' : 'rgba(0,0,0,0.05)', fontSize: 12, fontWeight: 700, color: pickerBlockCategory === 'all' ? 'white' : '#56637A', cursor: 'pointer', transition: 'all 0.15s' }}
               >Alla</button>
               {BLOCK_CATEGORIES.map(cat => {
                 const isActive = pickerBlockCategory === cat.id
@@ -1374,7 +1374,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             {/* Search + sub-category chips */}
             <div style={{ padding: '10px 16px 6px', flexShrink: 0 }}>
               <div style={{ position: 'relative', marginBottom: 8 }}>
-                <Search size={14} color="#94A3B8" strokeWidth={2} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
+                <Search size={14} color="#56637A" strokeWidth={2} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
                 <input value={pickerSearch} onChange={e => setPickerSearch(e.target.value)} placeholder="Sök på namn eller kod..." className="glass-input" style={{ width: '100%', padding: '11px 14px 11px 34px', fontSize: 14 }} autoFocus />
               </div>
               <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
@@ -1390,7 +1390,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             {/* Items list */}
             <div style={{ overflowY: 'auto', flex: 1, padding: '4px 16px calc(var(--safe-bottom) + 24px)' }}>
               {filteredPickerItems.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: '#94A3B8', fontSize: 14 }}>Inga övningar</div>
+                <div style={{ textAlign: 'center', padding: '60px 0', color: '#56637A', fontSize: 14 }}>Inga övningar</div>
               ) : pickerCategory !== 'all' || pickerSearch.trim() || pickerBlockCategory !== 'all' ? (
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                   {filteredPickerItems.map(item => (
@@ -1400,7 +1400,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               ) : (
                 groupedPickerItems?.map(([key, group]) => (
                   <div key={key} style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#64748B', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, paddingTop: 4 }}>{group.label}</div>
+                    <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, paddingTop: 4 }}>{group.label}</div>
                     <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
                       {group.items.map(item => (
                         <PickerItemRow key={item.id} item={item} onSelect={() => addItemFromLibrary(pickerBlockId, item)} />
@@ -1425,9 +1425,9 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             className="glass-sheet"
             style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto' }}
           >
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Spara mall</div>
-            <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 20 }}>"{saveTemplateBlock.name}"</div>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#1E2B42', marginBottom: 4 }}>Spara mall</div>
+            <div style={{ fontSize: 13, color: '#56637A', marginBottom: 20 }}>"{saveTemplateBlock.name}"</div>
 
             {/* Global */}
             <button
@@ -1436,14 +1436,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               className="glass-card"
               style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 16, border: 'none', cursor: 'pointer', marginBottom: 10, opacity: savingTemplate ? 0.6 : 1 }}
             >
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>📋 Spara globalt</div>
-              <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Tillgänglig för alla grupper</div>
+              <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42' }}>📋 Spara globalt</div>
+              <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>Tillgänglig för alla grupper</div>
             </button>
 
             {/* Per group */}
             {groups.length > 0 && (
               <>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '16px 0 10px' }}>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', margin: '16px 0 10px' }}>
                   Spara till grupp
                 </div>
                 <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
@@ -1453,9 +1453,9 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
                       onClick={() => saveBlockAsTemplate(saveTemplateBlock, g.id)}
                       disabled={savingTemplate}
                       className="glass-card"
-                      style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 16, border: 'none', cursor: 'pointer', opacity: savingTemplate ? 0.6 : 1, borderLeft: `4px solid ${g.color ?? '#0D7377'}` }}
+                      style={{ width: '100%', textAlign: 'left', padding: '14px 18px', borderRadius: 16, border: 'none', cursor: 'pointer', opacity: savingTemplate ? 0.6 : 1, borderLeft: `4px solid ${g.color ?? '#2B5C9E'}` }}
                     >
-                      <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A' }}>{g.name}</div>
+                      <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42' }}>{g.name}</div>
                     </button>
                   ))}
                 </div>
@@ -1470,8 +1470,8 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         <>
           <div onClick={() => !savingPurpose && setShowNewPurposeSheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 10000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Ny fokustyp</div>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42', marginBottom: 16 }}>Ny fokustyp</div>
             <input
               value={newPurposeName}
               onChange={e => setNewPurposeName(e.target.value)}
@@ -1481,11 +1481,11 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               autoFocus
             />
             <div style={{ marginBottom: 16 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Färg</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Färg</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 10 }}>
-                {['#0D7377','#DC2626','#D4A017','#6366F1','#EC4899','#16A34A','#F97316','#0EA5E9','#8B5CF6','#64748B'].map(c => (
+                {['#2B5C9E','#DC2626','#D4A017','#6366F1','#EC4899','#16A34A','#F97316','#0EA5E9','#8B5CF6','#56637A'].map(c => (
                   <button key={c} onClick={() => setNewPurposeColor(c)}
-                    style={{ width: 32, height: 32, borderRadius: '50%', background: c, border: newPurposeColor === c ? '3px solid #0F172A' : '3px solid transparent', cursor: 'pointer', outline: 'none', transition: 'border 0.1s' }}
+                    style={{ width: 32, height: 32, borderRadius: '50%', background: c, border: newPurposeColor === c ? '3px solid #1E2B42' : '3px solid transparent', cursor: 'pointer', outline: 'none', transition: 'border 0.1s' }}
                   />
                 ))}
               </div>
@@ -1493,7 +1493,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             <button
               onClick={saveNewPurposeType}
               disabled={!newPurposeName.trim() || savingPurpose}
-              style={{ width: '100%', padding: '14px', background: newPurposeName.trim() ? newPurposeColor : 'rgba(0,0,0,0.08)', color: newPurposeName.trim() ? 'white' : '#94A3B8', border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: newPurposeName.trim() ? 'pointer' : 'default', transition: 'all 0.15s' }}
+              style={{ width: '100%', padding: '14px', background: newPurposeName.trim() ? newPurposeColor : 'rgba(0,0,0,0.08)', color: newPurposeName.trim() ? 'white' : '#56637A', border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: newPurposeName.trim() ? 'pointer' : 'default', transition: 'all 0.15s' }}
             >
               {savingPurpose ? 'Sparar...' : 'Skapa typ'}
             </button>
@@ -1506,8 +1506,8 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         <>
           <div onClick={() => !savingEditPurpose && setEditingPurposeType(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 10000 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 10001, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 16 }}>Redigera fokustyp</div>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42', marginBottom: 16 }}>Redigera fokustyp</div>
             <input
               value={editPurposeName}
               onChange={e => setEditPurposeName(e.target.value)}
@@ -1517,11 +1517,11 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             />
             {/* Color */}
             <div style={{ marginBottom: 14 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Färg</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Färg</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                {['#0D7377','#DC2626','#D4A017','#6366F1','#EC4899','#16A34A','#F97316','#0EA5E9','#8B5CF6','#64748B'].map(c => (
+                {['#2B5C9E','#DC2626','#D4A017','#6366F1','#EC4899','#16A34A','#F97316','#0EA5E9','#8B5CF6','#56637A'].map(c => (
                   <button key={c} onClick={() => setEditPurposeColor(c)}
-                    style={{ width: 32, height: 32, borderRadius: '50%', background: c, border: editPurposeColor === c ? '3px solid #0F172A' : '3px solid transparent', cursor: 'pointer', outline: 'none', transition: 'border 0.1s' }}
+                    style={{ width: 32, height: 32, borderRadius: '50%', background: c, border: editPurposeColor === c ? '3px solid #1E2B42' : '3px solid transparent', cursor: 'pointer', outline: 'none', transition: 'border 0.1s' }}
                   />
                 ))}
               </div>
@@ -1529,14 +1529,14 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             {/* Group link */}
             {groups.length > 0 && (
               <div style={{ marginBottom: 14 }}>
-                <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Visa för grupp</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Visa för grupp</div>
                 <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                   <button onClick={() => setEditPurposeGroup(null)}
-                    style={{ padding: '6px 12px', borderRadius: 16, border: 'none', background: editPurposeGroup === null ? '#0F172A' : 'rgba(0,0,0,0.06)', fontSize: 12, fontWeight: 700, color: editPurposeGroup === null ? 'white' : '#64748B', cursor: 'pointer' }}>
+                    style={{ padding: '6px 12px', borderRadius: 16, border: 'none', background: editPurposeGroup === null ? '#1E2B42' : 'rgba(0,0,0,0.06)', fontSize: 12, fontWeight: 700, color: editPurposeGroup === null ? 'white' : '#56637A', cursor: 'pointer' }}>
                     Alla
                   </button>
                   {groups.map(g => {
-                    const c = g.color ?? '#0D7377'
+                    const c = g.color ?? '#2B5C9E'
                     const active = editPurposeGroup === g.id
                     return (
                       <button key={g.id} onClick={() => setEditPurposeGroup(active ? null : g.id)}
@@ -1550,10 +1550,10 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
             )}
             {/* Block category link */}
             <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Föreslå vid block</div>
+              <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8 }}>Föreslå vid block</div>
               <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6 }}>
                 <button onClick={() => setEditPurposeCat(null)}
-                  style={{ padding: '6px 12px', borderRadius: 16, border: 'none', background: editPurposeCat === null ? '#0F172A' : 'rgba(0,0,0,0.06)', fontSize: 12, fontWeight: 700, color: editPurposeCat === null ? 'white' : '#64748B', cursor: 'pointer' }}>
+                  style={{ padding: '6px 12px', borderRadius: 16, border: 'none', background: editPurposeCat === null ? '#1E2B42' : 'rgba(0,0,0,0.06)', fontSize: 12, fontWeight: 700, color: editPurposeCat === null ? 'white' : '#56637A', cursor: 'pointer' }}>
                   Inget
                 </button>
                 {BLOCK_CATEGORIES.map(cat => {
@@ -1568,7 +1568,7 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               </div>
             </div>
             <button onClick={saveEditPurposeType} disabled={!editPurposeName.trim() || savingEditPurpose}
-              style={{ width: '100%', padding: '14px', background: editPurposeName.trim() ? editPurposeColor : 'rgba(0,0,0,0.08)', color: editPurposeName.trim() ? 'white' : '#94A3B8', border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: editPurposeName.trim() ? 'pointer' : 'default', marginBottom: 10, transition: 'all 0.15s' }}>
+              style={{ width: '100%', padding: '14px', background: editPurposeName.trim() ? editPurposeColor : 'rgba(0,0,0,0.08)', color: editPurposeName.trim() ? 'white' : '#56637A', border: 'none', borderRadius: 16, fontSize: 15, fontWeight: 700, cursor: editPurposeName.trim() ? 'pointer' : 'default', marginBottom: 10, transition: 'all 0.15s' }}>
               {savingEditPurpose ? 'Sparar...' : 'Spara'}
             </button>
             <button onClick={deletePurposeType} disabled={savingEditPurpose}
@@ -1584,9 +1584,9 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
         <>
           <div onClick={() => !savingTraining && setShowSaveTrainingSheet(false)} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', zIndex: 400 }} />
           <div className="glass-sheet" style={{ position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 500, borderRadius: '24px 24px 0 0', padding: '24px 20px calc(env(safe-area-inset-bottom, 0px) + 100px)', maxWidth: 520, margin: '0 auto' }}>
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#CBD5E1', margin: '0 auto 20px' }} />
-            <div style={{ fontSize: 17, fontWeight: 700, color: '#0F172A', marginBottom: 4 }}>Spara träning som mall</div>
-            <div style={{ fontSize: 13, color: '#94A3B8', marginBottom: 16 }}>{blocks.length} block · {blocks.reduce((s, b) => s + b.items.length, 0)} övningar</div>
+            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
+            <div style={{ fontSize: 17, fontWeight: 700, color: '#1E2B42', marginBottom: 4 }}>Spara träning som mall</div>
+            <div style={{ fontSize: 13, color: '#56637A', marginBottom: 16 }}>{blocks.length} block · {blocks.reduce((s, b) => s + b.items.length, 0)} övningar</div>
             <input
               value={trainingTmplName}
               onChange={e => setTrainingTmplName(e.target.value)}
@@ -1595,23 +1595,23 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
               style={{ width: '100%', padding: '12px 16px', fontSize: 15, marginBottom: 16 }}
               autoFocus
             />
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#94A3B8', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Spara till grupp</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>Spara till grupp</div>
             <button
               onClick={() => setTrainingTmplGroup(null)}
               className="glass-card"
-              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 14, border: `2px solid ${trainingTmplGroup === null ? '#0D7377' : 'transparent'}`, cursor: 'pointer', marginBottom: 8, background: trainingTmplGroup === null ? 'rgba(13,115,119,0.06)' : undefined }}
+              style={{ width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 14, border: `2px solid ${trainingTmplGroup === null ? '#2B5C9E' : 'transparent'}`, cursor: 'pointer', marginBottom: 8, background: trainingTmplGroup === null ? 'rgba(43,92,158,0.06)' : undefined }}
             >
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>📋 Globalt</div>
-              <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>Tillgänglig för alla grupper</div>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42' }}>📋 Globalt</div>
+              <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>Tillgänglig för alla grupper</div>
             </button>
             {groups.map(g => (
               <button
                 key={g.id}
                 onClick={() => setTrainingTmplGroup(g.id)}
                 className="glass-card"
-                style={{ width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 14, border: `2px solid ${trainingTmplGroup === g.id ? (g.color ?? '#0D7377') : 'transparent'}`, cursor: 'pointer', marginBottom: 8, borderLeft: `4px solid ${g.color ?? '#0D7377'}`, background: trainingTmplGroup === g.id ? `${g.color ?? '#0D7377'}10` : undefined }}
+                style={{ width: '100%', textAlign: 'left', padding: '12px 16px', borderRadius: 14, border: `2px solid ${trainingTmplGroup === g.id ? (g.color ?? '#2B5C9E') : 'transparent'}`, cursor: 'pointer', marginBottom: 8, borderLeft: `4px solid ${g.color ?? '#2B5C9E'}`, background: trainingTmplGroup === g.id ? `${g.color ?? '#2B5C9E'}10` : undefined }}
               >
-                <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A' }}>{g.name}</div>
+                <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42' }}>{g.name}</div>
               </button>
             ))}
             <button
@@ -1636,14 +1636,14 @@ function PickerItemRow({ item, onSelect }: { item: PickerItem; onSelect: () => v
     <button onClick={onSelect} className="glass-card" style={{ width: '100%', padding: '12px 14px', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 10, borderRadius: 14, border: 'none' }}>
       <div style={{ flex: 1, minWidth: 0 }}>
         {item.codeLabel && (
-          <div style={{ fontSize: 11, fontWeight: 700, color: '#0D7377', letterSpacing: '0.06em', marginBottom: 2 }}>{item.codeLabel}</div>
+          <div style={{ fontSize: 11, fontWeight: 700, color: '#2B5C9E', letterSpacing: '0.06em', marginBottom: 2 }}>{item.codeLabel}</div>
         )}
-        <div style={{ fontSize: 14, fontWeight: 600, color: '#0F172A' }}>{item.name}</div>
+        <div style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42' }}>{item.name}</div>
         {item.dd && (
           <div style={{ fontSize: 11, color: '#D4A017', fontWeight: 700, marginTop: 2 }}>DD {item.dd}</div>
         )}
       </div>
-      <Plus size={15} color="#0D7377" strokeWidth={2.5} style={{ flexShrink: 0 }} />
+      <Plus size={15} color="#2B5C9E" strokeWidth={2.5} style={{ flexShrink: 0 }} />
     </button>
   )
 }

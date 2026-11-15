@@ -140,7 +140,7 @@ export default function DagbokPage() {
   if (loading || dataLoading) {
     return (
       <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh' }}>
-        <div style={{ width: 28, height: 28, border: '3px solid rgba(13,115,119,0.2)', borderTopColor: '#0D7377', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
+        <div style={{ width: 28, height: 28, border: '3px solid rgba(43,92,158,0.2)', borderTopColor: '#2B5C9E', borderRadius: '50%', animation: 'spin 0.8s linear infinite' }} />
       </div>
     )
   }
@@ -150,16 +150,16 @@ export default function DagbokPage() {
       <div style={{ maxWidth: 520, margin: '0 auto', padding: '60px 20px', textAlign: 'center' }}>
         <div style={{
           width: 64, height: 64, borderRadius: 20,
-          background: 'rgba(13,115,119,0.08)',
+          background: 'rgba(43,92,158,0.08)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           margin: '0 auto 20px',
         }}>
-          <Star size={28} color="rgba(13,115,119,0.5)" />
+          <Star size={28} color="rgba(43,92,158,0.5)" />
         </div>
-        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 8 }}>
+        <h1 style={{ fontSize: 20, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 8 }}>
           Dagbok
         </h1>
-        <p style={{ fontSize: 14, color: '#94A3B8', lineHeight: 1.6 }}>
+        <p style={{ fontSize: 14, color: '#56637A', lineHeight: 1.6 }}>
           Inga genomförda pass ännu. Din träningshistorik visas här efter att du har kört ditt första pass.
         </p>
       </div>
@@ -168,7 +168,7 @@ export default function DagbokPage() {
 
   return (
     <div style={{ maxWidth: 520, margin: '0 auto', padding: '20px 16px' }}>
-      <h1 style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', marginBottom: 20 }}>
+      <h1 style={{ fontSize: 22, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', marginBottom: 20 }}>
         Dagbok
       </h1>
 
@@ -193,22 +193,22 @@ export default function DagbokPage() {
                 }}
               >
                 <div style={{ flex: 1, minWidth: 0 }}>
-                  <div style={{ fontSize: 15, fontWeight: 700, color: '#0F172A', marginBottom: 3 }}>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 3 }}>
                     {session.training_title ?? 'Träningspass'}
                   </div>
                   <div style={{ display: 'flex', gap: 8, alignItems: 'center' }}>
-                    <span style={{ fontSize: 12, color: '#64748B', fontWeight: 500 }}>
+                    <span style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
                       {new Date(session.started_at).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
                     </span>
                     {totalItems > 0 && (
-                      <span style={{ fontSize: 11, fontWeight: 600, color: '#94A3B8' }}>
+                      <span style={{ fontSize: 11, fontWeight: 600, color: '#56637A' }}>
                         {totalItems} övningar
                       </span>
                     )}
                     {avgScore && (
                       <span style={{
                         fontSize: 11, fontWeight: 700,
-                        color: '#0D7377', background: 'rgba(13,115,119,0.08)',
+                        color: '#2B5C9E', background: 'rgba(43,92,158,0.08)',
                         padding: '1px 7px', borderRadius: 9999,
                       }}>
                         {avgScore} p
@@ -217,22 +217,22 @@ export default function DagbokPage() {
                   </div>
                 </div>
                 <ChevronDown
-                  size={16} color="#94A3B8"
+                  size={16} color="#56637A"
                   style={{ transform: isOpen ? 'rotate(180deg)' : 'none', transition: 'transform 0.2s', flexShrink: 0 }}
                 />
               </button>
 
               {/* Expanded content */}
               {isOpen && session.blocks.length > 0 && (
-                <div style={{ borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                <div style={{ borderTop: '1px solid #E1E8F0' }}>
                   {session.blocks.map(block => (
                     <div key={block.id}>
                       <div style={{
                         padding: '8px 16px',
                         fontSize: 11, fontWeight: 800,
-                        color: '#0D7377',
+                        color: '#2B5C9E',
                         textTransform: 'uppercase', letterSpacing: '0.06em',
-                        background: 'rgba(13,115,119,0.03)',
+                        background: 'rgba(43,92,158,0.03)',
                       }}>
                         {block.name}
                       </div>
@@ -242,22 +242,22 @@ export default function DagbokPage() {
                           style={{
                             display: 'flex', alignItems: 'center', gap: 10,
                             padding: '10px 16px',
-                            borderBottom: i < block.items.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                            borderBottom: i < block.items.length - 1 ? '1px solid #E1E8F0' : 'none',
                           }}
                         >
-                          <span style={{ fontSize: 13, fontWeight: 600, color: '#334155', flex: 1 }}>
+                          <span style={{ fontSize: 13, fontWeight: 600, color: '#1E2B42', flex: 1 }}>
                             {item.name}
                           </span>
                           {item.score !== null ? (
                             <span style={{
                               fontSize: 13, fontWeight: 700,
-                              color: '#0D7377', background: 'rgba(13,115,119,0.08)',
+                              color: '#2B5C9E', background: 'rgba(43,92,158,0.08)',
                               padding: '2px 10px', borderRadius: 9999,
                             }}>
                               {item.score} p
                             </span>
                           ) : (
-                            <span style={{ fontSize: 12, color: '#CBD5E1' }}>–</span>
+                            <span style={{ fontSize: 12, color: '#E1E8F0' }}>–</span>
                           )}
                         </div>
                       ))}
@@ -267,7 +267,7 @@ export default function DagbokPage() {
               )}
 
               {isOpen && session.blocks.length === 0 && (
-                <div style={{ padding: '16px', textAlign: 'center', color: '#94A3B8', fontSize: 13, borderTop: '1px solid rgba(0,0,0,0.05)' }}>
+                <div style={{ padding: '16px', textAlign: 'center', color: '#56637A', fontSize: 13, borderTop: '1px solid #E1E8F0' }}>
                   Inga övningar registrerade
                 </div>
               )}

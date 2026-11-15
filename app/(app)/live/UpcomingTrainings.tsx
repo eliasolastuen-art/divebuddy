@@ -4,8 +4,8 @@ import { ChevronRight } from 'lucide-react'
 import type { TrainingWithGroup } from './TodayTrainings'
 
 const STATUS_STYLE = {
-  draft:     { bg: 'rgba(100,116,139,0.1)', text: '#64748B', label: 'Utkast' },
-  published: { bg: 'rgba(13,115,119,0.1)',  text: '#0D7377', label: 'Publicerad' },
+  draft:     { bg: 'rgba(86,99,122,0.1)', text: '#56637A', label: 'Utkast' },
+  published: { bg: 'rgba(43,92,158,0.1)',  text: '#2B5C9E', label: 'Publicerad' },
   completed: { bg: 'rgba(22,163,74,0.1)',   text: '#16A34A', label: 'Genomförd' },
 } as const
 
@@ -18,7 +18,7 @@ export default function UpcomingTrainings({ trainings }: Props) {
 
   if (trainings.length === 0) {
     return (
-      <p style={{ fontSize: 13, color: '#94A3B8', padding: '16px 0' }}>
+      <p style={{ fontSize: 13, color: '#56637A', padding: '16px 0' }}>
         Inga kommande pass schemalagda.
       </p>
     )
@@ -51,24 +51,24 @@ export default function UpcomingTrainings({ trainings }: Props) {
             {dateLabel && (
               <div style={{
                 flexShrink: 0,
-                background: 'rgba(13,115,119,0.07)',
+                background: 'rgba(43,92,158,0.07)',
                 borderRadius: 10, padding: '6px 10px',
                 textAlign: 'center', minWidth: 52,
               }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#0D7377', lineHeight: 1.2 }}>
+                <div style={{ fontSize: 11, fontWeight: 700, color: '#2B5C9E', lineHeight: 1.2 }}>
                   {dateLabel.split(' ')[0]}
                 </div>
-                <div style={{ fontSize: 14, fontWeight: 800, color: '#0F172A', lineHeight: 1.2 }}>
+                <div style={{ fontSize: 14, fontWeight: 800, color: '#1E2B42', lineHeight: 1.2 }}>
                   {dateLabel.split(' ')[1]}
                 </div>
-                <div style={{ fontSize: 10, fontWeight: 600, color: '#64748B', lineHeight: 1.2 }}>
+                <div style={{ fontSize: 10, fontWeight: 600, color: '#56637A', lineHeight: 1.2 }}>
                   {dateLabel.split(' ')[2]}
                 </div>
               </div>
             )}
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', marginBottom: 4, letterSpacing: '-0.01em' }}>
+              <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42', marginBottom: 4, letterSpacing: '-0.01em' }}>
                 {t.title}
               </div>
               <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexWrap: 'wrap' }}>
@@ -80,14 +80,14 @@ export default function UpcomingTrainings({ trainings }: Props) {
                   {s.label}
                 </span>
                 {groupName && (
-                  <span style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>
+                  <span style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
                     {groupName}
                   </span>
                 )}
               </div>
             </div>
 
-            <ChevronRight size={15} color="#CBD5E1" strokeWidth={2.5} />
+            <ChevronRight size={15} color="#E1E8F0" strokeWidth={2.5} />
           </div>
         )
       })}

@@ -29,8 +29,8 @@ export default function ViewerBar({ showScope = true }: { showScope?: boolean })
           {(['mine', 'all'] as const).map(s => (
             <button key={s} aria-pressed={v.scope === s} onClick={() => setScope(s)} style={{
               minHeight: 34, padding: '0 12px', borderRadius: 9, border: 'none', fontFamily: 'inherit', cursor: 'pointer',
-              background: v.scope === s ? '#fff' : 'transparent', color: v.scope === s ? UI.tealDark : UI.muted,
-              fontSize: 13, fontWeight: 700, boxShadow: v.scope === s ? '0 1px 3px rgba(0,0,0,0.08)' : 'none',
+              background: v.scope === s ? '#fff' : 'transparent', color: v.scope === s ? UI.primary : UI.muted,
+              fontSize: 13, fontWeight: 700, boxShadow: v.scope === s ? 'none' : 'none',
             }}>{s === 'mine' ? 'Mina grupper' : 'Alla grupper'}</button>
           ))}
         </div>

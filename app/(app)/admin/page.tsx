@@ -32,7 +32,7 @@ interface Invite {
 // ── Constants ──────────────────────────────────────────────────
 const ROLE_META: Record<string, { label: string; desc: string; bg: string; color: string }> = {
   admin:   { label: 'Admin',    desc: 'Full åtkomst till admin-panelen',   bg: 'rgba(147,51,234,0.12)',  color: '#9333EA' },
-  coach:   { label: 'Tränare',  desc: 'Kan hantera grupper och atleter',    bg: 'rgba(13,115,119,0.10)',  color: '#0D7377' },
+  coach:   { label: 'Tränare',  desc: 'Kan hantera grupper och atleter',    bg: 'rgba(43,92,158,0.10)',  color: '#2B5C9E' },
   athlete: { label: 'Atlet',    desc: 'Åtkomst till athlete-vyn',           bg: 'rgba(245,158,11,0.12)',  color: '#D97706' },
 }
 
@@ -59,7 +59,7 @@ function Toast({ text, type }: { text: string; type: 'success' | 'error' }) {
       top: 'max(16px, env(safe-area-inset-top, 16px))',
       left: '50%', transform: 'translateX(-50%)',
       zIndex: 1000,
-      background: type === 'success' ? '#0D7377' : '#DC2626',
+      background: type === 'success' ? '#2B5C9E' : '#DC2626',
       color: 'white', borderRadius: 14,
       padding: '10px 20px', fontSize: 13, fontWeight: 600,
       boxShadow: '0 4px 20px rgba(0,0,0,0.2)',
@@ -85,7 +85,7 @@ function SheetBackdrop({ onClose }: { onClose: () => void }) {
 }
 
 function RolePill({ role }: { role: string }) {
-  const m = ROLE_META[role] ?? { label: role, bg: '#F1F5F9', color: '#64748B' }
+  const m = ROLE_META[role] ?? { label: role, bg: '#EEF3F8', color: '#56637A' }
   return (
     <span style={{
       display: 'inline-block',
@@ -101,17 +101,17 @@ function RolePill({ role }: { role: string }) {
 function StatCard({ value, label }: { value: number; label: string }) {
   return (
     <div style={{
-      background: 'rgba(255,255,255,0.9)',
+      background: '#FFFFFF',
       borderRadius: 14,
       border: '1px solid rgba(255,255,255,0.8)',
-      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+      boxShadow: 'none',
       padding: '14px 16px',
       flex: 1,
     }}>
-      <div style={{ fontSize: 26, fontWeight: 900, color: '#0F172A', letterSpacing: '-0.04em', lineHeight: 1 }}>
+      <div style={{ fontSize: 26, fontWeight: 900, color: '#1E2B42', letterSpacing: '-0.04em', lineHeight: 1 }}>
         {value}
       </div>
-      <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500, marginTop: 3 }}>
+      <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500, marginTop: 3 }}>
         {label}
       </div>
     </div>
@@ -121,7 +121,7 @@ function StatCard({ value, label }: { value: number; label: string }) {
 function SectionHeader({ title, action }: { title: string; action?: React.ReactNode }) {
   return (
     <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-      <span style={{ fontSize: 16, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.02em' }}>
+      <span style={{ fontSize: 16, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>
         {title}
       </span>
       {action}
@@ -263,27 +263,25 @@ export default function AdminPage() {
       {/* ── Sticky header ──────────────────────────────────── */}
       <div style={{
         position: 'sticky', top: 0, zIndex: 20,
-        background: 'rgba(245,244,241,0.92)',
-        backdropFilter: 'blur(20px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(20px) saturate(180%)',
-        borderBottom: '1px solid rgba(0,0,0,0.06)',
+        background: '#EEF3F8',
+        borderBottom: '1px solid #E1E8F0',
         padding: '12px 16px',
       }}>
         <div style={{ maxWidth: 480, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 10 }}>
           <div style={{
             width: 34, height: 34, borderRadius: 11, flexShrink: 0,
-            background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+            background: 'var(--gradient-hero)',
             display: 'flex', alignItems: 'center', justifyContent: 'center',
-            boxShadow: '0 2px 8px rgba(13,115,119,0.25)',
+            boxShadow: 'none',
           }}>
             <Lock size={15} color="white" strokeWidth={2.5} />
           </div>
           <div>
-            <div style={{ fontSize: 22, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
+            <div style={{ fontSize: 22, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', lineHeight: 1.1 }}>
               Admin
             </div>
             {clubName && (
-              <div style={{ fontSize: 12, color: '#94A3B8', fontWeight: 500 }}>
+              <div style={{ fontSize: 12, color: '#56637A', fontWeight: 500 }}>
                 {clubName}
               </div>
             )}
@@ -324,7 +322,7 @@ export default function AdminPage() {
                 onClick={() => { setShowInvite(true); setInviteEmail(''); setInviteRole('coach') }}
                 style={{
                   display: 'flex', alignItems: 'center', gap: 5,
-                  background: '#0D7377', color: 'white',
+                  background: '#2B5C9E', color: 'white',
                   border: 'none', borderRadius: 20,
                   padding: '7px 13px', fontSize: 12, fontWeight: 700,
                   cursor: 'pointer',
@@ -343,7 +341,7 @@ export default function AdminPage() {
               ))}
             </div>
           ) : profiles.length === 0 ? (
-            <div style={{ color: '#94A3B8', fontSize: 14, padding: '20px 0', textAlign: 'center' }}>
+            <div style={{ color: '#56637A', fontSize: 14, padding: '20px 0', textAlign: 'center' }}>
               Inga användare ännu
             </div>
           ) : (
@@ -355,10 +353,10 @@ export default function AdminPage() {
                   <div
                     key={p.id}
                     style={{
-                      background: 'rgba(255,255,255,0.9)',
+                      background: '#FFFFFF',
                       borderRadius: 14,
                       border: '1px solid rgba(255,255,255,0.8)',
-                      boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                      boxShadow: 'none',
                       padding: '12px 14px',
                       display: 'flex', alignItems: 'center', gap: 12,
                     }}
@@ -366,7 +364,7 @@ export default function AdminPage() {
                     {/* Avatar */}
                     <div style={{
                       width: 40, height: 40, borderRadius: '50%', flexShrink: 0,
-                      background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+                      background: 'var(--gradient-hero)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
                       color: 'white', fontSize: 14, fontWeight: 700,
                     }}>
@@ -375,17 +373,17 @@ export default function AdminPage() {
 
                     {/* Info */}
                     <div style={{ flex: 1, minWidth: 0 }}>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                         {displayName}
                       </div>
                       {p.full_name && p.email && (
-                        <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                        <div style={{ fontSize: 12, color: '#56637A', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                           {p.email}
                         </div>
                       )}
                       <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 5 }}>
                         {pRoles.length === 0 ? (
-                          <span style={{ fontSize: 11, color: '#CBD5E1', fontWeight: 500 }}>Inga roller</span>
+                          <span style={{ fontSize: 11, color: '#E1E8F0', fontWeight: 500 }}>Inga roller</span>
                         ) : (
                           pRoles.map(r => <RolePill key={r} role={r} />)
                         )}
@@ -430,10 +428,10 @@ export default function AdminPage() {
             </div>
           ) : invites.length === 0 ? (
             <div style={{
-              background: 'rgba(255,255,255,0.7)',
+              background: '#FFFFFF',
               borderRadius: 14, border: '1px dashed rgba(0,0,0,0.1)',
               padding: '28px 20px', textAlign: 'center',
-              color: '#94A3B8', fontSize: 14,
+              color: '#56637A', fontSize: 14,
             }}>
               Inga inbjudningar skickade än
             </div>
@@ -443,10 +441,10 @@ export default function AdminPage() {
                 <div
                   key={inv.id}
                   style={{
-                    background: 'rgba(255,255,255,0.9)',
+                    background: '#FFFFFF',
                     borderRadius: 14,
                     border: '1px solid rgba(255,255,255,0.8)',
-                    boxShadow: '0 2px 12px rgba(0,0,0,0.06)',
+                    boxShadow: 'none',
                     padding: '12px 14px',
                     display: 'flex', alignItems: 'center', gap: 12,
                   }}
@@ -462,13 +460,13 @@ export default function AdminPage() {
 
                   {/* Info */}
                   <div style={{ flex: 1, minWidth: 0 }}>
-                    <div style={{ fontSize: 14, fontWeight: 700, color: '#0F172A', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
+                    <div style={{ fontSize: 14, fontWeight: 700, color: '#1E2B42', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
                       {inv.email}
                     </div>
                     <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, margin: '4px 0' }}>
                       {(inv.roles ?? []).map(r => <RolePill key={r} role={r} />)}
                     </div>
-                    <div style={{ fontSize: 11, color: '#94A3B8', fontWeight: 500 }}>
+                    <div style={{ fontSize: 11, color: '#56637A', fontWeight: 500 }}>
                       {daysAgo(inv.created_at)}
                     </div>
                   </div>
@@ -485,7 +483,7 @@ export default function AdminPage() {
                         showToast(`Inbjudan skickad igen till ${inv.email}`)
                       }}
                       style={{
-                        fontSize: 12, fontWeight: 700, color: '#0D7377',
+                        fontSize: 12, fontWeight: 700, color: '#2B5C9E',
                         background: 'none', border: 'none',
                         cursor: 'pointer', flexShrink: 0,
                         padding: '6px 0',
@@ -542,31 +540,31 @@ export default function AdminPage() {
               onClick={() => setManageProfile(null)}
               style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             >
-              <X size={20} color="#94A3B8" />
+              <X size={20} color="#56637A" />
             </button>
 
             {/* Header */}
             <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 20 }}>
               <div style={{
                 width: 44, height: 44, borderRadius: '50%', flexShrink: 0,
-                background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+                background: 'var(--gradient-hero)',
                 display: 'flex', alignItems: 'center', justifyContent: 'center',
                 color: 'white', fontSize: 16, fontWeight: 700,
               }}>
                 {initials(manageProfile.full_name, manageProfile.email)}
               </div>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 800, color: '#0F172A' }}>
+                <div style={{ fontSize: 16, fontWeight: 800, color: '#1E2B42' }}>
                   {manageProfile.full_name ?? manageProfile.email ?? 'Okänd'}
                 </div>
                 {manageProfile.full_name && manageProfile.email && (
-                  <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 2 }}>{manageProfile.email}</div>
+                  <div style={{ fontSize: 12, color: '#56637A', marginTop: 2 }}>{manageProfile.email}</div>
                 )}
               </div>
             </div>
 
             {/* Role label */}
-            <div style={{ fontSize: 12, fontWeight: 700, color: '#64748B', marginBottom: 10 }}>Roller</div>
+            <div style={{ fontSize: 12, fontWeight: 700, color: '#56637A', marginBottom: 10 }}>Roller</div>
 
             {/* Role toggles */}
             <div style={{ display: 'flex', flexDirection: 'column', gap: 2, marginBottom: 20 }}>
@@ -589,10 +587,10 @@ export default function AdminPage() {
                     }}
                   >
                     <div>
-                      <div style={{ fontSize: 14, fontWeight: 700, color: has ? m.color : '#0F172A' }}>
+                      <div style={{ fontSize: 14, fontWeight: 700, color: has ? m.color : '#1E2B42' }}>
                         {m.label}
                       </div>
-                      <div style={{ fontSize: 12, color: '#94A3B8', marginTop: 1 }}>{m.desc}</div>
+                      <div style={{ fontSize: 12, color: '#56637A', marginTop: 1 }}>{m.desc}</div>
                     </div>
                     <div style={{
                       width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
@@ -635,15 +633,15 @@ export default function AdminPage() {
               onClick={() => setShowInvite(false)}
               style={{ position: 'absolute', top: 20, right: 20, background: 'none', border: 'none', cursor: 'pointer', padding: 4 }}
             >
-              <X size={20} color="#94A3B8" />
+              <X size={20} color="#56637A" />
             </button>
 
-            <div style={{ fontSize: 17, fontWeight: 800, color: '#0F172A', marginBottom: 18 }}>
+            <div style={{ fontSize: 17, fontWeight: 800, color: '#1E2B42', marginBottom: 18 }}>
               Bjud in tränare eller admin
             </div>
 
             {/* Email */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 4 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 4 }}>
               E-post
             </label>
             <input
@@ -657,7 +655,7 @@ export default function AdminPage() {
             />
 
             {/* Role picker */}
-            <label style={{ fontSize: 12, fontWeight: 700, color: '#64748B', display: 'block', marginBottom: 8 }}>
+            <label style={{ fontSize: 12, fontWeight: 700, color: '#56637A', display: 'block', marginBottom: 8 }}>
               Roll
             </label>
             <div style={{ display: 'flex', gap: 8, marginBottom: 20 }}>
@@ -670,9 +668,9 @@ export default function AdminPage() {
                     onClick={() => setInviteRole(r)}
                     style={{
                       flex: 1, padding: '10px 0', borderRadius: 12, fontSize: 14, fontWeight: 700,
-                      border: active ? 'none' : '1.5px solid rgba(0,0,0,0.1)',
-                      background: active ? m.bg : 'rgba(255,255,255,0.7)',
-                      color: active ? m.color : '#64748B',
+                      border: active ? 'none' : '1px solid #E1E8F0',
+                      background: active ? m.bg : '#FFFFFF',
+                      color: active ? m.color : '#56637A',
                       cursor: 'pointer',
                     }}
                   >

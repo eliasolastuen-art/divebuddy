@@ -81,12 +81,12 @@ export function passStatus(p: SchedulePass, today = todayISO()): PassStatus {
 }
 
 export const STATUS_STYLE: Record<PassStatus, { label: string; bg: string; fg: string; border: string; dashed?: boolean; strike?: boolean }> = {
-  unplanned: { label: 'Oplanerat', bg: '#F8FAFC', fg: '#475569', border: '#CBD5E1', dashed: true },
+  unplanned: { label: 'Oplanerat', bg: '#EEF3F8', fg: '#56637A', border: '#E1E8F0', dashed: true },
   draft: { label: 'Utkast', bg: '#FEF3C7', fg: '#92400E', border: '#FCD34D' },
   planned: { label: 'Planerat', bg: '#DCFCE7', fg: '#166534', border: '#86EFAC' },
-  completed: { label: 'Genomfört', bg: 'rgba(13,115,119,0.1)', fg: '#0B5C5F', border: 'rgba(13,115,119,0.3)' },
+  completed: { label: 'Genomfört', bg: 'rgba(43,92,158,0.1)', fg: '#2B5C9E', border: 'rgba(43,92,158,0.3)' },
   cancelled: { label: 'Inställt', bg: '#FEE2E2', fg: '#991B1B', border: '#FCA5A5', strike: true },
-  past: { label: 'Passerat', bg: '#F1F5F9', fg: '#64748B', border: '#E2E8F0' },
+  past: { label: 'Passerat', bg: '#EEF3F8', fg: '#56637A', border: '#E1E8F0' },
 }
 
 // ── Places & event types ───────────────────────────────────────────────────
@@ -101,11 +101,11 @@ const PLACE_COLORS: Record<string, { bg: string; fg: string }> = {
   'Teori/lek': { bg: '#FFEDD5', fg: '#9A3412' },
 }
 
-export const placeColors = (place: string) => PLACE_COLORS[place] ?? { bg: '#F1F5F9', fg: '#475569' }
+export const placeColors = (place: string) => PLACE_COLORS[place] ?? { bg: '#EEF3F8', fg: '#56637A' }
 
 export const EVENT_STYLE: Record<EventType, { label: string; dot: string; bg: string; fg: string }> = {
   camp: { label: 'Läger', dot: '#0284C7', bg: '#E0F2FE', fg: '#075985' },
-  edu: { label: 'Utbildning', dot: '#64748B', bg: '#F1F5F9', fg: '#334155' },
+  edu: { label: 'Utbildning', dot: '#56637A', bg: '#EEF3F8', fg: '#1E2B42' },
   tryout: { label: 'Prova på', dot: '#059669', bg: '#D1FAE5', fg: '#065F46' },
   cancelled: { label: 'Ingen träning', dot: '#DC2626', bg: '#FEE2E2', fg: '#991B1B' },
   comp: { label: 'Tävling', dot: '#D97706', bg: '#FEF3C7', fg: '#92400E' },
@@ -119,18 +119,16 @@ export function eventsOnDate(events: ClubEvent[], date: string) {
 // ── Shared UI tokens (match app/globals.css) ───────────────────────────────
 
 export const UI = {
-  text: '#0F172A',
-  muted: '#64748B',
-  faint: '#94A3B8',
-  line: 'rgba(0,0,0,0.06)',
-  teal: '#0D7377',
-  tealDark: '#0B5C5F',
-  tealLight: 'rgba(13,115,119,0.1)',
+  text: '#1E2B42',
+  muted: '#56637A',
+  faint: '#56637A',
+  line: '#E1E8F0',
+  primary: '#2B5C9E',
+  primarySoft: '#E3ECF7',
 }
 
 export const cardStyle: React.CSSProperties = {
   background: 'var(--surface-card)',
   borderRadius: 'var(--radius-card)',
-  border: '1px solid rgba(255,255,255,0.8)',
-  boxShadow: 'var(--shadow-card)',
+  border: '1px solid var(--line)',
 }

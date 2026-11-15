@@ -30,7 +30,7 @@ export function ReviewMark({ pass }: { pass: SchedulePass }) {
     <span style={{ display: 'inline-flex', gap: 4, alignItems: 'center' }}>
       {r.rating === 'up' && <ThumbsUp size={14} color="#15803D" aria-label="Bra pass" />}
       {r.rating === 'down' && <ThumbsDown size={14} color="#B91C1C" aria-label="Behöver ändras" />}
-      {r.repeat && <Repeat size={14} color={UI.tealDark} aria-label="Kör igen" />}
+      {r.repeat && <Repeat size={14} color={UI.primary} aria-label="Kör igen" />}
     </span>
   )
 }
@@ -75,7 +75,7 @@ export function WeekFocusEditor({ groupId, monday, compact }: { groupId: string;
     return (
       <form onSubmit={e => { e.preventDefault(); save() }} style={{ display: 'flex', gap: 6 }}>
         <input autoFocus aria-label="Veckans fokus" value={text} onChange={e => setText(e.target.value)} onBlur={save}
-          placeholder="t.ex. framåtvarv, ansats" style={{ flex: 1, minWidth: 0, minHeight: 38, padding: '0 10px', borderRadius: 10, border: `1.5px solid ${UI.teal}`, fontFamily: 'inherit', fontSize: 13.5 }} />
+          placeholder="t.ex. framåtvarv, ansats" style={{ flex: 1, minWidth: 0, minHeight: 38, padding: '0 10px', borderRadius: 10, border: `1.5px solid ${UI.primary}`, fontFamily: 'inherit', fontSize: 13.5 }} />
       </form>
     )
   }
@@ -83,8 +83,8 @@ export function WeekFocusEditor({ groupId, monday, compact }: { groupId: string;
   return (
     <button onClick={() => { setText(current); setEditing(true) }} style={{
       display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: compact ? 32 : 38, padding: '0 10px', borderRadius: 10,
-      border: current ? 'none' : `1px dashed ${UI.faint}`, background: current ? UI.tealLight : 'transparent',
-      color: current ? UI.tealDark : UI.muted, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', maxWidth: '100%',
+      border: current ? 'none' : `1px dashed ${UI.faint}`, background: current ? UI.primarySoft : 'transparent',
+      color: current ? UI.primary : UI.muted, fontFamily: 'inherit', fontSize: 13, fontWeight: 700, cursor: 'pointer', textAlign: 'left', maxWidth: '100%',
     }}>
       {current ? <Target size={14} aria-hidden /> : <Plus size={14} aria-hidden />}
       <span style={{ overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{current || 'Fokus för veckan'}</span>

@@ -50,7 +50,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         onClick={onClose}
         style={{
           position: 'fixed', inset: 0, zIndex: 100,
-          background: 'rgba(15, 23, 42, 0.4)',
+          background: 'rgba(30,43,66,0.4)',
           backdropFilter: 'blur(4px)',
           WebkitBackdropFilter: 'blur(4px)',
           opacity: open ? 1 : 0,
@@ -67,8 +67,6 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         transition: 'transform 0.28s cubic-bezier(0.32, 0.72, 0, 1)',
         paddingTop: 'env(safe-area-inset-top, 0px)',
         background: 'rgba(240, 244, 248, 0.96)',
-        backdropFilter: 'blur(28px) saturate(180%)',
-        WebkitBackdropFilter: 'blur(28px) saturate(180%)',
         boxShadow: '8px 0 40px rgba(0,0,0,0.18)',
         borderRight: '1px solid rgba(255,255,255,0.6)',
       }}>
@@ -76,7 +74,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         {/* Teal gradient accent at top */}
         <div style={{
           position: 'absolute', top: 0, left: 0, right: 0, height: 200,
-          background: 'linear-gradient(180deg, rgba(13,115,119,0.08) 0%, transparent 100%)',
+          background: 'linear-gradient(180deg, rgba(43,92,158,0.08) 0%, transparent 100%)',
           pointerEvents: 'none',
         }} />
 
@@ -84,16 +82,16 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
           padding: '16px 20px',
-          borderBottom: '1px solid rgba(0,0,0,0.06)',
+          borderBottom: '1px solid #E1E8F0',
           position: 'relative',
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <div style={{
               width: 32, height: 32,
-              background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+              background: 'var(--gradient-hero)',
               borderRadius: 11,
               display: 'flex', alignItems: 'center', justifyContent: 'center',
-              boxShadow: '0 2px 8px rgba(13,115,119,0.3)',
+              boxShadow: 'none',
             }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none">
                 <path d="M8 6C8 4.9 8.9 4 10 4h4c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2h-4c-1.1 0-2-.9-2-2V6zM3 9a1 1 0 0 1 1-1h2v8H4a1 1 0 0 1-1-1V9zm14-1h2a1 1 0 0 1 1 1v6a1 1 0 0 1-1 1h-2V8z" fill="white"/>
@@ -101,7 +99,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
             </div>
             <span style={{
               fontSize: 17, fontWeight: 800, letterSpacing: '-0.03em',
-              background: 'linear-gradient(135deg, #0D7377 0%, #0a5c60 100%)',
+              background: 'var(--gradient-hero)',
               WebkitBackgroundClip: 'text',
               WebkitTextFillColor: 'transparent',
               backgroundClip: 'text',
@@ -112,14 +110,14 @@ export default function HamburgerMenu({ open, onClose }: Props) {
             onClick={onClose}
             style={{
               width: 34, height: 34, borderRadius: 10,
-              background: 'rgba(255,255,255,0.7)',
-              border: '1px solid rgba(0,0,0,0.08)',
+              background: '#FFFFFF',
+              border: '1px solid #E1E8F0',
               cursor: 'pointer',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
             }}
             aria-label="Close menu"
           >
-            <X size={16} color="#64748B" strokeWidth={2.5} />
+            <X size={16} color="#56637A" strokeWidth={2.5} />
           </button>
         </div>
 
@@ -141,20 +139,20 @@ export default function HamburgerMenu({ open, onClose }: Props) {
                     style={{
                       display: 'flex', alignItems: 'center', gap: 12,
                       padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
-                      borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                      borderBottom: i < arr.length - 1 ? '1px solid #E1E8F0' : 'none',
                     }}
                   >
                     <div style={{
                       width: 34, height: 34, borderRadius: 11,
-                      background: 'rgba(13,115,119,0.1)',
+                      background: 'rgba(43,92,158,0.1)',
                       display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                     }}>
-                      <Icon size={16} color="#0D7377" strokeWidth={2} />
+                      <Icon size={16} color="#2B5C9E" strokeWidth={2} />
                     </div>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42', flex: 1 }}>
                       {item.label}
                     </span>
-                    <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
+                    <ChevronRight size={14} color="#E1E8F0" strokeWidth={2.5} />
                   </Link>
                 )
               })}
@@ -163,7 +161,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
             <>
               {/* Groups section */}
               <div style={{
-                fontSize: 11, fontWeight: 700, color: '#94A3B8',
+                fontSize: 11, fontWeight: 700, color: '#56637A',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 padding: '0 10px', marginBottom: 8,
               }}>
@@ -171,7 +169,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
               </div>
 
               {groups.length === 0 ? (
-                <div style={{ padding: '14px 10px', color: '#94A3B8', fontSize: 13 }}>
+                <div style={{ padding: '14px 10px', color: '#56637A', fontSize: 13 }}>
                   Inga grupper ännu
                 </div>
               ) : (
@@ -184,23 +182,23 @@ export default function HamburgerMenu({ open, onClose }: Props) {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
-                        borderBottom: i < groups.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                        borderBottom: i < groups.length - 1 ? '1px solid #E1E8F0' : 'none',
                       }}
                     >
                       <div style={{
                         width: 34, height: 34, borderRadius: 11,
-                        background: `${group.color || '#0D7377'}18`,
-                        border: `1.5px solid ${group.color || '#0D7377'}30`,
+                        background: `${group.color || '#2B5C9E'}18`,
+                        border: `1.5px solid ${group.color || '#2B5C9E'}30`,
                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                       }}>
-                        <span style={{ fontSize: 15, fontWeight: 800, color: group.color || '#0D7377' }}>
+                        <span style={{ fontSize: 15, fontWeight: 800, color: group.color || '#2B5C9E' }}>
                           {group.name.charAt(0)}
                         </span>
                       </div>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42', flex: 1 }}>
                         {group.name}
                       </span>
-                      <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
+                      <ChevronRight size={14} color="#E1E8F0" strokeWidth={2.5} />
                     </Link>
                   ))}
                 </div>
@@ -211,7 +209,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
 
               {/* Other links */}
               <div style={{
-                fontSize: 11, fontWeight: 700, color: '#94A3B8',
+                fontSize: 11, fontWeight: 700, color: '#56637A',
                 textTransform: 'uppercase', letterSpacing: '0.08em',
                 padding: '0 10px', marginBottom: 8,
               }}>
@@ -234,20 +232,20 @@ export default function HamburgerMenu({ open, onClose }: Props) {
                       style={{
                         display: 'flex', alignItems: 'center', gap: 12,
                         padding: '11px 10px', borderRadius: 14, textDecoration: 'none',
-                        borderBottom: i < arr.length - 1 ? '1px solid rgba(0,0,0,0.04)' : 'none',
+                        borderBottom: i < arr.length - 1 ? '1px solid #E1E8F0' : 'none',
                       }}
                     >
                       <div style={{
                         width: 34, height: 34, borderRadius: 11,
-                        background: 'rgba(13,115,119,0.1)',
+                        background: 'rgba(43,92,158,0.1)',
                         display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
                       }}>
-                        <Icon size={16} color="#0D7377" strokeWidth={2} />
+                        <Icon size={16} color="#2B5C9E" strokeWidth={2} />
                       </div>
-                      <span style={{ fontSize: 15, fontWeight: 600, color: '#0F172A', flex: 1 }}>
+                      <span style={{ fontSize: 15, fontWeight: 600, color: '#1E2B42', flex: 1 }}>
                         {item.label}
                       </span>
-                      <ChevronRight size={14} color="#CBD5E1" strokeWidth={2.5} />
+                      <ChevronRight size={14} color="#E1E8F0" strokeWidth={2.5} />
                     </Link>
                   )
                 })}
@@ -259,7 +257,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
         {/* Sign out */}
         <div style={{
           padding: '12px 12px',
-          borderTop: '1px solid rgba(0,0,0,0.06)',
+          borderTop: '1px solid #E1E8F0',
         }}>
           <button
             onClick={async () => {

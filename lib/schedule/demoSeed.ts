@@ -11,7 +11,7 @@ const GROUPS: (ScheduleGroup & { key: string })[] = [
   { id: 'g-n2', key: 'N2', name: 'N2', color: '#2563EB' },
   { id: 'g-fg', key: 'FG', name: 'FG', color: '#7C3AED' },
   { id: 'g-tg', key: 'TG', name: 'TG', color: '#C2410C' },
-  { id: 'g-vux', key: 'VUX', name: 'Vuxen', color: '#475569' },
+  { id: 'g-vux', key: 'VUX', name: 'Vuxen', color: '#56637A' },
 ]
 
 const STAFF: Staff[] = [
@@ -20,7 +20,7 @@ const STAFF: Staff[] = [
   { id: 's-elias', name: 'Elias', color: '#2563EB', profileId: null, groupIds: [] },
   { id: 's-ville', name: 'Ville', color: '#7C3AED', profileId: null, groupIds: [] },
   { id: 's-leo', name: 'Leo', color: '#059669', profileId: null, groupIds: [] },
-  { id: 's-vega', name: 'Vega', color: '#0D7377', profileId: null, groupIds: [] },
+  { id: 's-vega', name: 'Vega', color: '#2B5C9E', profileId: null, groupIds: [] },
   { id: 's-anton', name: 'Anton', color: '#C2410C', profileId: null, groupIds: [] },
 ]
 

@@ -29,8 +29,8 @@ export default function RoleSwitcher() {
             textTransform: 'capitalize',
             transition: 'all 0.18s ease',
             background: activeRole === role ? 'white' : 'transparent',
-            color: activeRole === role ? '#0D7377' : '#94A3B8',
-            boxShadow: activeRole === role ? '0 1px 4px rgba(0,0,0,0.1)' : 'none',
+            color: activeRole === role ? '#2B5C9E' : '#56637A',
+            boxShadow: activeRole === role ? 'none' : 'none',
           }}
         >
           {role}

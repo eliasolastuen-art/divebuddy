@@ -51,7 +51,7 @@ export default function LiveWeekView() {
 
       {/* Header */}
       <div style={{ padding: '20px 16px 20px' }}>
-        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#0F172A', letterSpacing: '-0.04em', marginBottom: 16 }}>
+        <h1 style={{ fontSize: 26, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.04em', marginBottom: 16 }}>
           Live
         </h1>
         <WeekNavigator
@@ -65,23 +65,23 @@ export default function LiveWeekView() {
       {/* Training list */}
       <div style={{ padding: '0 16px' }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#94A3B8', fontSize: 15 }}>
+          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#56637A', fontSize: 15 }}>
             Laddar…
           </div>
         ) : trainings.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
             <div style={{
               width: 64, height: 64, borderRadius: 20,
-              background: 'rgba(13,115,119,0.08)',
+              background: 'rgba(43,92,158,0.08)',
               display: 'flex', alignItems: 'center', justifyContent: 'center',
               margin: '0 auto 16px',
             }}>
-              <CalendarDays size={28} color="#0D7377" strokeWidth={1.5} />
+              <CalendarDays size={28} color="#2B5C9E" strokeWidth={1.5} />
             </div>
-            <p style={{ fontSize: 15, fontWeight: 700, color: '#475569', marginBottom: 4 }}>
+            <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>
               Inga pass schemalagda denna vecka
             </p>
-            <p style={{ fontSize: 13, color: '#94A3B8', marginBottom: 20 }}>
+            <p style={{ fontSize: 13, color: '#56637A', marginBottom: 20 }}>
               Gå till Planning och sätt ett datum på dina pass.
             </p>
             <button
