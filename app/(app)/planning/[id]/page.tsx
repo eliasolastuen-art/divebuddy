@@ -65,6 +65,7 @@ export default function TrainingPage() {
   const [showEdit, setShowEdit] = useState(false)
   const [menu, setMenu] = useState(false)
   const [copying, setCopying] = useState(false)
+  const [restart, setRestart] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -193,7 +194,9 @@ export default function TrainingPage() {
                 </div>
               ))}
             </div>
-            {status !== 'completed' && (
+            {status === 'completed' ? (
+              <button type="button" onClick={() => setRestart(true)} style={outlinedButton}>Starta om passet</button>
+            ) : (
               <button type="button" onClick={() => setShowEdit(true)} style={status === 'published' ? filledButton : outlinedButton}>
                 Redigera pass
               </button>
@@ -213,13 +216,28 @@ export default function TrainingPage() {
           onDuplicate={() => { setMenu(false); setCopying(true) }}
           onSaveTemplate={() => saveAsTemplate(db, training.title || 'Pass', training.group_id, fromRows(blocks).blocks)}
           onDelete={async () => {
+            // Live sessions of a pass that was run keep their row but lose the link (FK has no ON DELETE)
+            const { error: unlink } = await db.from('live_sessions').update({ training_id: null }).eq('training_id', trainingId)
+            if (unlink) throw new Error(unlink.message)
             const { error: e } = await db.from('trainings').delete().eq('id', trainingId)
-            if (e) throw new Error(e.code === '23503' ? 'Passet har körts live och kan inte tas bort.' : e.message)
+            if (e) throw new Error(e.message)
             reload()
             router.replace(backHref)
           }}
           onClose={() => setMenu(false)}
         />
+      )}
+
+      {restart && (
+        <BottomSheet title="Är du säker?" onClose={() => !busy && setRestart(false)}>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: C.muted }}>
+            Passet blir publicerat igen så att du kan ändra det och köra det en gång till. Poäng från förra gången ligger kvar.
+          </p>
+          <button type="button" disabled={busy} onClick={async () => { await setStatus('published'); setRestart(false) }} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
+            {busy ? 'Startar om …' : 'Starta om passet'}
+          </button>
+          <button type="button" disabled={busy} onClick={() => setRestart(false)} style={{ ...linkButton, alignSelf: 'center' }}>Avbryt</button>
+        </BottomSheet>
       )}
 
       {copying && (
@@ -264,12 +282,12 @@ function PassMenu({ onDuplicate, onSaveTemplate, onDelete, onClose }: {
   }
 
   return (
-    <BottomSheet title={confirm ? 'Ta bort passet?' : 'Mer'} onClose={onClose}>
+    <BottomSheet title={confirm ? 'Är du säker?' : 'Mer'} onClose={onClose}>
       {confirm ? (
         <>
-          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: C.muted }}>Passet och dess övningar tas bort. Det går inte att ångra.</p>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: C.muted }}>Passet tas bort med alla övningar, poäng och anteckningar. Det går inte att ångra.</p>
           <button type="button" disabled={busy} onClick={() => run(onDelete)} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
-            {busy ? 'Tar bort …' : 'Ta bort'}
+            {busy ? 'Tar bort …' : 'Ta bort passet'}
           </button>
           <button type="button" onClick={() => setConfirm(false)} style={{ ...linkButton, alignSelf: 'center' }}>Avbryt</button>
         </>
@@ -277,7 +295,7 @@ function PassMenu({ onDuplicate, onSaveTemplate, onDelete, onClose }: {
         <>
           <button type="button" disabled={busy} onClick={onDuplicate} style={menuRow}>Duplicera</button>
           <button type="button" disabled={busy} onClick={() => run(onSaveTemplate, 'Sparad som mall.')} style={menuRow}>Spara som mall</button>
-          <button type="button" disabled={busy} onClick={() => setConfirm(true)} style={{ ...menuRow, borderBottom: 'none' }}>Ta bort</button>
+          <button type="button" disabled={busy} onClick={() => setConfirm(true)} style={{ ...menuRow, boxShadow: 'none' }}>Ta bort</button>
         </>
       )}
       {note && <p role="status" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{note}</p>}
@@ -304,6 +322,6 @@ const filledButton: React.CSSProperties = {
 const outlinedButton: React.CSSProperties = { ...filledButton, border: `1.5px solid ${C.primary}`, background: '#fff', color: C.primary }
 
 const menuRow: React.CSSProperties = {
-  width: '100%', minHeight: 52, padding: '0 2px', border: 'none', borderBottom: `1px solid ${C.line}`, background: 'none',
+  width: '100%', minHeight: 52, padding: '0 2px', border: 'none', boxShadow: `inset 0 -1px 0 ${C.line}`, background: 'none',
   textAlign: 'left', fontFamily: 'inherit', fontSize: 16, fontWeight: 700, color: C.text, cursor: 'pointer',
 }

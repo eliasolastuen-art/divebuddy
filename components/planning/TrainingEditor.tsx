@@ -63,7 +63,7 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
   const [link, setLink] = useState<ScheduleLink | null>(null)
 
   const [picker, setPicker] = useState<{ blockId: string; athleteId: string | null } | null>(null)
-  const [detail, setDetail] = useState<{ blockId: string; itemId: string } | null>(null)
+  const [detail, setDetail] = useState<{ blockId: string; itemId: string; isCopy?: boolean } | null>(null)
   const [blockSheet, setBlockSheet] = useState<string | null>(null)
   const [newBlock, setNewBlock] = useState(false)
   const [menu, setMenu] = useState(false)
@@ -116,6 +116,16 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
   // ── Edits ────────────────────────────────────────────────────────────────
   const patchBlock = (id: string, fn: (b: EditorBlock) => EditorBlock) => setBlocks(bs => bs.map(b => (b.id === id ? fn(b) : b)))
   const patchItem = (blockId: string, it: EditorItem) => patchBlock(blockId, b => ({ ...b, items: b.items.map(x => (x.id === it.id ? it : x)) }))
+  // A new row right under the original, opened so the coach can pick another height or sets
+  const duplicateItem = (blockId: string, it: EditorItem) => {
+    const copy: EditorItem = { ...it, id: genId(), raw: undefined }
+    patchBlock(blockId, b => {
+      const items = b.items.map(x => (x.id === it.id ? it : x))
+      items.splice(items.findIndex(x => x.id === it.id) + 1, 0, copy)
+      return { ...b, items }
+    })
+    setDetail({ blockId, itemId: copy.id, isCopy: true })
+  }
   const removeItem = (blockId: string, itemId: string) => patchBlock(blockId, b => ({ ...b, items: b.items.filter(x => x.id !== itemId) }))
 
   const addPicked = (blockId: string, athleteId: string | null, picked: PrefilledItem[]) => {
@@ -254,8 +264,9 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
           />
         )}
         {detail && detailItem && (
-          <ExerciseDetailSheet item={detailItem}
+          <ExerciseDetailSheet key={detailItem.id} item={detailItem} isCopy={detail.isCopy}
             onSave={it => patchItem(detail.blockId, it)}
+            onDuplicate={it => duplicateItem(detail.blockId, it)}
             onRemove={() => removeItem(detail.blockId, detail.itemId)}
             onClose={() => setDetail(null)} />
         )}

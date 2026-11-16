@@ -7,24 +7,32 @@ import BottomSheet, { fieldLabel, linkButton, pill, textInput } from './BottomSh
 
 const HEIGHTS = ['1', '3', '5', '7,5', '10']
 
-// What does not fit in the row: sets, height, note, remove
-export function ExerciseDetailSheet({ item, onSave, onRemove, onClose }: {
+// What does not fit in the row: sets, height, note, duplicate, remove
+export function ExerciseDetailSheet({ item, isCopy, onSave, onDuplicate, onRemove, onClose }: {
   item: EditorItem
+  isCopy?: boolean // just duplicated: pick another height or number of sets
   onSave: (it: EditorItem) => void
+  onDuplicate: (it: EditorItem) => void
   onRemove: () => void
   onClose: () => void
 }) {
   const [sets, setSets] = useState(item.sets ?? 0)
   const [height, setHeight] = useState(item.height ?? '')
   const [notes, setNotes] = useState(item.notes ?? '')
-  const done = () => { onSave({ ...item, sets: sets || undefined, height: height.trim() || undefined, notes }); onClose() }
+  const current = (): EditorItem => ({ ...item, sets: sets || undefined, height: height.trim() || undefined, notes })
+  const done = () => { onSave(current()); onClose() }
+  const duplicate = () => { const it = current(); onSave(it); onDuplicate(it) }
 
   return (
     <BottomSheet title={item.custom_name || item.libraryItem?.name || 'Övning'} onClose={done}
       footer={<>
         <button type="button" onClick={done} style={primaryButton}>Klar</button>
-        <button type="button" onClick={() => { onRemove(); onClose() }} style={{ ...linkButton, textAlign: 'center' }}>Ta bort övningen</button>
+        <div style={{ display: 'flex', justifyContent: 'center', gap: 24 }}>
+          <button type="button" onClick={duplicate} style={linkButton}>Duplicera</button>
+          <button type="button" onClick={() => { onRemove(); onClose() }} style={linkButton}>Ta bort övningen</button>
+        </div>
       </>}>
+      {isCopy && <p role="status" style={{ margin: 0, fontSize: 14, fontWeight: 600, color: C.text }}>Kopia tillagd under originalet. Välj ny höjd eller antal set.</p>}
       <div style={fieldLabel}>
         Set
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>

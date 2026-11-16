@@ -203,7 +203,7 @@ export function switchMode(it: EditorItem, defaultReps: number): EditorItem {
 }
 
 export function step(it: EditorItem, dir: 1 | -1): EditorItem {
-  if (isTimeMode(it)) return { ...it, duration_seconds: Math.max(300, (it.duration_seconds ?? 300) + dir * 300) }
+  if (isTimeMode(it)) return { ...it, duration_seconds: Math.max(60, Math.round((it.duration_seconds ?? 300) / 60) * 60 + dir * 60) }
   return { ...it, reps: Math.max(1, (it.reps ?? 0) + dir) }
 }
 
