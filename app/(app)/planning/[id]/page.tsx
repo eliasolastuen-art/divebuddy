@@ -7,6 +7,7 @@ import { createClient } from '@/lib/supabase/client'
 import type { PlanningFolder } from '@/types'
 import TrainingEditor from '@/components/planning/TrainingEditor'
 import BottomSheet, { linkButton } from '@/components/planning/BottomSheet'
+import CopyToPassSheet from '@/components/planning/CopyToPassSheet'
 import { useLibrary } from '@/components/library/useLibrary'
 import { isDive } from '@/lib/library/queries'
 import { fromRows, saveAsTemplate } from '@/lib/library/trainingSave'
@@ -63,6 +64,7 @@ export default function TrainingPage() {
   const [loading, setLoading] = useState(true)
   const [showEdit, setShowEdit] = useState(false)
   const [menu, setMenu] = useState(false)
+  const [copying, setCopying] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -168,7 +170,9 @@ export default function TrainingPage() {
                   {groupsLabel ? `Publicera för ${groupsLabel}` : 'Publicera'}
                 </button>
               )}
-              {/* Klart: "Kopiera till ett annat pass" comes with the copy sheet (sprint 4) */}
+              {status === 'completed' && (
+                <button type="button" onClick={() => setCopying(true)} style={filledButton}>Kopiera till ett annat pass</button>
+              )}
             </section>
           )}
           {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
@@ -206,6 +210,7 @@ export default function TrainingPage() {
 
       {menu && (
         <PassMenu
+          onDuplicate={() => { setMenu(false); setCopying(true) }}
           onSaveTemplate={() => saveAsTemplate(db, training.title || 'Pass', training.group_id, fromRows(blocks).blocks)}
           onDelete={async () => {
             const { error: e } = await db.from('trainings').delete().eq('id', trainingId)
@@ -215,6 +220,11 @@ export default function TrainingPage() {
           }}
           onClose={() => setMenu(false)}
         />
+      )}
+
+      {copying && (
+        <CopyToPassSheet trainingId={trainingId} title={training.title || 'Pass'}
+          groupId={training.group_id ?? pair?.groupIds[0] ?? null} onClose={() => setCopying(false)} />
       )}
 
       {showEdit && (
@@ -230,8 +240,9 @@ export default function TrainingPage() {
   )
 }
 
-// ⋯: Spara som mall, Ta bort (Duplicera comes with the copy sheet)
-function PassMenu({ onSaveTemplate, onDelete, onClose }: {
+// ⋯: Duplicera (the copy sheet), Spara som mall, Ta bort
+function PassMenu({ onDuplicate, onSaveTemplate, onDelete, onClose }: {
+  onDuplicate: () => void
   onSaveTemplate: () => Promise<void>
   onDelete: () => Promise<void>
   onClose: () => void
@@ -264,6 +275,7 @@ function PassMenu({ onSaveTemplate, onDelete, onClose }: {
         </>
       ) : (
         <>
+          <button type="button" disabled={busy} onClick={onDuplicate} style={menuRow}>Duplicera</button>
           <button type="button" disabled={busy} onClick={() => run(onSaveTemplate, 'Sparad som mall.')} style={menuRow}>Spara som mall</button>
           <button type="button" disabled={busy} onClick={() => setConfirm(true)} style={{ ...menuRow, borderBottom: 'none' }}>Ta bort</button>
         </>
