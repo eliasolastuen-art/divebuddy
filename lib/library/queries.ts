@@ -73,7 +73,7 @@ const EXERCISE_COLUMNS = 'id, name, code, category_id, type, default_height, dd,
 // The club's exercises (RLS limits to the club), archived ones excluded
 export async function fetchExercises(db: SupabaseClient): Promise<Exercise[]> {
   const rows = check(await db.from('library_items').select(EXERCISE_COLUMNS)
-    .or('archived.is.null,archived.eq.false').order('code').order('name'))
+    .or('archived.is.null,archived.eq.false').order('name'))
   return (rows as ExerciseRow[]).map(toExercise)
 }
 

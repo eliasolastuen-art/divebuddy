@@ -9,6 +9,8 @@ import { CSS } from '@dnd-kit/utilities'
 import { useUser } from '@/lib/context/user'
 import AthleteBlockEditor from './AthleteBlockEditor'
 import Portal from '@/components/Portal'
+import ExercisePicker from '@/components/library/ExercisePicker'
+import type { PrefilledItem } from '@/lib/library/queries'
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -522,6 +524,29 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
       setEditingItemId(newId)
       setPickerBlockId(null)
     }
+  }
+
+  // Several exercises at once from ExercisePicker, with prefilled height and reps
+  const addItemsFromPicker = (blockId: string, picked: PrefilledItem[]) => {
+    const athleteId = pickerForAthleteId
+    setBlocks(b => b.map(block => block.id !== blockId ? block : {
+      ...block,
+      items: [...block.items, ...picked.map(p => ({
+        id: genId(),
+        library_item_id: p.exercise.id,
+        custom_name: p.exercise.name,
+        reps: p.reps,
+        sets: undefined,
+        height: p.height ?? undefined,
+        duration_seconds: undefined,
+        notes: '',
+        isFromLibrary: true,
+        libraryItem: { id: p.exercise.id, name: p.exercise.name, dd: p.exercise.dd ?? undefined, type: p.exercise.type },
+        ...(athleteId ? { assigned_athlete_id: athleteId } : {}),
+      }))],
+    }))
+    setPickerBlockId(null)
+    setPickerForAthleteId(null)
   }
 
   const addCustomItem = (blockId: string) => {
@@ -1331,86 +1356,13 @@ export default function TrainingBuilder({ folders, onClose, onSaved, existingTra
           </>
         )}
 
-        {/* ── Library picker — full screen ──────────────────────────────── */}
+        {/* ── Exercise picker (components/library) ─────────────────────── */}
         {pickerBlockId && (
-          <div style={{
-            position: 'fixed', inset: 0, zIndex: 10000,
-            background: 'var(--surface-bg)',
-            backgroundImage: 'radial-gradient(ellipse at 20% 0%, rgba(43,92,158,0.05) 0%, transparent 60%)',
-            display: 'flex', flexDirection: 'column',
-          }}>
-            {/* Header */}
-            <div style={{ padding: '0 16px', height: 56, display: 'flex', alignItems: 'center', justifyContent: 'space-between', borderBottom: '1px solid #E1E8F0', flexShrink: 0 }}>
-              <span style={{ fontSize: 16, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>
-                {pickerBlockCategory !== 'all' ? `${CAT_BY_ID[pickerBlockCategory as BlockCategory]?.emoji ?? ''} ${CAT_BY_ID[pickerBlockCategory as BlockCategory]?.label ?? 'Övningar'}` : 'Alla övningar'}
-              </span>
-              <button
-                onClick={() => { setPickerBlockId(null); setPickerForAthleteId(null) }}
-                style={{ background: 'rgba(0,0,0,0.06)', border: 'none', borderRadius: 10, padding: '7px 14px', fontSize: 14, fontWeight: 700, color: '#56637A', cursor: 'pointer' }}
-              >
-                Klar
-              </button>
-            </div>
-
-            {/* Block category tabs */}
-            <div style={{ display: 'flex', gap: 6, overflowX: 'auto', padding: '10px 16px 0', flexShrink: 0 }}>
-              <button
-                onClick={() => { setPickerBlockCategory('all'); setPickerCategory('all') }}
-                style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: 'none', background: pickerBlockCategory === 'all' ? '#1E2B42' : 'rgba(0,0,0,0.05)', fontSize: 12, fontWeight: 700, color: pickerBlockCategory === 'all' ? 'white' : '#56637A', cursor: 'pointer', transition: 'all 0.15s' }}
-              >Alla</button>
-              {BLOCK_CATEGORIES.map(cat => {
-                const isActive = pickerBlockCategory === cat.id
-                return (
-                  <button key={cat.id}
-                    onClick={() => { setPickerBlockCategory(cat.id); setPickerCategory('all') }}
-                    style={{ flexShrink: 0, padding: '7px 14px', borderRadius: 20, border: 'none', background: isActive ? cat.color : cat.color + '15', fontSize: 12, fontWeight: 700, color: isActive ? 'white' : cat.color, cursor: 'pointer', transition: 'all 0.15s' }}
-                  >
-                    {cat.emoji} {cat.label}
-                  </button>
-                )
-              })}
-            </div>
-
-            {/* Search + sub-category chips */}
-            <div style={{ padding: '10px 16px 6px', flexShrink: 0 }}>
-              <div style={{ position: 'relative', marginBottom: 8 }}>
-                <Search size={14} color="#56637A" strokeWidth={2} style={{ position: 'absolute', left: 12, top: '50%', transform: 'translateY(-50%)', pointerEvents: 'none' }} />
-                <input value={pickerSearch} onChange={e => setPickerSearch(e.target.value)} placeholder="Sök på namn eller kod..." className="glass-input" style={{ width: '100%', padding: '11px 14px 11px 34px', fontSize: 14 }} autoFocus />
-              </div>
-              <div style={{ display: 'flex', gap: 6, overflowX: 'auto', paddingBottom: 4 }}>
-                <button onClick={() => setPickerCategory('all')} className={pickerCategory === 'all' ? 'chip chip-active' : 'chip chip-inactive'} style={{ flexShrink: 0 }}>Alla</button>
-                {pickerCategories
-                  .filter(cat => pickerBlockCategory === 'all' || cat.block_category === pickerBlockCategory)
-                  .map(cat => (
-                    <button key={cat.id} onClick={() => setPickerCategory(cat.id)} className={pickerCategory === cat.id ? 'chip chip-active' : 'chip chip-inactive'} style={{ flexShrink: 0 }}>{cat.name}</button>
-                  ))}
-              </div>
-            </div>
-
-            {/* Items list */}
-            <div style={{ overflowY: 'auto', flex: 1, padding: '4px 16px calc(var(--safe-bottom) + 24px)' }}>
-              {filteredPickerItems.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '60px 0', color: '#56637A', fontSize: 14 }}>Inga övningar</div>
-              ) : pickerCategory !== 'all' || pickerSearch.trim() || pickerBlockCategory !== 'all' ? (
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                  {filteredPickerItems.map(item => (
-                    <PickerItemRow key={item.id} item={item} onSelect={() => addItemFromLibrary(pickerBlockId, item)} />
-                  ))}
-                </div>
-              ) : (
-                groupedPickerItems?.map(([key, group]) => (
-                  <div key={key} style={{ marginBottom: 20 }}>
-                    <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 8, paddingTop: 4 }}>{group.label}</div>
-                    <div style={{ display: 'flex', flexDirection: 'column', gap: 6 }}>
-                      {group.items.map(item => (
-                        <PickerItemRow key={item.id} item={item} onSelect={() => addItemFromLibrary(pickerBlockId, item)} />
-                      ))}
-                    </div>
-                  </div>
-                ))
-              )}
-            </div>
-          </div>
+          <ExercisePicker
+            initialArea={['land', 'styrka', 'rorlighet', 'uppvarmning'].includes(pickerBlockCategory) ? 'land' : 'vatten'}
+            onClose={() => { setPickerBlockId(null); setPickerForAthleteId(null) }}
+            onAdd={items => addItemsFromPicker(pickerBlockId, items)}
+          />
         )}
       </div>
 
