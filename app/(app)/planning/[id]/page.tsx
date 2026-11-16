@@ -1,71 +1,87 @@
 'use client'
-import { useEffect, useState } from 'react'
+
+import { useCallback, useEffect, useMemo, useState } from 'react'
+import Link from 'next/link'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { PlanningFolder } from '@/types'
 import TrainingEditor from '@/components/planning/TrainingEditor'
-import Portal from '@/components/Portal'
-import { ArrowLeft, MoreHorizontal, Pencil, Copy, Trash2, LayoutList } from 'lucide-react'
+import BottomSheet, { linkButton } from '@/components/planning/BottomSheet'
+import { useLibrary } from '@/components/library/useLibrary'
+import { isDive } from '@/lib/library/queries'
+import { fromRows, saveAsTemplate } from '@/lib/library/trainingSave'
+import { useSchedule } from '@/lib/schedule/store'
+import { mondayOf, todayISO, weekNumber, addDays } from '@/lib/schedule/format'
+import { longDate, pairGroups, pairLayout, pairPasses, pairTime } from '@/lib/schedule/pairing'
+import { passSummary } from '@/lib/schedule/trainingSummary'
+import type { TrainingStatus } from '@/lib/schedule/types'
+import { C } from '@/components/schedule/ui'
 
-const BLOCK_COLORS: Record<string, { color: string; emoji: string }> = {
-  vatten:      { color: '#2B5C9E', emoji: '💧' },
-  land:        { color: '#D4A017', emoji: '🏃' },
-  styrka:      { color: '#DC2626', emoji: '💪' },
-  rorlighet:   { color: '#16A34A', emoji: '🧘' },
-  uppvarmning: { color: '#F97316', emoji: '🔥' },
-  tavling:     { color: '#6366F1', emoji: '🏆' },
+// Design PassetUtkast / PassetPublicerat / PassetKlart: one page per pass with
+// its status, publish / unpublish and the content. Blocks are edited in the builder.
+
+interface TrainingRow {
+  id: string; club_id: string; title: string | null; status: string | null; updated_at: string
+  folder_id: string | null; scheduled_date: string | null; start_time: string | null; end_time: string | null
+  group_id: string | null; purpose: string | null; purpose_type: string | null; created_by: string | null
 }
 
-const STATUS_STYLE: Record<string, { bg: string; text: string; label: string }> = {
-  draft:     { bg: 'rgba(86,99,122,0.1)', text: '#56637A', label: 'Utkast' },
-  published: { bg: 'rgba(43,92,158,0.1)',  text: '#2B5C9E', label: 'Publicerad' },
-  completed: { bg: 'rgba(22,163,74,0.1)',   text: '#16A34A', label: 'Genomförd' },
+interface ItemRow {
+  id: string; library_item_id: string | null; custom_name: string | null; sets: number | null; reps: number | null
+  height: string | null; duration_seconds: number | null; notes: string | null; assigned_athlete_id: string | null
+  library_item?: { id: string; name: string; code?: string | null; type?: string; category_id?: string | null; dd?: number | null } | null
 }
 
-export default function TrainingDetailPage() {
+interface BlockRow {
+  id: string; category: string | null; name: string; notes: string | null; block_type: string | null; items: ItemRow[]
+}
+
+const toStatus = (s: string | null): TrainingStatus => (s === 'published' || s === 'completed' ? s : 'draft')
+
+// "idag 21:42", "igår 08:10", "12 nov 21:42"
+function savedText(iso: string) {
+  const d = new Date(iso)
+  const time = d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+  const day = d.toLocaleDateString('sv-SE', { year: 'numeric', month: '2-digit', day: '2-digit' })
+  const today = todayISO()
+  if (day === today) return `idag ${time}`
+  if (day === addDays(today, -1)) return `igår ${time}`
+  return `${d.toLocaleDateString('sv-SE', { day: 'numeric', month: 'short' }).replace('.', '')} ${time}`
+}
+
+export default function TrainingPage() {
   const { id } = useParams()
+  const trainingId = Array.isArray(id) ? id[0] : (id as string)
   const router = useRouter()
-  const [training, setTraining] = useState<any>(null)
-  const [blocks, setBlocks] = useState<any[]>([])
+  const db = useMemo(() => createClient(), [])
+  const { data, reload } = useSchedule()
+  const { groups: libGroups } = useLibrary()
+
+  const [training, setTraining] = useState<TrainingRow | null>(null)
+  const [blocks, setBlocks] = useState<BlockRow[]>([])
   const [folders, setFolders] = useState<PlanningFolder[]>([])
   const [loading, setLoading] = useState(true)
   const [showEdit, setShowEdit] = useState(false)
-  const [showMenu, setShowMenu] = useState(false)
-  const [deleting, setDeleting] = useState(false)
-  const [duplicating, setDuplicating] = useState(false)
+  const [menu, setMenu] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
-  const trainingId = Array.isArray(id) ? id[0] : id as string
-
-  const load = async () => {
-    const supabase = createClient()
-    const [{ data: t }, { data: f }] = await Promise.all([
-      supabase.from('trainings').select('*').eq('id', trainingId).single(),
-      supabase.from('planning_folders').select('*').order('sort_order'),
+  const load = useCallback(async () => {
+    const [{ data: t }, { data: f }, { data: blockData }] = await Promise.all([
+      db.from('trainings').select('*').eq('id', trainingId).maybeSingle(),
+      db.from('planning_folders').select('*').order('sort_order'),
+      db.from('training_blocks').select('*').eq('training_id', trainingId).order('sort_order'),
     ])
-    if (t) setTraining(t)
+    setTraining((t as TrainingRow | null) ?? null)
     if (f) setFolders(f)
-
-    const { data: blockData } = await supabase
-      .from('training_blocks').select('*').eq('training_id', trainingId).order('sort_order')
-
-    if (blockData && blockData.length > 0) {
-      const blocksWithItems = await Promise.all(
-        blockData.map(block =>
-          supabase.from('training_block_items')
-            .select('*, library_item:library_items(*)')
-            .eq('block_id', block.id)
-            .order('sort_order')
-            .then(({ data: items }) => ({ ...block, items: items || [] }))
-        )
-      )
-      setBlocks(blocksWithItems)
-    } else {
-      setBlocks([])
-    }
+    const withItems = await Promise.all((blockData ?? []).map(block =>
+      db.from('training_block_items').select('*, library_item:library_items(*)').eq('block_id', block.id).order('sort_order')
+        .then(({ data: items }) => ({ ...block, items: (items ?? []) as ItemRow[] }) as BlockRow)))
+    setBlocks(withItems)
     setLoading(false)
-  }
+  }, [db, trainingId])
 
-  useEffect(() => { load() }, [trainingId])
+  useEffect(() => { load() }, [load])
 
   // ?edit=1 (from "Planera pass") opens the builder straight away
   useEffect(() => {
@@ -75,280 +91,130 @@ export default function TrainingDetailPage() {
     }
   }, [loading, training]) // eslint-disable-line react-hooks/exhaustive-deps
 
-  const updateStatus = async (newStatus: string) => {
-    const supabase = createClient()
-    await supabase.from('trainings').update({ status: newStatus }).eq('id', trainingId)
-    setTraining((t: any) => t ? { ...t, status: newStatus } : t)
+  const pair = useMemo(() => pairPasses(data.passes).find(p => p.trainingId === trainingId) ?? null, [data.passes, trainingId])
+
+  if (loading) return <Message>Hämtar passet …</Message>
+  if (!training) return <Message>Passet finns inte längre.</Message>
+
+  const status = toStatus(training.status)
+  const date = pair?.date ?? training.scheduled_date
+  const weekDate = date ?? todayISO()
+  const backHref = `/planning?week=${mondayOf(weekDate)}`
+  const groupsLabel = pair ? pairGroups(data, pair) : data.groups.find(g => g.id === training.group_id)?.name ?? null
+  const time = pair ? pairTime(pair) : training.start_time ? pairTime({ start: training.start_time.slice(0, 5), end: training.end_time?.slice(0, 5) ?? '' }) : null
+  const layout = pair ? pairLayout(data, pair) : null
+  const saved = `Sparat ${savedText(training.updated_at)}.`
+
+  const dive = (it: ItemRow) => it.library_item
+    ? isDive({ type: it.library_item.type ?? '', groupId: it.library_item.category_id ?? null } as Parameters<typeof isDive>[0], libGroups)
+    : false
+  // Dives by their code ("101B - Forward Dive Pike" → "101B"); the code column is often empty or lacks the position
+  const label = (it: ItemRow) => {
+    const name = it.custom_name || it.library_item?.name || 'Övning'
+    return (dive(it) && name.match(/^\d{3,4}[A-Da-d]\b/)?.[0]) || name
   }
+  const summary = passSummary(blocks, dive)
 
-  const handleDelete = async () => {
-    if (!confirm('Ta bort detta träningspass?')) return
-    setDeleting(true)
-    const supabase = createClient()
-    for (const block of blocks) {
-      await supabase.from('training_block_items').delete().eq('block_id', block.id)
-    }
-    await supabase.from('training_blocks').delete().eq('training_id', trainingId)
-    await supabase.from('trainings').delete().eq('id', trainingId)
-    router.replace('/planning')
+  const setStatus = async (next: TrainingStatus) => {
+    setBusy(true)
+    setError(null)
+    const { data: row, error: e } = await db.from('trainings').update({ status: next }).eq('id', trainingId).select('updated_at').single()
+    if (e) setError(e.message)
+    else setTraining(t => (t ? { ...t, status: next, updated_at: (row as { updated_at: string }).updated_at } : t))
+    setBusy(false)
+    reload()
   }
-
-  const handleDuplicate = async () => {
-    setDuplicating(true)
-    setShowMenu(false)
-    const supabase = createClient()
-
-    const { data: newTraining } = await supabase.from('trainings').insert({
-      club_id: training.club_id,
-      title: training.title + ' (kopia)',
-      folder_id: training.folder_id,
-      scheduled_date: null,
-      status: 'draft',
-      training_type: training.training_type,
-    }).select().single()
-
-    if (newTraining) {
-      for (let i = 0; i < blocks.length; i++) {
-        const block = blocks[i]
-        const { data: newBlock } = await supabase.from('training_blocks').insert({
-          training_id: newTraining.id,
-          category: block.category,
-          name: block.name,
-          notes: block.notes,
-          sort_order: i,
-          block_type: block.block_type || 'standard',
-        }).select().single()
-
-        if (newBlock) {
-          for (let j = 0; j < block.items.length; j++) {
-            const item = block.items[j]
-            await supabase.from('training_block_items').insert({
-              block_id: newBlock.id,
-              library_item_id: item.library_item_id,
-              custom_name: item.custom_name,
-              sets: item.sets,
-              reps: item.reps,
-              duration_seconds: item.duration_seconds,
-              notes: item.notes,
-              sort_order: j,
-            })
-          }
-        }
-      }
-      router.push(`/planning/${newTraining.id}`)
-    }
-    setDuplicating(false)
-  }
-
-  if (loading) return <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center', height: '60vh', color: '#56637A' }}>Laddar...</div>
-  if (!training) return <div style={{ padding: 24 }}><p style={{ color: '#56637A' }}>Hittades inte.</p></div>
-
-  const s = STATUS_STYLE[training.status] || STATUS_STYLE.draft
-  const totalItems = blocks.reduce((sum: number, b: any) => sum + (b.items?.length || 0), 0)
 
   return (
     <>
-      <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px) + 24px)' }}>
-
-        {/* ── Header ───────────────────────────────────────────────────────── */}
-        <div style={{
-          position: 'sticky', top: 0, zIndex: 10,
-          display: 'flex', alignItems: 'center', gap: 12,
-          padding: '0 16px', height: 56,
-          background: 'rgba(248,250,252,0.92)',
-          borderBottom: '1px solid #E1E8F0',
-        }}>
-          <button
-            onClick={() => router.back()}
-            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid #E1E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-          >
-            <ArrowLeft size={16} color="#1E2B42" strokeWidth={2.5} />
+      <div style={{ maxWidth: 560, margin: '0 auto', color: C.text }}>
+        <header style={{ height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.line}` }}>
+          <Link href={backHref} aria-label="Tillbaka till veckan" style={iconButton}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
+          </Link>
+          <div style={{ flex: 1, minWidth: 0, fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>Vecka {weekNumber(weekDate)}</div>
+          <button type="button" onClick={() => setMenu(true)} aria-label="Mer" style={iconButton}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill={C.text} aria-hidden><circle cx="5" cy="12" r="1.8" /><circle cx="12" cy="12" r="1.8" /><circle cx="19" cy="12" r="1.8" /></svg>
           </button>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-              {training.title}
-            </div>
-            {totalItems > 0 && (
-              <div style={{ fontSize: 11, color: '#56637A', fontWeight: 600 }}>{totalItems} övningar</div>
-            )}
-          </div>
-          <button
-            onClick={() => setShowMenu(true)}
-            style={{ width: 36, height: 36, borderRadius: 11, background: 'rgba(0,0,0,0.05)', border: '1px solid #E1E8F0', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}
-          >
-            <MoreHorizontal size={18} color="#1E2B42" strokeWidth={2} />
-          </button>
-        </div>
+        </header>
 
-        <div style={{ padding: '16px 16px 0' }}>
-
-          {/* ── Meta card ────────────────────────────────────────────────────── */}
-          <div className="glass-card" style={{ padding: '16px 18px', marginBottom: 16, borderRadius: 18 }}>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 10, flexWrap: 'wrap' }}>
-              {/* Status badge */}
-              <span style={{ padding: '4px 10px', borderRadius: 20, background: s.bg, color: s.text, fontSize: 12, fontWeight: 700 }}>
-                {s.label}
-              </span>
-              {/* Mode badge */}
-              {training.mode && training.mode !== 'training' && (
-                <span style={{ padding: '4px 10px', borderRadius: 20, background: 'rgba(99,102,241,0.1)', color: '#6366F1', fontSize: 12, fontWeight: 700 }}>
-                  {training.mode === 'test' ? 'Test' : 'Tävling'}
-                </span>
-              )}
-              {/* Date */}
-              {training.scheduled_date && (
-                <span style={{ fontSize: 13, color: '#56637A', fontWeight: 500 }}>
-                  {new Date(training.scheduled_date).toLocaleDateString('sv-SE', { weekday: 'short', day: 'numeric', month: 'short' })}
-                </span>
-              )}
-            </div>
-
-            {training.notes && (
-              <p style={{ fontSize: 13, color: '#56637A', marginTop: 10, lineHeight: 1.5, marginBottom: 0 }}>
-                {training.notes}
-              </p>
-            )}
+        <div style={{ padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <div>
+            <div style={{ fontSize: 14, fontWeight: 600, color: C.muted }}>{date ? longDate(date) : 'Inget datum'}</div>
+            {time && <h1 style={{ margin: '2px 0 0', fontSize: 30, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1, fontVariantNumeric: 'tabular-nums' }}>{time}</h1>}
+            {groupsLabel && <div style={{ marginTop: 4, fontSize: 16, fontWeight: 700 }}>{groupsLabel}</div>}
+            {layout && <div style={{ marginTop: 2, fontSize: 14, fontWeight: 500, color: C.muted }}>{layout}</div>}
           </div>
 
-          {/* ── Status actions ───────────────────────────────────────────────── */}
-          {training.status === 'draft' && (
-            <button
-              onClick={() => updateStatus('published')}
-              style={{ width: '100%', padding: '13px', borderRadius: 14, border: 'none', background: 'var(--gradient-hero)', color: 'white', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16, boxShadow: 'none' }}
-            >
-              Publicera pass
-            </button>
-          )}
-          {training.status === 'published' && (
-            <button
-              onClick={() => updateStatus('draft')}
-              style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px solid rgba(86,99,122,0.2)', background: 'transparent', color: '#56637A', fontSize: 14, fontWeight: 700, cursor: 'pointer', marginBottom: 16 }}
-            >
-              Ångra publicering
-            </button>
-          )}
-
-          {/* ── Blocks ───────────────────────────────────────────────────────── */}
-          {blocks.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '48px 20px' }}>
-              <div style={{ fontSize: 36, marginBottom: 12 }}>📋</div>
-              <p style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga block</p>
-              <p style={{ fontSize: 13, color: '#56637A' }}>Redigera passet för att lägga till övningar.</p>
-            </div>
+          {status === 'published' ? (
+            <section style={{ borderRadius: 18, background: C.primarySoft, padding: 16, display: 'flex', flexDirection: 'column', gap: 4 }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M5 12.5l4.5 4.5L19 7.5" /></svg>
+                <span style={{ flex: 1, fontSize: 19, fontWeight: 900, letterSpacing: '-0.02em', color: '#234E88' }}>Publicerat</span>
+                <button type="button" disabled={busy} onClick={() => setStatus('draft')} style={{ minHeight: 44, border: 'none', background: 'none', padding: '0 2px', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: '#234E88', cursor: 'pointer' }}>
+                  Avpublicera
+                </button>
+              </div>
+              <div style={{ fontSize: 14, fontWeight: 500 }}>{groupsLabel ? `${groupsLabel} ser passet i sin app.` : 'Gruppen ser passet i sin app.'} {saved}</div>
+            </section>
           ) : (
-            blocks.map(block => {
-              const bc = BLOCK_COLORS[block.category] ?? { color: '#56637A', emoji: '📋' }
-              return (
-                <div key={block.id} style={{ marginBottom: 16 }}>
-                  {/* Block header */}
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8, paddingLeft: 2 }}>
-                    <span style={{ fontSize: 16 }}>{bc.emoji}</span>
-                    <span style={{ fontSize: 12, fontWeight: 800, color: bc.color, textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-                      {block.name}
-                    </span>
-                    {block.notes && (
-                      <span style={{ fontSize: 11, color: '#56637A', fontWeight: 500, marginLeft: 4 }}>— {block.notes}</span>
-                    )}
-                  </div>
+            <section style={{ ...card, padding: 16, display: 'flex', flexDirection: 'column', gap: 12 }}>
+              <div>
+                <div style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.02em' }}>{status === 'draft' ? 'Utkast' : 'Klart'}</div>
+                {status === 'draft' && <div style={{ fontSize: 14, fontWeight: 500, color: C.muted, marginTop: 2 }}>Bara tränare ser passet. {saved}</div>}
+              </div>
+              {status === 'draft' && (
+                <button type="button" disabled={busy} onClick={() => setStatus('published')} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
+                  {groupsLabel ? `Publicera för ${groupsLabel}` : 'Publicera'}
+                </button>
+              )}
+              {/* Klart: "Kopiera till ett annat pass" comes with the copy sheet (sprint 4) */}
+            </section>
+          )}
+          {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
 
-                  {/* Items */}
-                  <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-                    {(block.items || []).length === 0 ? (
-                      <div style={{ padding: '14px 16px', fontSize: 13, color: '#56637A', fontStyle: 'italic' }}>Inga övningar i detta block</div>
-                    ) : (
-                      (block.items || []).map((item: any, ii: number) => {
-                        const itemName = item.library_item?.name || item.custom_name || '–'
-                        const setsPrefix = item.sets && item.sets > 1 ? `${item.sets} × ` : ''
-                        return (
-                          <div
-                            key={item.id}
-                            style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '13px 16px', borderBottom: ii < (block.items.length - 1) ? '1px solid #E1E8F0' : 'none' }}
-                          >
-                            <div style={{ width: 28, height: 28, borderRadius: 9, background: `${bc.color}18`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                              <div style={{ width: 7, height: 7, borderRadius: '50%', background: bc.color }} />
-                            </div>
-                            <div style={{ flex: 1, minWidth: 0 }}>
-                              <div style={{ fontSize: 14, fontWeight: 600, color: '#1E2B42' }}>{setsPrefix}{itemName}</div>
-                              {item.notes && (
-                                <div style={{ fontSize: 11, color: '#56637A', marginTop: 1, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{item.notes}</div>
-                              )}
-                            </div>
-                            <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                              {item.reps && (
-                                <span style={{ fontSize: 11, fontWeight: 700, background: 'rgba(86,99,122,0.08)', color: '#56637A', padding: '3px 8px', borderRadius: 9999 }}>
-                                  🔁 {item.reps}
-                                </span>
-                              )}
-                              {item.duration_seconds && (
-                                <span style={{ fontSize: 11, fontWeight: 700, background: `${bc.color}12`, color: bc.color, padding: '3px 8px', borderRadius: 9999 }}>
-                                  ⏱ {Math.floor(item.duration_seconds / 60)}:{String(item.duration_seconds % 60).padStart(2, '0')}
-                                </span>
-                              )}
-                            </div>
-                          </div>
-                        )
-                      })
-                    )}
+          <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
+            <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>Innehåll</h2>
+            <div style={{ ...card, padding: '0 16px' }}>
+              <div style={{ padding: '14px 0', borderBottom: blocks.length ? `1px solid ${C.line}` : 'none' }}>
+                <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>{training.title || 'Pass utan namn'}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 500, color: C.muted, marginTop: 2 }}>{blocks.length ? summary : 'Inga övningar än'}</div>
+              </div>
+              {blocks.map((b, i) => (
+                <div key={b.id} style={{ padding: '12px 0', borderBottom: i < blocks.length - 1 ? `1px solid ${C.line}` : 'none' }}>
+                  <div style={{ fontSize: 15, fontWeight: 700 }}>{b.name}</div>
+                  <div style={{ fontSize: 13.5, fontWeight: 500, color: C.muted, marginTop: 2 }}>
+                    {b.items.length ? Array.from(new Set(b.items.map(label))).join(', ') : 'Inga övningar'}
                   </div>
                 </div>
-              )
-            })
-          )}
+              ))}
+            </div>
+            {status !== 'completed' && (
+              <button type="button" onClick={() => setShowEdit(true)} style={status === 'published' ? filledButton : outlinedButton}>
+                Redigera pass
+              </button>
+            )}
+          </section>
 
-          {/* ── Edit button ──────────────────────────────────────────────────── */}
-          <button
-            onClick={() => setShowEdit(true)}
-            style={{ width: '100%', padding: '13px', borderRadius: 14, border: '1.5px dashed rgba(0,0,0,0.12)', background: 'transparent', fontSize: 14, fontWeight: 700, color: '#56637A', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, marginTop: 8 }}
-          >
-            <LayoutList size={16} strokeWidth={2} />
-            Redigera pass
-          </button>
+          {pair && (
+            <Link href={`/planning?week=${mondayOf(pair.date)}&pass=${pair.id}&edit=1`} style={{ alignSelf: 'center', minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 700, color: C.primary, textDecoration: 'none' }}>
+              Ändra tid, tränare eller ställ in
+            </Link>
+          )}
         </div>
       </div>
 
-      {/* Action menu */}
-      {showMenu && (
-        <Portal>
-          <div
-            onClick={() => setShowMenu(false)}
-            style={{
-              position: 'fixed',
-              inset: 0,
-              background: 'rgba(30,43,66,0.4)',
-              backdropFilter: 'blur(4px)',
-              WebkitBackdropFilter: 'blur(4px)',
-              zIndex: 9998, // ✅ FIX
-            }}
-          />
-          <div
-            className="glass-sheet"
-            style={{
-              position: 'fixed',
-              bottom: 0,
-              left: 0,
-              right: 0,
-              zIndex: 9999, // ✅ FIX
-              padding: '16px 16px calc(var(--safe-bottom) + 40px)',
-            }}
-          >
-            <div style={{ width: 36, height: 4, background: 'rgba(0,0,0,0.12)', borderRadius: 2, margin: '0 auto 20px' }} />
-
-            {[
-              { onClick: () => { setShowMenu(false); setShowEdit(true) }, Icon: Pencil, label: 'Redigera pass', color: '#1E2B42', bg: 'rgba(0,0,0,0.04)' },
-              { onClick: handleDuplicate, Icon: Copy, label: duplicating ? 'Kopierar...' : 'Duplicera pass', color: '#1E2B42', bg: 'rgba(0,0,0,0.04)' },
-            ].map((action, i) => (
-              <button key={i} onClick={action.onClick} style={{ width: '100%', padding: '15px 18px', borderRadius: 14, border: 'none', background: action.bg, fontSize: 15, fontWeight: 600, color: action.color, cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14, marginBottom: 8 }}>
-                <action.Icon size={18} strokeWidth={2} />
-                {action.label}
-              </button>
-            ))}
-
-            <button onClick={handleDelete} disabled={deleting} style={{ width: '100%', padding: '15px 18px', borderRadius: 14, border: 'none', background: 'rgba(220,38,38,0.08)', fontSize: 15, fontWeight: 600, color: '#DC2626', cursor: 'pointer', textAlign: 'left', display: 'flex', alignItems: 'center', gap: 14 }}>
-              <Trash2 size={18} strokeWidth={2} />
-              {deleting ? 'Tar bort...' : 'Ta bort pass'}
-            </button>
-          </div>
-        </Portal>
+      {menu && (
+        <PassMenu
+          onSaveTemplate={() => saveAsTemplate(db, training.title || 'Pass', training.group_id, fromRows(blocks).blocks)}
+          onDelete={async () => {
+            const { error: e } = await db.from('trainings').delete().eq('id', trainingId)
+            if (e) throw new Error(e.code === '23503' ? 'Passet har körts live och kan inte tas bort.' : e.message)
+            reload()
+            router.replace(backHref)
+          }}
+          onClose={() => setMenu(false)}
+        />
       )}
 
       {showEdit && (
@@ -357,9 +223,75 @@ export default function TrainingDetailPage() {
           existingTraining={training}
           existingBlocks={blocks}
           onClose={() => setShowEdit(false)}
-          onSaved={() => { setShowEdit(false); load() }}
+          onSaved={() => { setShowEdit(false); load(); reload() }}
         />
       )}
     </>
   )
+}
+
+// ⋯: Spara som mall, Ta bort (Duplicera comes with the copy sheet)
+function PassMenu({ onSaveTemplate, onDelete, onClose }: {
+  onSaveTemplate: () => Promise<void>
+  onDelete: () => Promise<void>
+  onClose: () => void
+}) {
+  const [confirm, setConfirm] = useState(false)
+  const [busy, setBusy] = useState(false)
+  const [note, setNote] = useState<string | null>(null)
+
+  const run = async (fn: () => Promise<void>, done?: string) => {
+    setBusy(true)
+    setNote(null)
+    try {
+      await fn()
+      if (done) setNote(done)
+    } catch (e) {
+      setNote(e instanceof Error ? e.message : 'Något gick fel')
+    }
+    setBusy(false)
+  }
+
+  return (
+    <BottomSheet title={confirm ? 'Ta bort passet?' : 'Mer'} onClose={onClose}>
+      {confirm ? (
+        <>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: C.muted }}>Passet och dess övningar tas bort. Det går inte att ångra.</p>
+          <button type="button" disabled={busy} onClick={() => run(onDelete)} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
+            {busy ? 'Tar bort …' : 'Ta bort'}
+          </button>
+          <button type="button" onClick={() => setConfirm(false)} style={{ ...linkButton, alignSelf: 'center' }}>Avbryt</button>
+        </>
+      ) : (
+        <>
+          <button type="button" disabled={busy} onClick={() => run(onSaveTemplate, 'Sparad som mall.')} style={menuRow}>Spara som mall</button>
+          <button type="button" disabled={busy} onClick={() => setConfirm(true)} style={{ ...menuRow, borderBottom: 'none' }}>Ta bort</button>
+        </>
+      )}
+      {note && <p role="status" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{note}</p>}
+    </BottomSheet>
+  )
+}
+
+function Message({ children }: { children: React.ReactNode }) {
+  return <p style={{ maxWidth: 560, margin: '0 auto', padding: 24, fontSize: 15, color: C.muted, fontWeight: 500 }}>{children}</p>
+}
+
+const card: React.CSSProperties = { borderRadius: 18, background: '#fff', border: `1px solid ${C.line}` }
+
+const iconButton: React.CSSProperties = {
+  width: 44, height: 44, flex: 'none', borderRadius: 12, border: `1px solid ${C.line}`, background: '#fff',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer',
+}
+
+const filledButton: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center', width: '100%', minHeight: 52, borderRadius: 14,
+  border: 'none', background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer',
+}
+
+const outlinedButton: React.CSSProperties = { ...filledButton, border: `1.5px solid ${C.primary}`, background: '#fff', color: C.primary }
+
+const menuRow: React.CSSProperties = {
+  width: '100%', minHeight: 52, padding: '0 2px', border: 'none', borderBottom: `1px solid ${C.line}`, background: 'none',
+  textAlign: 'left', fontFamily: 'inherit', fontSize: 16, fontWeight: 700, color: C.text, cursor: 'pointer',
 }

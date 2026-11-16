@@ -87,7 +87,20 @@ export function pairSummary(d: ScheduleData, p: PassPair, meId: string | null) {
   return others.length ? `${parts} · med ${staffNames(d, others)}` : parts
 }
 
-export const longDate = (date: string) => {
+const joinNames = (names: string[]) =>
+  names.length < 2 ? names.join('') : `${names.slice(0, -1).join(', ')} och ${names[names.length - 1]}`
+
+// "Land 17:00, vatten 17:45 · Maria och Elias" (all coaches). One part: "Vatten · Elias".
+export function pairLayout(d: ScheduleData, p: PassPair) {
+  const parts = p.parts.length === 1 ? p.parts[0].place : p.parts.map((x, i) => {
+    const place = i === 0 ? x.place : x.place.toLowerCase()
+    return x.start ? `${place} ${x.start}` : place
+  }).join(', ')
+  const names = p.staffIds.map(id => d.staff.find(s => s.id === id)?.name).filter((n): n is string => !!n)
+  return [parts, joinNames(names)].filter(Boolean).join(' · ')
+}
+
+export const longDate =(date: string) => {
   const d = parseISO(date)
   return `${DAY_LONG[weekdayIndex(date)]} ${d.getDate()} ${MONTHS_FULL[d.getMonth()].toLowerCase()}`
 }
