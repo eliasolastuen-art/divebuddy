@@ -1,7 +1,7 @@
 import { SCHEDULE_DSL } from './ht2026-data'
 
 // Parses the HT2026 schedule from the Claude Design handoff into plain
-// sessions. Only used to seed the demo data in lib/schedule/demoSeed.ts.
+// sessions. Used by scripts/seed-schedule.ts to import HT2026 into Supabase.
 
 export interface Session {
   id: string
@@ -30,7 +30,7 @@ function parseSchedule(dsl: string): { sessions: Session[] } {
     }
     if (!date) continue
 
-    // Training lines only; markers (x) and club events (e) live in demoSeed's EVENTS
+    // Training lines only; markers (x) and club events (e) live in the seed script
     const p = line.split('|')
     if (p[0] === 't') {
       sessions.push({

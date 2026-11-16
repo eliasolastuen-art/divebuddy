@@ -5,15 +5,15 @@ import { useSchedule } from '@/lib/schedule/store'
 import { setScope, setViewAs, useViewer } from '@/lib/schedule/viewer'
 import { UI } from '@/lib/schedule/format'
 
-// "Visa som" (demo preview) and "Mina grupper / Alla grupper" for admins
+// "Visa som" (preview as a coach) and "Mina grupper / Alla grupper" for admins
 export default function ViewerBar({ showScope = true }: { showScope?: boolean }) {
-  const { data, source } = useSchedule()
+  const { data } = useSchedule()
   const v = useViewer()
   if (!v.isAdmin) return null
 
   return (
     <div className="no-print" style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
-      {source === 'demo' && (
+      {data.staff.length > 0 && (
         <label style={{ display: 'inline-flex', alignItems: 'center', gap: 6, minHeight: 40, padding: '0 10px', borderRadius: 12, background: v.previewing ? '#FEF3C7' : 'rgba(0,0,0,0.04)', fontSize: 13, fontWeight: 600, color: v.previewing ? '#78350F' : UI.muted }}>
           <Eye size={15} aria-hidden />
           Visa som

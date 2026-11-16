@@ -1,0 +1,135 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Välj övningar</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2B5C9E}a:hover{color:#1F4577}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #EEF3F8; color: #1E2B42; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; overflow: hidden">
+
+  <header style="flex: none; height: 56px; padding: 0 16px; display: flex; align-items: center; gap: 12px; background: #EEF3F8; border-bottom: 1px solid #E1E8F0">
+    <a href="Bygg.dc.html" aria-label="Stäng" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E1E8F0; background: #fff; display: flex; align-items: center; justify-content: center">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#1E2B42" stroke-width="2.4" stroke-linecap="round" aria-hidden="true"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </a>
+    <span style="flex: 1; font-size: 17px; font-weight: 800; letter-spacing: -0.02em">Lägg till övningar</span>
+    <a href="NyOvning.dc.html" style="display: flex; align-items: center; min-height: 44px; font-size: 15px; font-weight: 700; text-decoration: none">+ Ny övning</a>
+  </header>
+
+  <div style="flex: none; padding: 14px 16px 12px; display: flex; flex-direction: column; gap: 12px">
+    <label style="display: block">
+      <span style="position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%)">Sök övning</span>
+      <input type="search" value="{{ q }}" onChange="{{ onSearch }}" placeholder="Sök i alla övningar, t.ex. 105B" style="width: 100%; box-sizing: border-box; min-height: 48px; border-radius: 14px; border: 1px solid #C9D5E3; background: #fff; padding: 0 14px; font-size: 16px; color: #1E2B42; font-family: inherit">
+    </label>
+    <sc-if value="{{ showAreas }}" hint-placeholder-val="{{ true }}">
+      <div style="display: flex; gap: 4px; padding: 4px; border-radius: 13px; background: #DFE7F1">
+        <sc-for list="{{ areas }}" as="t" hint-placeholder-count="2">
+          <button onClick="{{ t.pick }}" style="{{ t.style }}">{{ t.label }}</button>
+        </sc-for>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 0 16px 16px">
+
+    <sc-if value="{{ showTiles }}" hint-placeholder-val="{{ true }}">
+      <div style="display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px">
+        <sc-for list="{{ tiles }}" as="g" hint-placeholder-count="6">
+          <button onClick="{{ g.open }}" style="min-height: 92px; border-radius: 18px; border: 1px solid #E1E8F0; background: #fff; padding: 14px 16px; text-align: left; font-family: inherit; color: inherit; display: flex; flex-direction: column; justify-content: space-between; gap: 6px">
+            <span style="font-size: 19px; font-weight: 900; letter-spacing: -0.03em">{{ g.name }}</span>
+            <span style="{{ g.subStyle }}">{{ g.sub }}</span>
+          </button>
+        </sc-for>
+      </div>
+    </sc-if>
+
+    <sc-if value="{{ showList }}" hint-placeholder-val="{{ false }}">
+      <div style="display: flex; flex-direction: column; gap: 10px">
+        <sc-if value="{{ inGroup }}" hint-placeholder-val="{{ false }}">
+          <button onClick="{{ back }}" style="align-self: flex-start; min-height: 44px; border: none; background: none; padding: 0; font-family: inherit; font-size: 15px; font-weight: 700; color: #2B5C9E">‹ {{ backLabel }}</button>
+        </sc-if>
+        <h2 style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.03em">{{ listTitle }}</h2>
+        <div style="border-radius: 18px; background: #fff; border: 1px solid #E1E8F0; padding: 0 8px 0 16px">
+          <sc-for list="{{ items }}" as="it" hint-placeholder-count="4">
+            <button onClick="{{ it.toggle }}" aria-pressed="{{ it.on }}" style="width: 100%; display: flex; align-items: center; gap: 12px; padding: 8px 0; border: none; border-bottom: 1px solid #E1E8F0; background: none; text-align: left; font-family: inherit; color: inherit">
+              <span style="flex: 1; min-width: 0">
+                <span style="display: block; font-size: 15px; font-weight: 700">{{ it.name }}</span>
+                <span style="display: block; font-size: 13px; color: #56637A; font-weight: 500">{{ it.sub }}</span>
+              </span>
+              <span style="{{ it.checkStyle }}">✓</span>
+            </button>
+          </sc-for>
+          <sc-if value="{{ empty }}" hint-placeholder-val="{{ false }}">
+            <div style="padding: 24px 0; font-size: 15px; font-weight: 600; color: #56637A">Ingen övning hittades.</div>
+          </sc-if>
+          <a href="NyOvning.dc.html" style="display: flex; align-items: center; min-height: 48px; font-size: 15px; font-weight: 700; text-decoration: none">+ Ny övning här</a>
+        </div>
+      </div>
+    </sc-if>
+  </div>
+
+  <div style="flex: none; padding: 12px 16px 22px; background: #fff; border-top: 1px solid #E1E8F0">
+    <a href="Bygg.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 14px; background: #2B5C9E; color: #fff; font-size: 16px; font-weight: 700; text-decoration: none">{{ cta }}</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { q: '', area: 'vatten', group: null, sel: { '105B Framåt 2½ volt': 1, '201B Bakåt': 1 } };
+  DATA = {
+    vatten: [
+      ['100', 'Framåt', ['101B Framåt', '103B Framåt 1½ volt', '105B Framåt 2½ volt', '107B Framåt 3½ volt']],
+      ['200', 'Bakåt', ['201B Bakåt', '203B Bakåt 1½ volt', '205B Bakåt 2½ volt']],
+      ['300', 'Isander', ['301B Isander', '303B Isander 1½ volt', '305B Isander 2½ volt']],
+      ['400', 'Inåt', ['401B Inåt', '403B Inåt 1½ volt', '405B Inåt 2½ volt']],
+      ['Skruvar', '5000-hopp', ['5132D Framåt 1½ volt 1 skruv', '5231D Bakåt 1½ volt ½ skruv', '5134D Framåt 1½ volt 2 skruvar']],
+      ['Armsving', 'Ansats och sving', ['Armsving framåt', 'Armsving bakåt']],
+      ['Fall', 'Fall och nedslag', ['Fall framåt', 'Fall bakåt']],
+    ],
+    land: [
+      ['Styrka', 'Kropp och bål', ['Benlyft i ribbstol', 'Planka', 'Upphopp']],
+      ['Längor', 'Volter på matta', ['Volt framåt på matta', 'Handstående', 'Flickis']],
+      ['Stretch', 'Rörlighet', ['Rörlighet axlar', 'Spagat', 'Pik-stretch']],
+      ['Lekar', 'Uppvärmning och avslut', ['Kull', 'Stafett']],
+      ['Redskap', 'Trampett, torrbräda, bälte', ['Upphopp på trampett', 'Ansats på torrbräda', 'Volt i bälte']],
+    ],
+  };
+  renderVals() {
+    const { q, area, group, sel } = this.state;
+    const s = q.trim().toLowerCase();
+    const groups = this.DATA[area];
+    const mkItem = (name, where) => { const on = !!sel[name]; return { name, sub: where, on: on ? 'true' : 'false',
+      toggle: () => { const next = { ...sel }; if (on) delete next[name]; else next[name] = 1; this.setState({ sel: next }); },
+      checkStyle: 'width:44px;height:44px;flex:none;border-radius:12px;font-size:20px;font-weight:800;display:flex;align-items:center;justify-content:center;' + (on ? 'background:#2B5C9E;border:2px solid #2B5C9E;color:#fff' : 'background:#fff;border:2px solid #B9C6D8;color:#fff') }; };
+    let items = [], listTitle = '';
+    if (s) {
+      listTitle = 'Sökresultat';
+      [['vatten', 'Vatten'], ['land', 'Land']].forEach(([k, label]) => this.DATA[k].forEach(([g, , list]) => list.forEach(n => { if (n.toLowerCase().includes(s)) items.push(mkItem(n, label + ' · ' + g)); })));
+    } else if (group) {
+      const g = groups.find(x => x[0] === group);
+      listTitle = g[0] + ' · ' + g[1];
+      items = g[2].map(n => mkItem(n, area === 'vatten' ? '3 m' : 'Land'));
+    }
+    const tiles = groups.map(([name, sub, list]) => { const picked = list.filter(n => sel[n]).length;
+      return { name, sub: picked ? picked + (picked === 1 ? ' vald' : ' valda') : sub,
+        subStyle: 'font-size:13.5px;' + (picked ? 'font-weight:700;color:#2B5C9E' : 'font-weight:500;color:#56637A'),
+        open: () => this.setState({ group: name }) }; });
+    const areas = [['vatten', 'Vatten'], ['land', 'Land']].map(([k, label]) => ({ label, pick: () => this.setState({ area: k, group: null }),
+      style: 'flex:1;min-height:40px;border:none;border-radius:10px;font-size:14px;font-weight:700;' + (area === k ? 'background:#fff;color:#1E2B42' : 'background:transparent;color:#56637A') }));
+    const count = Object.keys(sel).length;
+    return { q, onSearch: e => this.setState({ q: e.target.value }), areas, tiles, items, listTitle,
+      showAreas: !s && !group, showTiles: !s && !group, showList: !!s || !!group, inGroup: !s && !!group,
+      back: () => this.setState({ group: null }), backLabel: area === 'vatten' ? 'Vatten' : 'Land', empty: items.length === 0,
+      cta: count === 0 ? 'Klar' : count === 1 ? 'Lägg till 1 övning' : 'Lägg till ' + count + ' övningar' };
+  }
+}
+</script>
+</body>
+</html>

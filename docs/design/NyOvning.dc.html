@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Ny övning</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2B5C9E}a:hover{color:#1F4577}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #EEF3F8; color: #1E2B42; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; overflow: hidden">
+
+  <header style="flex: none; height: 56px; padding: 0 16px; display: flex; align-items: center; gap: 12px; background: #EEF3F8; border-bottom: 1px solid #E1E8F0">
+    <a href="Valj.dc.html" aria-label="Tillbaka" style="width: 44px; height: 44px; border-radius: 12px; border: 1px solid #E1E8F0; background: #fff; display: flex; align-items: center; justify-content: center">
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E2B42" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg>
+    </a>
+    <span style="font-size: 17px; font-weight: 800; letter-spacing: -0.02em">Ny övning</span>
+  </header>
+
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 20px; display: flex; flex-direction: column; gap: 22px">
+
+    <button style="height: 170px; flex: none; border-radius: 18px; border: 2px dashed #9DB3CF; background: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 8px; font-family: inherit; color: #2B5C9E">
+      <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="#2B5C9E" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z"/><circle cx="12" cy="13.5" r="3.5"/></svg>
+      <span style="font-size: 17px; font-weight: 800">Ta bild</span>
+      <span style="font-size: 13.5px; font-weight: 500; color: #56637A">eller välj en bild från mobilen</span>
+    </button>
+
+    <label style="display: flex; flex-direction: column; gap: 6px; font-size: 14px; font-weight: 700; color: #56637A">Namn
+      <input type="text" placeholder="T.ex. Volt på matta" style="min-height: 50px; border-radius: 14px; border: 1px solid #C9D5E3; background: #fff; padding: 0 14px; font-size: 16px; font-weight: 600; color: #1E2B42; font-family: inherit">
+    </label>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 14px; font-weight: 700; color: #56637A">Var</span>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap">
+        <sc-for list="{{ areas }}" as="c" hint-placeholder-count="2">
+          <button onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="{{ c.style }}">{{ c.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <div style="display: flex; flex-direction: column; gap: 8px">
+      <span style="font-size: 14px; font-weight: 700; color: #56637A">Grupp</span>
+      <div style="display: flex; gap: 6px; flex-wrap: wrap">
+        <sc-for list="{{ groups }}" as="c" hint-placeholder-count="5">
+          <button onClick="{{ c.pick }}" aria-pressed="{{ c.on }}" style="{{ c.style }}">{{ c.label }}</button>
+        </sc-for>
+      </div>
+    </div>
+
+    <p style="margin: 0; font-size: 13.5px; color: #56637A; font-weight: 500">Bara namnet måste fyllas i. Gruppen är förvald efter var du kom ifrån.</p>
+  </div>
+
+  <div style="flex: none; padding: 12px 16px 22px; background: #fff; border-top: 1px solid #E1E8F0">
+    <a href="Bygg.dc.html" style="display: flex; align-items: center; justify-content: center; min-height: 54px; border-radius: 14px; background: #2B5C9E; color: #fff; font-size: 16px; font-weight: 700; text-decoration: none">Spara och lägg till i passet</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { area: 'Land', group: 'Längor' };
+  renderVals() {
+    const { area, group } = this.state;
+    const chip = (label, on, pick) => ({ label, on: on ? 'true' : 'false', pick,
+      style: 'min-height:44px;padding:0 18px;border-radius:999px;font-size:15px;font-weight:700;' + (on ? 'background:#2B5C9E;color:#fff;border:1px solid #2B5C9E' : 'background:#fff;color:#1E2B42;border:1px solid #C9D5E3') });
+    const list = area === 'Land' ? ['Styrka', 'Längor', 'Stretch', 'Lekar', 'Redskap'] : ['100', '200', '300', '400', 'Skruvar', 'Armsving', 'Fall'];
+    return {
+      areas: ['Land', 'Vatten'].map(a => chip(a, a === area, () => this.setState({ area: a, group: a === 'Land' ? 'Längor' : '100' }))),
+      groups: list.map(g => chip(g, g === group, () => this.setState({ group: g }))),
+    };
+  }
+}
+</script>
+</body>
+</html>

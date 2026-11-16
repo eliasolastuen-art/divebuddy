@@ -174,8 +174,20 @@ Körs med `npx tsx scripts/seed-schedule.ts` (+ `tsx` som devDependency), servic
 - **Timmar i Närvaro**: ett ihopslaget pass räknas som 1 pass, och tiden = `actual_*` annars första start → sista slut.
 - **Prod-data**: seeden skriver till prod (enda projektet). Kör `--dry-run` först; jag kör inget mot prod utan ditt OK.
 
+## 5b. Avstämning mot designen (`docs/design/`, skärm 1–6)
+
+- **Gruppnamn** i designen: TG, FG, N1 Nybörjare, N1 Fortsättning, N2, Vuxen. Det ger sex grupper, och VUX blir "Vuxen".
+- **Närvaro räknas per del, inte per ihopslaget pass.** I designen har Elias bara vattendelen 17:45–19:00 på torsdagen. Det stämmer med `schedule_session_coaches` per rad. Risken "ett ihopslaget pass räknas som 1" stryks: timmar = summan av mina delar.
+- **Pass-bladet** visar innehållet som "3 block · 18 övningar". Det räknas från `training_blocks` och `training_block_items`.
+- **Planning** har bara vecka med "Mina pass" / "Alla pass", och inga flikar för Period eller Bank. Förslag: Period och Bank försvinner från Planning i sprint 3.
+- **"Planera innehåll"** öppnar skärm 7 (Planera pass, start) från PLAN-bibliotek.md.
+- **Bottenmenyn**: coach har Dashboard, Live, Planning, Library. Atlet har Hem, Dagbok, Mål, Meddelanden.
+
 ## 6. Frågor (påverkar datamodell eller import)
 
 1. **Källa**: JSON-filen saknas. Ska jag seeda från `lib/schema/ht2026-data.ts` (276 rader, ingen närvaro), eller lägger du in JSON:en? Närvaro finns bara i JSON:en.
-2. **Gruppmappning** mot befintliga rader (atleter och trainings hänger på dem): T-Grupp → TG, F-grupp → FG, Ny1 → ?, Ny2 → ? (N1N, N1F eller N2). De som blir över skapas, och VUX skapas.
+2. **Gruppmappning** mot befintliga rader (atleter och trainings hänger på dem). Förslag:
+   - T-Grupp → TG, F-grupp → FG (byter namn).
+   - Ny1 → N1 Nybörjare, Ny2 → N2.
+   - N1 Fortsättning och Vuxen skapas.
 3. **`club_staff`** i stället för `profile_id`/`coach_name` per pass. OK?

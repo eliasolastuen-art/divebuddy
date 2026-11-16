@@ -1,6 +1,5 @@
-// Domain model for the term schedule. Mirrors the planned Supabase tables
-// (trainings + training_groups + training_staff, club_staff, club_events,
-// schedule_terms) so the in-memory demo source can be swapped for Supabase.
+// Domain model for the term schedule. Loaded from Supabase in queries.ts
+// (schedule_sessions + _groups + _coaches, club_staff, club_events).
 
 export type ContentStatus = 'none' | 'draft' | 'planned'
 
@@ -94,6 +93,7 @@ export interface SchedulePass {
   place: string
   groupIds: string[]
   staffIds: string[]
+  trainingId: string | null // schedule_sessions.training_id
   contentStatus: ContentStatus
   content?: PassContent | null
   review?: PassReview | null
