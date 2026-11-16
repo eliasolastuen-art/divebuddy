@@ -1,5 +1,6 @@
 'use client'
 
+import StaffLinks from '@/components/schedule/StaffLinks'
 import { useEffect, useState, useMemo } from 'react'
 import { useRouter } from 'next/navigation'
 import { useUser } from '@/lib/context/user'
@@ -296,6 +297,8 @@ export default function AdminPage() {
         maxWidth: 480, width: '100%', margin: '0 auto',
         display: 'flex', flexDirection: 'column', gap: 24,
       }}>
+
+        <StaffLinks />
 
         {/* ── Stats row ──────────────────────────────────── */}
         {dataLoading ? (

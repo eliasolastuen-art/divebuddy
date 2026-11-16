@@ -218,7 +218,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
 
               <div className="glass-card" style={{ padding: 6 }}>
                 {[
-                  { href: '/schema', label: 'Schema', Icon: CalendarRange },
+                  { href: '/viktiga-datum', label: 'Viktiga datum', Icon: CalendarRange },
                   ...(roles.includes('coach') || roles.includes('admin') ? [{ href: '/narvaro', label: 'Närvaro', Icon: ClipboardCheck }] : []),
                   { href: '/library', label: 'Bibliotek', Icon: BookOpen },
                   { href: '/groups', label: 'Alla grupper & atleter', Icon: Users },
