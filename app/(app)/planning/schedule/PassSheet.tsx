@@ -3,17 +3,14 @@
 import { useState } from 'react'
 import Link from 'next/link'
 import {
-  Clock, MapPin, Users, UserRound, CalendarX, PencilLine, ClipboardList, Ban, RotateCcw, Trash2,
-  ThumbsUp, ThumbsDown, Repeat, Target, ArrowRight,
+  Clock, MapPin, Users, UserRound, CalendarX, PencilLine, Ban, RotateCcw, Trash2, ArrowRight,
 } from 'lucide-react'
 import { useSchedule } from '@/lib/schedule/store'
 import { useViewer } from '@/lib/schedule/viewer'
-import { DAY_LONG, eventsOnDate, EVENT_STYLE, mondayOf, passStatus, shortDate, timeText, todayISO, UI, weekdayIndex } from '@/lib/schedule/format'
+import { DAY_LONG, eventsOnDate, EVENT_STYLE, mondayOf, passStatus, shortDate, timeText, UI, weekdayIndex } from '@/lib/schedule/format'
 import { groupMap, staffMap } from '@/lib/schedule/select'
-import { CATEGORY_BY_ID, contentSummary, hasContent } from '@/lib/schedule/content'
-import type { PassReview, SchedulePass } from '@/lib/schedule/types'
+import type { SchedulePass } from '@/lib/schedule/types'
 import Sheet, { Button, inputStyle } from './Sheet'
-import PassPlanner from './PassPlanner'
 import PassForm from './PassForm'
 import { PlaceTag, StatusTag } from './ui'
 
@@ -31,16 +28,13 @@ export default function PassSheet({ passId, onClose, variant = 'plan' }: {
   if (!pass) return null
 
   const close = () => { setMode('view'); onClose() }
-  if (mode === 'plan') return <PassPlanner passId={pass.id} onClose={() => setMode('view')} />
   if (mode === 'edit') return <PassForm passId={pass.id} onClose={() => setMode('view')} />
 
   const gm = groupMap(data)
   return (
     <Sheet title={pass.groupIds.map(id => gm[id]?.name).join(' + ')} subtitle={`${DAY_LONG[weekdayIndex(pass.date)]} ${shortDate(pass.date)}`} onClose={close}>
       <Details pass={pass} variant={variant} />
-      {variant === 'plan'
-        ? <PlanSection pass={pass} onPlan={() => setMode('plan')} />
-        : <ScheduleSection pass={pass} onEdit={() => setMode('edit')} onClosed={close} />}
+      <ScheduleSection pass={pass} onEdit={() => setMode('edit')} onClosed={close} />
     </Sheet>
   )
 }
@@ -91,101 +85,6 @@ function Details({ pass, variant }: { pass: SchedulePass; variant: 'plan' | 'sch
         </div>
       )}
     </>
-  )
-}
-
-// ── Planning: content, focus, review ───────────────────────────────────────
-
-function PlanSection({ pass, onPlan }: { pass: SchedulePass; onPlan: () => void }) {
-  const { data, setContentStatus } = useSchedule()
-  const cancelled = pass.cancelledReason !== null
-  const monday = mondayOf(pass.date)
-  const focus = data.weekFocus.filter(f => f.monday === monday && pass.groupIds.includes(f.groupId))
-  const gm = groupMap(data)
-  const isPast = pass.date < todayISO()
-
-  return (
-    <>
-      {focus.length > 0 && (
-        <div style={{ marginTop: 16, display: 'grid', gap: 6 }}>
-          {focus.map(f => (
-            <div key={f.groupId} style={{ display: 'flex', alignItems: 'center', gap: 8, padding: '10px 12px', borderRadius: 12, background: UI.primarySoft, color: UI.primary, fontSize: 13.5, fontWeight: 700 }}>
-              <Target size={16} aria-hidden />Veckans fokus{focus.length > 1 ? ` (${gm[f.groupId]?.name})` : ''}: {f.text}
-            </div>
-          ))}
-        </div>
-      )}
-
-      {!cancelled && !pass.removed && (
-        <section style={{ marginTop: 20 }}>
-          <SectionHeading>Innehåll</SectionHeading>
-          {hasContent(pass.content) ? (
-            <div style={{ borderRadius: 16, background: '#fff', border: '1px solid #E1E8F0', padding: 12, display: 'grid', gap: 8 }}>
-              <div style={{ fontSize: 12.5, color: UI.muted }}>{pass.content!.source} · {contentSummary(pass.content)}</div>
-              {pass.content!.blocks.map(b => (
-                <div key={b.id} style={{ borderLeft: `3px solid ${CATEGORY_BY_ID[b.category]?.color}`, paddingLeft: 10 }}>
-                  <div style={{ fontSize: 14, fontWeight: 800, color: UI.text }}>{b.name}</div>
-                  {b.items.length > 0 && (
-                    <div style={{ fontSize: 13, color: UI.muted, marginTop: 2 }}>
-                      {b.items.map(i => `${i.name}${i.sets ? ` ${i.sets}×${i.reps ?? ''}` : ''}`).join(' · ')}
-                    </div>
-                  )}
-                </div>
-              ))}
-              {pass.content!.notes && <div style={{ fontSize: 13, color: UI.text, fontStyle: 'italic' }}>{pass.content!.notes}</div>}
-            </div>
-          ) : (
-            <p style={{ margin: 0, fontSize: 14, color: UI.muted }}>Inget planerat än.</p>
-          )}
-          <div style={{ display: 'flex', gap: 8, marginTop: 10, flexWrap: 'wrap' }}>
-            <Button grow variant={hasContent(pass.content) ? 'secondary' : 'primary'} onClick={onPlan}>
-              <ClipboardList size={16} />{hasContent(pass.content) ? 'Ändra planering' : 'Planera passet'}
-            </Button>
-            {hasContent(pass.content) && pass.contentStatus !== 'planned' && (
-              <Button grow variant="primary" onClick={() => setContentStatus(pass.id, 'planned')}>Markera klart</Button>
-            )}
-            {pass.contentStatus === 'planned' && (
-              <Button grow onClick={() => setContentStatus(pass.id, 'draft')}>Gör till utkast</Button>
-            )}
-          </div>
-        </section>
-      )}
-
-      {isPast && !cancelled && !pass.removed && <ReviewSection pass={pass} />}
-
-      <Link href="/schema" style={{ marginTop: 20, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.primary, textDecoration: 'none', minHeight: 40 }}>
-        Se passet i schemat <ArrowRight size={15} />
-      </Link>
-    </>
-  )
-}
-
-function ReviewSection({ pass }: { pass: SchedulePass }) {
-  const { saveReview } = useSchedule()
-  const r: PassReview = pass.review ?? { rating: null, note: '', repeat: false }
-  const set = (patch: Partial<PassReview>) => saveReview(pass.id, { ...r, ...patch })
-
-  return (
-    <section style={{ marginTop: 22, paddingTop: 16, borderTop: `1px solid ${UI.line}` }}>
-      <SectionHeading>Så gick det</SectionHeading>
-      <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
-        <Toggle on={r.rating === 'up'} onClick={() => set({ rating: r.rating === 'up' ? null : 'up' })} color="#15803D" bg="#DCFCE7">
-          <ThumbsUp size={16} />Bra pass
-        </Toggle>
-        <Toggle on={r.rating === 'down'} onClick={() => set({ rating: r.rating === 'down' ? null : 'down' })} color="#B91C1C" bg="#FEE2E2">
-          <ThumbsDown size={16} />Behöver ändras
-        </Toggle>
-        <Toggle on={r.repeat} onClick={() => set({ repeat: !r.repeat })} color={UI.primary} bg={UI.primarySoft}>
-          <Repeat size={16} />Kör igen
-        </Toggle>
-      </div>
-      <label style={{ display: 'grid', gap: 5, marginTop: 10 }}>
-        <span style={{ fontSize: 12, fontWeight: 700, color: UI.muted }}>Kommentar (syns när passet kopieras)</span>
-        <textarea value={r.note} onChange={e => set({ note: e.target.value })} rows={2}
-          placeholder="t.ex. för mycket land, ansatsen satt bra, öka till 3 serier nästa gång"
-          style={{ ...inputStyle, minHeight: 64, padding: '10px 12px', resize: 'vertical' }} />
-      </label>
-    </section>
   )
 }
 
@@ -240,7 +139,7 @@ function ScheduleSection({ pass, onEdit, onClosed }: { pass: SchedulePass; onEdi
         )}
       </section>
       {!pass.removed && !cancelled && (
-        <Link href={`/planning?view=vecka&week=${mondayOf(pass.date)}&pass=${pass.id}`} style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.primary, textDecoration: 'none', minHeight: 40 }}>
+        <Link href={`/planning?week=${mondayOf(pass.date)}&pass=${pass.id}`} style={{ marginTop: 18, display: 'inline-flex', alignItems: 'center', gap: 6, fontSize: 13.5, fontWeight: 700, color: UI.primary, textDecoration: 'none', minHeight: 40 }}>
           Planera passet i Planning <ArrowRight size={15} />
         </Link>
       )}
@@ -258,15 +157,6 @@ function Tag({ children, bg, fg }: { children: React.ReactNode; bg: string; fg: 
   return <span style={{ fontSize: 11, fontWeight: 700, padding: '3px 8px', borderRadius: 999, background: bg, color: fg }}>{children}</span>
 }
 
-function Toggle({ on, onClick, children, color, bg }: { on: boolean; onClick: () => void; children: React.ReactNode; color: string; bg: string }) {
-  return (
-    <button aria-pressed={on} onClick={onClick} style={{
-      minHeight: 44, padding: '0 14px', borderRadius: 12, fontFamily: 'inherit', cursor: 'pointer', fontSize: 14, fontWeight: 700,
-      display: 'inline-flex', alignItems: 'center', gap: 7,
-      border: `1.5px solid ${on ? color : 'rgba(0,0,0,0.1)'}`, background: on ? bg : '#fff', color: on ? color : UI.text,
-    }}>{children}</button>
-  )
-}
 
 function Row({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
   return (

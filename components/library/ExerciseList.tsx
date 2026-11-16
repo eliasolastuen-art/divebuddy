@@ -8,7 +8,7 @@ import { exerciseLabel } from '@/lib/library/queries'
 
 export default function ExerciseList({ exercises, subtitle, selected, onToggle, onOpen, onNew }: {
   exercises: Exercise[]
-  subtitle: (e: Exercise) => string
+  subtitle?: (e: Exercise) => string
   selected?: Set<string>
   onToggle?: (e: Exercise) => void
   onOpen?: (e: Exercise) => void
@@ -25,13 +25,13 @@ export default function ExerciseList({ exercises, subtitle, selected, onToggle, 
             aria-pressed={selected ? on : undefined}
             aria-label={selected ? `${label}: ${on ? 'vald' : 'välj'}` : undefined}
             style={{
-              width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', minHeight: 60,
+              width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: subtitle ? '8px 0' : '14px 0', minHeight: subtitle ? 60 : 50,
               border: 'none', borderBottom: '1px solid #E1E8F0', background: 'none', textAlign: 'left',
               fontFamily: 'inherit', color: '#1E2B42', cursor: 'pointer',
             }}>
             <span style={{ flex: 1, minWidth: 0 }}>
               <span style={{ display: 'block', fontSize: 15, fontWeight: 700 }}>{label}</span>
-              <span style={{ display: 'block', fontSize: 13, color: '#56637A', fontWeight: 500 }}>{subtitle(e)}</span>
+              {subtitle && <span style={{ display: 'block', fontSize: 13, color: '#56637A', fontWeight: 500 }}>{subtitle(e)}</span>}
             </span>
             {selected ? (
               <span aria-hidden style={{

@@ -24,10 +24,11 @@ export function Segmented<K extends string>({ options, value, onChange, label }:
   )
 }
 
-export default function GroupTiles({ groups, onOpen, picked }: {
+export default function GroupTiles({ groups, onOpen, picked, subtitle }: {
   groups: LibraryGroup[]
   onOpen: (g: LibraryGroup) => void
   picked?: Record<string, number> // group id → number of chosen exercises
+  subtitle?: (g: LibraryGroup) => string
 }) {
   return (
     <div style={{ display: 'grid', gridTemplateColumns: 'repeat(2, minmax(0, 1fr))', gap: 10 }}>
@@ -43,7 +44,7 @@ export default function GroupTiles({ groups, onOpen, picked }: {
             <span style={n
               ? { fontSize: 13.5, fontWeight: 700, color: '#2B5C9E' }
               : { fontSize: 13.5, fontWeight: 500, color: '#56637A' }}>
-              {n ? `${n} ${n === 1 ? 'vald' : 'valda'}` : g.description}
+              {n ? `${n} ${n === 1 ? 'vald' : 'valda'}` : subtitle ? subtitle(g) : g.description}
             </span>
           </button>
         )

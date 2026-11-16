@@ -206,3 +206,28 @@ export function step(it: EditorItem, dir: 1 | -1): EditorItem {
   if (isTimeMode(it)) return { ...it, duration_seconds: Math.max(300, (it.duration_seconds ?? 300) + dir * 300) }
   return { ...it, reps: Math.max(1, (it.reps ?? 0) + dir) }
 }
+
+// A saved pass or block template as unsaved editor blocks (opens in the pass editor)
+export async function templateToBlocks(db: SupabaseClient, kind: 'pass' | 'block', id: string): Promise<{ name: string; groupId: string | null; blocks: EditorBlock[] }> {
+  type Item = { library_item_id: string | null; custom_name: string | null; sets: number | null; reps: number | null; height: string | null; duration_seconds: number | null; notes: string | null; order_index: number | null; library_items: { id: string; name: string; type: string; dd: number | null } | null }
+  const toItems = (items: Item[]): EditorItem[] => [...items].sort((a, b) => (a.order_index ?? 0) - (b.order_index ?? 0)).map(i => ({
+    id: `new-${Math.random().toString(36).slice(2)}`,
+    library_item_id: i.library_item_id ?? undefined,
+    custom_name: i.library_items?.name ?? i.custom_name ?? '',
+    sets: i.sets ?? undefined, reps: i.reps ?? undefined, height: i.height ?? undefined,
+    duration_seconds: i.duration_seconds ?? undefined, notes: i.notes ?? '',
+    isFromLibrary: !!i.library_item_id, libraryItem: i.library_items,
+  }))
+  const itemCols = 'library_item_id, custom_name, sets, reps, height, duration_seconds, notes, order_index, library_items(id, name, type, dd)'
+  if (kind === 'block') {
+    const t = check(await db.from('block_templates').select(`name, category, group_id, block_template_items(${itemCols})`).eq('id', id).single()) as unknown as
+      { name: string; category: string | null; group_id: string | null; block_template_items: Item[] }
+    return { name: t.name, groupId: t.group_id, blocks: [{ id: `new-${id}`, category: t.category ?? 'vatten', name: t.name, notes: '', block_type: 'standard', items: toItems(t.block_template_items) }] }
+  }
+  const t = check(await db.from('training_templates').select(`name, group_id, training_template_blocks(id, name, category, notes, sort_order, training_template_items(${itemCols}))`).eq('id', id).single()) as unknown as
+    { name: string; group_id: string | null; training_template_blocks: { id: string; name: string; category: string | null; notes: string | null; sort_order: number | null; training_template_items: Item[] }[] }
+  const blocks = [...t.training_template_blocks].sort((a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0)).map(b => ({
+    id: `new-${b.id}`, category: b.category ?? 'vatten', name: b.name, notes: b.notes ?? '', block_type: 'standard' as const, items: toItems(b.training_template_items),
+  }))
+  return { name: t.name, groupId: t.group_id, blocks }
+}

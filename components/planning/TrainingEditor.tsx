@@ -24,10 +24,11 @@ const CATEGORY_BY_NAME: Record<string, string> = { 'Uppvärmning': 'uppvarmning'
 
 interface ScheduleLink { date: string; start: string | null; groupNames: string[] }
 
-export default function TrainingEditor({ folders, onClose, onSaved, existingTraining, existingBlocks }: {
+export default function TrainingEditor({ folders, onClose, onSaved, existingTraining, existingBlocks, template }: {
   folders: { id: string; name: string }[]
   onClose: () => void
-  onSaved: () => void
+  onSaved: (trainingId: string) => void
+  template?: { name: string; groupId: string | null; blocks: EditorBlock[] } // new pass from a template
   existingTraining?: {
     id: string; title: string | null; folder_id: string | null; scheduled_date: string | null; status: string | null
     group_id: string | null; purpose: string | null; purpose_type: string | null; created_by: string | null; start_time: string | null
@@ -39,15 +40,15 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
   const { groups: libGroups, exercises } = useLibrary()
 
   const initial = useMemo(() => fromRows(existingBlocks ?? []), [existingBlocks])
-  const [blocks, setBlocks] = useState<EditorBlock[]>(initial.blocks)
+  const [blocks, setBlocks] = useState<EditorBlock[]>(template?.blocks ?? initial.blocks)
   const [savedBlockIds] = useState(() => initial.blocks.map(b => b.savedId!).filter(Boolean))
   const [savedItemIds] = useState(initial.savedItemIds)
   const [fields, setFields] = useState<TrainingFields>({
-    title: existingTraining?.title ?? '',
+    title: existingTraining?.title ?? template?.name ?? '',
     folder_id: existingTraining?.folder_id ?? null,
     scheduled_date: existingTraining?.scheduled_date ?? null,
     status: existingTraining?.status === 'published' ? 'published' : existingTraining?.status === 'completed' ? 'completed' : 'draft',
-    group_id: existingTraining?.group_id ?? null,
+    group_id: existingTraining?.group_id ?? template?.groupId ?? null,
     purpose: existingTraining?.purpose ?? null,
     purpose_type: existingTraining?.purpose_type ?? null,
   })
@@ -144,12 +145,12 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
     setSaving(true)
     setError(null)
     try {
-      await saveTraining(db, {
+      const { trainingId } = await saveTraining(db, {
         trainingId: existingTraining?.id ?? null, clubId: profile.club_id, profileId: profile.id,
         createdBy: existingTraining?.created_by ?? null, fields: { ...fields, title: fields.title.trim() },
         blocks, savedBlockIds, savedItemIds,
       })
-      onSaved()
+      onSaved(trainingId)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Kunde inte spara passet')
       setSaving(false)
