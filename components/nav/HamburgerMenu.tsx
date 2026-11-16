@@ -3,7 +3,7 @@ import Link from 'next/link'
 import { useEffect, useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { X, ChevronRight, BookOpen, Users, LogOut, Shield, Waves, CalendarRange } from 'lucide-react'
+import { X, ChevronRight, BookOpen, Users, LogOut, Shield, Waves, CalendarRange, ClipboardCheck } from 'lucide-react'
 import { signOut } from '@/lib/auth'
 import { useUser } from '@/lib/context/user'
 
@@ -219,6 +219,7 @@ export default function HamburgerMenu({ open, onClose }: Props) {
               <div className="glass-card" style={{ padding: 6 }}>
                 {[
                   { href: '/schema', label: 'Schema', Icon: CalendarRange },
+                  ...(roles.includes('coach') || roles.includes('admin') ? [{ href: '/narvaro', label: 'Närvaro', Icon: ClipboardCheck }] : []),
                   { href: '/library', label: 'Bibliotek', Icon: BookOpen },
                   { href: '/groups', label: 'Alla grupper & atleter', Icon: Users },
                   ...(roles.includes('admin') ? [{ href: '/admin', label: 'Admin', Icon: Shield }] : []),

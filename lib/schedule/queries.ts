@@ -142,14 +142,16 @@ function check(res: { error: { message: string } | null }) {
 }
 
 export const writes = {
-  async insertSession(db: SupabaseClient, clubId: string, id: string, p: PassFields) {
+  async insertSession(db: SupabaseClient, clubId: string, id: string, p: PassFields, presentStaffId?: string) {
     const { data: auth } = await db.auth.getUser()
     check(await db.from('schedule_sessions').insert({
       id, club_id: clubId, session_date: p.date, start_time: orNull(p.start), end_time: orNull(p.end),
       place: p.place, is_extra: true, created_by: auth.user?.id ?? null,
     }))
     if (p.groupIds.length) check(await db.from('schedule_session_groups').insert(p.groupIds.map(group_id => ({ session_id: id, group_id }))))
-    if (p.staffIds.length) check(await db.from('schedule_session_coaches').insert(p.staffIds.map(staff_id => ({ session_id: id, staff_id }))))
+    if (p.staffIds.length) check(await db.from('schedule_session_coaches').insert(p.staffIds.map(staff_id => ({
+      session_id: id, staff_id, attendance: staff_id === presentStaffId ? 'narvarande' : null,
+    }))))
   },
 
   async updateSession(db: SupabaseClient, id: string, patch: Partial<PassFields>, before: SchedulePass) {

@@ -164,13 +164,15 @@ const actions = {
   },
   // Removed passes are deleted in the database and cannot be restored
   restorePass: (_id: string) => {},
-  addExtraPass: (p: NewPass): string => {
+  // presentStaffId: mark that coach present right away (Närvaro → "Lägg till ett pass")
+  addExtraPass: (p: NewPass, presentStaffId?: string): string => {
     const id = newId()
+    const attendance = presentStaffId ? { [presentStaffId]: 'narvarande' as const } : {}
     update(d => ({
       ...d,
-      passes: [...d.passes, { ...p, id, trainingId: null, contentStatus: 'none', content: null, completed: false, cancelledReason: null, isExtra: true, removed: false }],
+      passes: [...d.passes, { ...p, id, trainingId: null, attendance, contentStatus: 'none', content: null, completed: false, cancelledReason: null, isExtra: true, removed: false }],
     }))
-    if (status.clubId) persist(() => writes.insertSession(db(), status.clubId!, id, p))
+    if (status.clubId) persist(() => writes.insertSession(db(), status.clubId!, id, p, presentStaffId))
     return id
   },
 
