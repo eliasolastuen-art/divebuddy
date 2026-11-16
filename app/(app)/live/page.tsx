@@ -2,41 +2,37 @@
 
 import { useEffect, useMemo, useState } from 'react'
 import Link from 'next/link'
+import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/context/user'
 import { useSchedule } from '@/lib/schedule/store'
 import { useViewer } from '@/lib/schedule/viewer'
-import { DAY_LONG, todayISO, weekdayIndex } from '@/lib/schedule/format'
-import { hasMe, longDate, pairGroups, pairPasses, pairStatus, PAIR_STATUS_LABEL, type PassPair } from '@/lib/schedule/pairing'
-import PassSheet from '@/components/schedule/PassSheet'
-import { C, Empty, Hero, ListCard, Row, Screen, Section, TextLink } from '@/components/schedule/ui'
+import { addDays, DAY_LONG, mondayOf, MONTHS_FULL, parseISO, shortDate, todayISO, weekNumber, weekdayIndex } from '@/lib/schedule/format'
+import { toDateString } from '@/lib/utils/week'
+import { hasMe, pairGroups, pairLayout, pairPasses, pairTime, type PassPair } from '@/lib/schedule/pairing'
+import { activeSessions, minutesSince, type ActiveSession } from '@/lib/live/queries'
+import { useStartLive } from '@/components/schedule/useStartLive'
+import { Segmented } from '@/components/library/GroupTiles'
+import LiveCard from '@/components/live/LiveCard'
+import { C, TextLink } from '@/components/schedule/ui'
 
-interface ActiveLive {
-  id: string
-  started_at: string
-  schedule_session_id: string | null
-  trainings: { title: string } | null
-  groups: { name: string } | null
-}
+type Scope = 'mina' | 'alla'
 
-const nowHHMM = () => new Date().toTimeString().slice(0, 5)
-const minutesSince = (iso: string) => Math.max(0, Math.round((Date.now() - new Date(iso).getTime()) / 60000))
-
-// "Pågår nu · 52 min", or the start date for a session left open since an earlier day
-function runningLabel(iso: string) {
-  const min = minutesSince(iso)
-  if (min < 12 * 60) return `Pågår nu · ${min} min`
-  const d = new Date(iso)
-  return `Ej avslutat · startat ${d.getDate()} ${['jan', 'feb', 'mar', 'apr', 'maj', 'jun', 'jul', 'aug', 'sep', 'okt', 'nov', 'dec'][d.getMonth()]}`
-}
-
-// Design screen 4: what is running now, today's passes, my next pass
+// Design Live.dc.html: the week like Planning, but only published passes, as
+// blue boxes to start or continue. Sessions left open sit under "Inte avslutat".
 export default function LivePage() {
+  const router = useRouter()
   const { profile } = useUser()
   const { data, loading, reload } = useSchedule()
-  const { me, groupIds } = useViewer()
-  const [active, setActive] = useState<ActiveLive | null>(null)
-  const [openId, setOpenId] = useState<string | null>(null)
+  const { me } = useViewer()
+  const today = todayISO()
+
+  const [day, setDay] = useState(today)
+  const [picked, setScope] = useState<Scope | null>(null)
+  const scope: Scope = picked ?? (me ? 'mina' : 'alla')
+  const [active, setActive] = useState<ActiveSession[]>([])
+  const [startingId, setStartingId] = useState<string | null>(null)
+  const { start, error } = useStartLive()
   const [, tick] = useState(0)
 
   useEffect(() => { reload() }, []) // eslint-disable-line react-hooks/exhaustive-deps
@@ -44,95 +40,124 @@ export default function LivePage() {
     const t = setInterval(() => tick(n => n + 1), 60000)
     return () => clearInterval(t)
   }, [])
-
   useEffect(() => {
-    if (!profile?.id) return
-    createClient().from('live_sessions')
-      .select('id, started_at, schedule_session_id, trainings(title), groups(name)')
-      .eq('coach_id', profile.id).eq('status', 'active')
-      .order('started_at', { ascending: false }).limit(1).maybeSingle()
-      .then(({ data: row }) => setActive(row as unknown as ActiveLive | null))
-  }, [profile?.id])
+    if (!profile?.club_id) return
+    activeSessions(createClient(), profile.club_id).then(setActive).catch(() => setActive([]))
+  }, [profile?.club_id])
 
-  const today = todayISO()
   const pairs = useMemo(() => pairPasses(data.passes), [data.passes])
-  const inScope = (p: PassPair) => p.groupIds.some(g => groupIds.includes(g))
-  const todays = pairs.filter(p => p.date === today && inScope(p))
-  const isMine = (p: PassPair) => (me ? hasMe(p, me.id) : inScope(p))
-  const now = nowHHMM()
-  const next = pairs.find(p => isMine(p) && !p.cancelled && pairStatus(p) === 'planned' &&
-    (p.date > today || (p.date === today && (p.start || '00:00') > now)))
-  const open = openId ? pairs.find(p => p.id === openId) ?? null : null
+  const pairOf = (scheduleSessionId: string | null) =>
+    scheduleSessionId ? pairs.find(p => p.parts.some(x => x.id === scheduleSessionId)) ?? null : null
+  const running = (p: PassPair) => p.parts.find(x => x.live?.status === 'active')?.live ?? null
+  const mine = (p: PassPair) => scope === 'alla' || !me || hasMe(p, me.id)
 
-  // Hero line: "TG + FG · vatten till 19:00" when the live session came from the schedule
-  const activePair = active?.schedule_session_id ? pairs.find(p => p.parts.some(x => x.id === active.schedule_session_id)) : null
-  const currentPart = activePair?.parts.filter(x => !x.start || x.start <= now).pop() ?? activePair?.parts[0]
-  const heroSub = activePair
-    ? `${pairGroups(data, activePair)} · ${(currentPart?.place ?? '').toLowerCase()}${activePair.end ? ` till ${activePair.end}` : ''}`
-    : active?.groups?.name ?? ''
+  // "Inte avslutat": started before today, or not from the schedule
+  const open = active
+    .map(s => ({ s, pair: pairOf(s.scheduleSessionId) }))
+    .filter(({ s, pair }) => !pair || toDateString(new Date(s.startedAt)) < today)
+    .filter(({ s, pair }) => scope === 'alla' || s.coachId === profile?.id || (!!pair && !!me && hasMe(pair, me.id)))
+  const openPairIds = new Set(open.map(o => o.pair?.id).filter(Boolean))
+
+  // Published passes, or passes running now (also "Kör igen" on a finished pass)
+  const showsInLive = (p: PassPair) => !p.cancelled && !openPairIds.has(p.id) && (p.training?.status === 'published' || !!running(p))
+  const onDay = (d: string) => pairs.filter(p => p.date === d && showsInLive(p) && mine(p))
+  const todays = onDay(day)
+
+  const monday = mondayOf(day)
+  const week = Array.from({ length: 7 }, (_, i) => addDays(monday, i))
+  const setWeek = (m: string) => setDay(m === mondayOf(today) ? today : m)
+  const dayDate = parseISO(day)
+
+  const startPair = async (p: PassPair) => {
+    const live = running(p)
+    if (live) { router.push(`/live/session/${live.id}`); return }
+    setStartingId(p.id)
+    await start(p)
+    setStartingId(null)
+  }
 
   return (
-    <Screen>
-      <div>
-        <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>Live</h1>
-        <div style={{ fontSize: 14, color: C.muted, fontWeight: 500 }}>{longDate(today)}</div>
-      </div>
-
-      {active && (
-        <Hero>
-          <span style={{ fontSize: 14, fontWeight: 700 }}>{runningLabel(active.started_at)}</span>
-          <span style={{ fontSize: 22, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.15 }}>{active.trainings?.title ?? 'Fritt pass'}</span>
-          {heroSub && <span style={{ fontSize: 15, fontWeight: 600 }}>{heroSub}</span>}
-          <Link href={`/live/session/${active.id}`} style={{
-            marginTop: 14, display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, borderRadius: 14,
-            background: '#fff', color: '#234E88', fontSize: 16, fontWeight: 800, textDecoration: 'none',
-          }}>Fortsätt passet</Link>
-        </Hero>
-      )}
-
-      <Section title="Idag">
-        <ListCard>
-          {loading && <Empty>Hämtar dagens pass …</Empty>}
-          {!loading && todays.length === 0 && <Empty>Inga pass idag.</Empty>}
-          {todays.map((p, i) => {
-            const status = pairStatus(p)
+    <div style={{ maxWidth: 560, margin: '0 auto', padding: '16px 16px 24px', display: 'flex', flexDirection: 'column', gap: 20, color: C.text }}>
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 14 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+          <div style={{ flex: 1 }}>
+            <h1 style={{ margin: 0, fontSize: 28, fontWeight: 900, letterSpacing: '-0.04em', lineHeight: 1.1 }}>
+              {day === today ? 'Idag' : DAY_LONG[weekdayIndex(day)]}
+            </h1>
+            <div style={{ fontSize: 14, color: C.muted, fontWeight: 500 }}>
+              {DAY_LONG[weekdayIndex(day)]} {dayDate.getDate()} {MONTHS_FULL[dayDate.getMonth()].toLowerCase()} · vecka {weekNumber(day)}
+            </div>
+          </div>
+          <button type="button" aria-label="Föregående vecka" onClick={() => setWeek(addDays(monday, -7))} style={arrowStyle}>‹</button>
+          <button type="button" aria-label="Nästa vecka" onClick={() => setWeek(addDays(monday, 7))} style={arrowStyle}>›</button>
+        </div>
+        <Segmented label="Vilka pass" options={[['mina', 'Mina pass'], ['alla', 'Alla pass']]} value={scope} onChange={setScope} />
+        <div style={{ display: 'flex', gap: 4 }}>
+          {week.map(d => {
+            const on = d === day
+            const has = onDay(d).length > 0
             return (
-              <Row key={p.id} onClick={() => setOpenId(p.id)} last={i === todays.length - 1}>
-                <span style={{ width: 48, flex: 'none', fontSize: 15, fontWeight: 800, fontVariantNumeric: 'tabular-nums', textDecoration: status === 'cancelled' ? 'line-through' : 'none' }}>{p.start || '–'}</span>
-                <span style={{ flex: 1, fontSize: 15, fontWeight: 700 }}>{pairGroups(data, p)}</span>
-                <span style={{ fontSize: 13.5, fontWeight: status === 'running' ? 700 : 600, color: status === 'running' ? C.primary : C.muted }}>{PAIR_STATUS_LABEL[status]}</span>
-              </Row>
+              <button key={d} type="button" onClick={() => setDay(d)} aria-pressed={on}
+                aria-label={`${DAY_LONG[weekdayIndex(d)]} ${shortDate(d)}${has ? ', har pass' : ''}`}
+                style={{
+                  flex: 1, minHeight: 60, padding: '6px 0', borderRadius: 12, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 2,
+                  fontFamily: 'inherit', cursor: 'pointer', background: on ? C.primary : '#fff', color: on ? '#fff' : C.text,
+                  border: `1px solid ${on ? C.primary : C.line}`,
+                }}>
+                <span style={{ fontSize: 12, fontWeight: 600 }}>{DAY_LONG[weekdayIndex(d)][0]}</span>
+                <span style={{ fontSize: 16, fontWeight: 800, fontVariantNumeric: 'tabular-nums' }}>{parseISO(d).getDate()}</span>
+                <span style={{ width: 6, height: 6, borderRadius: '50%', background: has ? (on ? '#fff' : C.primary) : 'transparent' }} />
+              </button>
             )
           })}
-        </ListCard>
-      </Section>
+        </div>
+      </div>
 
-      <Section title="Ditt nästa pass">
-        {next ? (
-          <button type="button" onClick={() => setOpenId(next.id)} style={{
-            textAlign: 'left', fontFamily: 'inherit', color: 'inherit', cursor: 'pointer', width: '100%', minHeight: 48,
-            borderRadius: 18, background: C.card, border: `1px solid ${C.line}`, padding: 16, display: 'flex', alignItems: 'center', gap: 12,
-          }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 15, fontWeight: 700 }}>
-                {next.date === today ? 'Idag' : DAY_LONG[weekdayIndex(next.date)]} {next.start} · {pairGroups(data, next)}
-              </div>
-              <div style={{ fontSize: 13.5, fontWeight: 700, color: next.training ? C.muted : C.primary, marginTop: 2 }}>
-                {next.training?.title ?? 'Planera innehåll'}
-              </div>
-            </div>
-            <span aria-hidden style={{ fontSize: 20, color: '#8A96A8', lineHeight: 1 }}>›</span>
-          </button>
-        ) : (
-          <ListCard><Empty>{loading ? 'Hämtar …' : 'Inga fler pass inplanerade för dig.'}</Empty></ListCard>
-        )}
-      </Section>
+      {open.map(({ s, pair }) => {
+        const date = pair?.date ?? toDateString(new Date(s.startedAt))
+        return (
+          <LiveCard key={s.id} heading="Inte avslutat"
+            top={`${DAY_LONG[weekdayIndex(date)]} ${shortDate(date)} · ${s.checked} av ${s.total} övningar klara`}
+            group={pair ? pairGroups(data, pair) : s.groupName ?? 'Pass utan grupp'}
+            title={s.title ?? 'Fritt pass'}
+            sub={pair ? pairLayout(data, pair) : ''}
+            button="Fortsätt passet" onPress={() => router.push(`/live/session/${s.id}`)} />
+        )
+      })}
+
+      {todays.map(p => {
+        const live = running(p)
+        return (
+          <LiveCard key={p.id} heading={day === today ? 'Idag' : DAY_LONG[weekdayIndex(day)]}
+            top={`${pairTime(p)}${live ? ` · pågår ${minutesSince(live.startedAt)} min` : ''}`}
+            group={pairGroups(data, p)}
+            title={p.training?.title ?? ''}
+            sub={pairLayout(data, p)}
+            button={live ? 'Fortsätt passet' : 'Starta passet'}
+            busy={startingId === p.id}
+            onPress={() => startPair(p)} />
+        )
+      })}
+
+      {!loading && todays.length === 0 && (
+        <div style={{ borderRadius: 18, background: '#fff', border: `1px solid ${C.line}`, padding: '0 16px' }}>
+          <p style={{ margin: 0, padding: '14px 0', fontSize: 15, color: C.muted, fontWeight: 500 }}>
+            Inga publicerade pass den här dagen. Utkast publicerar du i{' '}
+            <Link href={`/planning?week=${monday}`} style={{ color: C.primary, fontWeight: 700, textDecoration: 'none' }}>Planning</Link>.
+          </p>
+        </div>
+      )}
+      {loading && <p style={{ margin: 0, fontSize: 15, color: C.muted, fontWeight: 500 }}>Hämtar veckan …</p>}
+      {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
 
       <div style={{ textAlign: 'center' }}>
         <TextLink href="/live/vecka">Pass utan schema</TextLink>
       </div>
-
-      {open && <PassSheet pair={open} onClose={() => setOpenId(null)} />}
-    </Screen>
+    </div>
   )
+}
+
+const arrowStyle: React.CSSProperties = {
+  width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.line}`, background: '#fff',
+  fontSize: 20, fontWeight: 700, color: C.text, cursor: 'pointer', fontFamily: 'inherit',
 }
