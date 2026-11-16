@@ -100,7 +100,15 @@ export function pairLayout(d: ScheduleData, p: PassPair) {
   return [parts, joinNames(names)].filter(Boolean).join(' · ')
 }
 
-export const longDate =(date: string) => {
+// While a pass runs: "Vatten till 19:00 · Maria och Elias" (the part going on now)
+export function pairNowLine(d: ScheduleData, p: PassPair, now = new Date().toTimeString().slice(0, 5)) {
+  const part = p.parts.filter(x => !x.start || x.start <= now).pop() ?? p.parts[0]
+  const where = [part?.place, p.end ? `till ${p.end}` : ''].filter(Boolean).join(' ')
+  const names = p.staffIds.map(id => d.staff.find(s => s.id === id)?.name).filter((n): n is string => !!n)
+  return [where, joinNames(names)].filter(Boolean).join(' · ')
+}
+
+export const longDate = (date: string) => {
   const d = parseISO(date)
   return `${DAY_LONG[weekdayIndex(date)]} ${d.getDate()} ${MONTHS_FULL[d.getMonth()].toLowerCase()}`
 }

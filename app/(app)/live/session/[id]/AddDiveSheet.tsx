@@ -124,7 +124,7 @@ export default function AddDiveSheet({ athleteId, athleteName, sessionId, onClos
         disabled={!diveCode.trim() || saving}
         style={{
           width: '100%', padding: '14px',
-          background: diveCode.trim() ? 'linear-gradient(135deg, #6366F1, #4f46e5)' : 'rgba(0,0,0,0.08)',
+          background: diveCode.trim() ? '#2B5C9E' : 'rgba(0,0,0,0.08)',
           color: diveCode.trim() ? 'white' : '#56637A',
           border: 'none', borderRadius: 16,
           fontSize: 15, fontWeight: 700, cursor: diveCode.trim() ? 'pointer' : 'default',

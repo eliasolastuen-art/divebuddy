@@ -1,9 +1,7 @@
 'use client'
 import { useEffect, useRef, useState } from 'react'
-import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/context/user'
-import { Users } from 'lucide-react'
 
 interface Athlete {
   id: string
@@ -18,15 +16,12 @@ interface LogState {
 interface Props {
   trainingId: string
   groupId: string | null
-  onFinish: () => void
 }
 
-export default function AthleteLogging({ trainingId, groupId, onFinish }: Props) {
-  const router = useRouter()
+export default function AthleteLogging({ trainingId, groupId }: Props) {
   const { profile } = useUser()
   const [athletes, setAthletes] = useState<Athlete[]>([])
   const [logs, setLogs]         = useState<Record<string, LogState>>({})
-  const [finishing, setFinishing] = useState(false)
   const [saving, setSaving]     = useState<Record<string, boolean>>({})
 
   const logsRef      = useRef<Record<string, LogState>>({})
@@ -98,41 +93,13 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
     }, 800)
   }
 
-  // ── Finish session ─────────────────────────────────────────────────────────
-
-  const handleFinish = async () => {
-    setFinishing(true)
-    const supabase = createClient()
-    await supabase
-      .from('trainings')
-      .update({
-        is_active: false,
-        ended_at: new Date().toISOString(),
-        status: 'completed',
-      })
-      .eq('id', trainingId)
-    onFinish()
-    router.push('/live')
-  }
-
   if (athletes.length === 0) return null
 
   return (
-    <div style={{ padding: '0 16px', marginTop: 8 }}>
-
-      {/* Section header */}
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 8,
-        marginBottom: 12,
-      }}>
-        <Users size={14} color="#56637A" strokeWidth={2} />
-        <span style={{ fontSize: 11, fontWeight: 800, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.07em' }}>
-          Utövare
-        </span>
-      </div>
+    <div>
 
       {/* Athlete rows */}
-      <div className="glass-card" style={{ padding: 0, overflow: 'hidden', marginBottom: 16 }}>
+      <div style={{ borderRadius: 18, background: '#fff', border: '1px solid #E1E8F0', overflow: 'hidden' }}>
         {athletes.map((athlete, i) => {
           const log = logs[athlete.id] ?? { score: '', notes: '' }
           const isSaving = saving[athlete.id]
@@ -199,23 +166,6 @@ export default function AthleteLogging({ trainingId, groupId, onFinish }: Props)
           )
         })}
       </div>
-
-      {/* Finish button */}
-      <button
-        onClick={handleFinish}
-        disabled={finishing}
-        style={{
-          width: '100%', padding: '14px',
-          background: finishing ? '#56637A' : 'linear-gradient(135deg, #16A34A, #15803d)',
-          color: 'white', border: 'none', borderRadius: 14,
-          fontSize: 15, fontWeight: 800, cursor: finishing ? 'default' : 'pointer',
-          boxShadow: finishing ? 'none' : 'none',
-          marginBottom: 20,
-          letterSpacing: '-0.01em',
-        }}
-      >
-        {finishing ? 'Avslutar…' : '✓ Avsluta pass'}
-      </button>
     </div>
   )
 }

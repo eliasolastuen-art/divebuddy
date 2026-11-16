@@ -1,188 +1,169 @@
 'use client'
-import { useEffect, useRef, useState } from 'react'
+
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
-import { ArrowLeft, Timer, Star } from 'lucide-react'
+import { useUser } from '@/lib/context/user'
+import { useSchedule } from '@/lib/schedule/store'
+import { useLibrary } from '@/components/library/useLibrary'
+import { isDive } from '@/lib/library/queries'
+import { pairGroups, pairNowLine, pairPasses } from '@/lib/schedule/pairing'
+import { loadChecks, setCheck } from '@/lib/live/checks'
+import { minutesSince } from '@/lib/live/queries'
+import BottomSheet from '@/components/planning/BottomSheet'
+import ScoreSheet from '@/components/live/ScoreSheet'
+import { C } from '@/components/schedule/ui'
+import Portal from '@/components/Portal'
 import AthleteLogging from './AthleteLogging'
 import AthleteBlockLive from './AthleteBlockLive'
 import AddDiveSheet from './AddDiveSheet'
-import { useUser } from '@/lib/context/user'
-import { loadChecks, setCheck } from '@/lib/live/checks'
-import Portal from '@/components/Portal'
 
-// ─── Types ────────────────────────────────────────────────────────────────────
+// Design LivePasset.dc.html: the pass while it runs. Blocks as in the builder,
+// a checkbox per exercise (saved), "Sätt poäng" for dives, "Starta tid" for
+// time exercises, and the progress with "Avsluta pass" at the bottom.
 
 interface SessionItem {
   id: string
   name: string
   reps?: number
   sets?: number
+  height?: string
   duration_seconds?: number
   assigned_athlete_id?: string | null
+  dive: boolean
 }
 
 interface SessionBlock {
   id: string
   name: string
-  category: string
-  sort_order: number
   block_type: string
   items: SessionItem[]
 }
 
-interface AthleteRow {
+interface SessionInfo {
   id: string
-  name: string
+  status: string
+  startedAt: string
+  trainingId: string | null
+  groupId: string | null
+  groupName: string | null
+  scheduleSessionId: string | null
+  title: string | null
 }
 
-interface SavedScore {
-  athleteId: string
-  score: number
-}
+type Scores = Record<string, Record<string, number>> // item id → athlete id → score
 
-// ─── Helpers ─────────────────────────────────────────────────────────────────
-
-const BLOCK_COLORS: Record<string, string> = {
-  vatten:      '#2B5C9E',
-  land:        '#D4A017',
-  styrka:      '#DC2626',
-  rorlighet:   '#16A34A',
-  uppvarmning: '#F97316',
-  tavling:     '#6366F1',
-}
-
-function formatTime(secs: number): string {
-  const m = Math.floor(secs / 60)
-  const s = secs % 60
-  return `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`
-}
-
-// ─── Component ────────────────────────────────────────────────────────────────
+const mmss = (s: number) => `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`
 
 export default function LiveSessionPage() {
-  const { id: sessionId } = useParams()
-  const sid = Array.isArray(sessionId) ? sessionId[0] : sessionId as string
+  const { id } = useParams()
+  const sid = Array.isArray(id) ? id[0] : (id as string)
   const router = useRouter()
+  const db = useMemo(() => createClient(), [])
   const { profile } = useUser()
+  const { data, reload } = useSchedule()
+  const { groups: libGroups } = useLibrary()
 
-  const [sessionInfo, setSessionInfo] = useState<{ id: string; training_id: string | null; groupName: string | null; group_id: string | null } | null>(null)
-  const [blocks, setBlocks] = useState<SessionBlock[]>([])
-  const [loading, setLoading] = useState(true)
-  const [noTraining, setNoTraining] = useState(false)
-  const [ending, setEnding] = useState(false)
-
+  const [info, setInfo] = useState<SessionInfo | null>(null)
+  const [rawBlocks, setRawBlocks] = useState<RawBlock[]>([])
+  const [athletes, setAthletes] = useState<{ id: string; name: string }[]>([])
+  const [scores, setScores] = useState<Scores>({})
   const [checked, setChecked] = useState<Set<string>>(new Set())
-  const [activeTimer, setActiveTimer] = useState<{ itemId: string; remaining: number } | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [ending, setEnding] = useState(false)
+  const [error, setError] = useState<string | null>(null)
+
+  const [scoring, setScoring] = useState<SessionItem | null>(null)
+  const [pickAthlete, setPickAthlete] = useState(false)
+  const [addDiveFor, setAddDiveFor] = useState<{ id: string; name: string } | null>(null)
+  const [note, setNote] = useState<string | null>(null)
+  const [showLogging, setShowLogging] = useState(false)
+  const [timer, setTimer] = useState<{ itemId: string; remaining: number } | null>(null)
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null)
-
-  const [addDiveTarget, setAddDiveTarget] = useState<{ athleteId: string; athleteName: string } | null>(null)
-  const [refreshKey, setRefreshKey] = useState(0)
-
-  // ── Scoring state ────────────────────────────────────────────────────────────
-  const [athletes, setAthletes] = useState<AthleteRow[]>([])
-  const [scoringItem, setScoringItem] = useState<SessionItem | null>(null)
-  const [selectedAthletes, setSelectedAthletes] = useState<Set<string>>(new Set())
-  const [scoreInputs, setScoreInputs] = useState<Record<string, string>>({})
-  const [savedScores, setSavedScores] = useState<Record<string, SavedScore[]>>({})
-  const [savingScore, setSavingScore] = useState(false)
-
-  // ── Data loading ────────────────────────────────────────────────────────────
+  const [, tick] = useState(0)
 
   useEffect(() => {
+    const t = setInterval(() => tick(n => n + 1), 60000)
+    return () => clearInterval(t)
+  }, [])
+
+  const pair = useMemo(() => info?.scheduleSessionId
+    ? pairPasses(data.passes).find(p => p.parts.some(x => x.id === info.scheduleSessionId)) ?? null
+    : null, [data.passes, info?.scheduleSessionId])
+  const groupIds = useMemo(() => (pair?.groupIds.length ? pair.groupIds : info?.groupId ? [info.groupId] : []), [pair, info?.groupId])
+
+  // ── Load the session, its pass, scores and checks ─────────────────────────
+  useEffect(() => {
     const load = async () => {
-      const supabase = createClient()
+      const { data: s } = await db.from('live_sessions')
+        .select('id, status, started_at, training_id, group_id, schedule_session_id, groups(name), trainings(title)')
+        .eq('id', sid).maybeSingle()
+      if (!s) { setLoading(false); return }
+      const row = s as unknown as { id: string; status: string; started_at: string; training_id: string | null; group_id: string | null; schedule_session_id: string | null; groups: { name: string } | null; trainings: { title: string | null } | null }
+      setInfo({
+        id: row.id, status: row.status, startedAt: row.started_at, trainingId: row.training_id, groupId: row.group_id,
+        groupName: row.groups?.name ?? null, scheduleSessionId: row.schedule_session_id, title: row.trainings?.title ?? null,
+      })
+      if (!row.training_id) { setLoading(false); return }
 
-      const { data: session } = await supabase
-        .from('live_sessions')
-        .select('id, training_id, group_id, groups(name)')
-        .eq('id', sid)
-        .single()
-
-      if (!session) { setLoading(false); return }
-
-      const groupName = (session as any).groups?.name ?? null
-      const group_id = (session as any).group_id ?? null
-      setSessionInfo({ id: session.id, training_id: (session as any).training_id, groupName, group_id })
-
-      // Load athletes filtered by group
-      let athQuery = supabase
-        .from('athletes')
-        .select('id, name')
-        .eq('club_id', profile?.club_id ?? '')
-        .order('name')
-      if (group_id) athQuery = athQuery.eq('group_id', group_id)
-      const { data: ath } = await athQuery
-      if (ath) setAthletes(ath)
-
-      if (!(session as any).training_id) {
-        setNoTraining(true)
-        setLoading(false)
-        return
-      }
-
-      const [blockResult, scoresResult, savedChecks] = await Promise.all([
-        supabase
-          .from('training_blocks')
-          .select(`
-            id, name, category, sort_order, block_type,
-            training_block_items(
-              id, custom_name, reps, sets, duration_seconds, sort_order, assigned_athlete_id,
-              library_item:library_items(name)
-            )
-          `)
-          .eq('training_id', (session as any).training_id)
-          .order('sort_order'),
-        supabase
-          .from('exercise_scores')
-          .select('training_block_item_id, athlete_id, score')
-          .eq('session_id', sid),
-        loadChecks(supabase, sid).catch(() => new Set<string>()),
+      const [blocks, sc, ch] = await Promise.all([
+        db.from('training_blocks')
+          .select('id, name, sort_order, block_type, training_block_items(id, custom_name, reps, sets, height, duration_seconds, sort_order, assigned_athlete_id, library_item:library_items(name, type, category_id))')
+          .eq('training_id', row.training_id).order('sort_order'),
+        db.from('exercise_scores').select('training_block_item_id, athlete_id, score').eq('session_id', sid),
+        loadChecks(db, sid).catch(() => new Set<string>()),
       ])
-      setChecked(savedChecks)
-
-      if (blockResult.data) {
-        setBlocks(blockResult.data.map((b: any) => ({
-          id: b.id,
-          name: b.name,
-          category: b.category,
-          sort_order: b.sort_order,
-          block_type: b.block_type ?? 'standard',
-          items: (b.training_block_items || [])
-            .sort((a: any, b2: any) => a.sort_order - b2.sort_order)
-            .map((it: any) => ({
-              id: it.id,
-              name: it.library_item?.name || it.custom_name || '–',
-              reps: it.reps ?? undefined,
-              sets: it.sets ?? undefined,
-              duration_seconds: it.duration_seconds ?? undefined,
-              assigned_athlete_id: it.assigned_athlete_id ?? null,
-            })),
-        })))
+      setRawBlocks((blocks.data ?? []) as unknown as RawBlock[])
+      const map: Scores = {}
+      for (const r of (sc.data ?? []) as { training_block_item_id: string; athlete_id: string; score: number }[]) {
+        (map[r.training_block_item_id] ??= {})[r.athlete_id] = Number(r.score)
       }
-
-      // Build savedScores map: itemId → [{athleteId, score}]
-      if (scoresResult.data) {
-        const map: Record<string, SavedScore[]> = {}
-        scoresResult.data.forEach((s: any) => {
-          const key = s.training_block_item_id
-          if (!map[key]) map[key] = []
-          map[key].push({ athleteId: s.athlete_id, score: Number(s.score) })
-        })
-        setSavedScores(map)
-      }
-
+      setScores(map)
+      setChecked(ch)
       setLoading(false)
     }
     load()
-  }, [sid])
+  }, [db, sid])
 
-  // ── Timer ───────────────────────────────────────────────────────────────────
+  // Athletes in every group of the pass (TG + FG), not only the first
+  useEffect(() => {
+    if (!profile?.club_id || !groupIds.length) return
+    db.from('athletes').select('id, name').eq('club_id', profile.club_id).in('group_id', groupIds).order('name')
+      .then(({ data: a }) => setAthletes(a ?? []))
+  }, [db, profile?.club_id, groupIds])
 
-  const startTimer = (itemId: string, duration: number) => {
+  const blocks: SessionBlock[] = useMemo(() => rawBlocks.map(b => ({
+    id: b.id, name: b.name, block_type: b.block_type ?? 'standard',
+    items: [...b.training_block_items].sort((x, y) => (x.sort_order ?? 0) - (y.sort_order ?? 0)).map(it => ({
+      id: it.id,
+      name: it.custom_name || it.library_item?.name || 'Övning',
+      reps: it.reps ?? undefined, sets: it.sets ?? undefined, height: it.height ?? undefined,
+      duration_seconds: it.duration_seconds ?? undefined, assigned_athlete_id: it.assigned_athlete_id,
+      dive: it.library_item ? isDive({ type: it.library_item.type ?? '', groupId: it.library_item.category_id ?? null } as Parameters<typeof isDive>[0], libGroups) : false,
+    })),
+  })), [rawBlocks, libGroups])
+
+  // ── Checks (saved) and the timer ──────────────────────────────────────────
+  const writeCheck = (itemId: string, on: boolean) => {
+    const apply = (value: boolean) => setChecked(prev => {
+      const next = new Set(Array.from(prev))
+      if (value) next.add(itemId)
+      else next.delete(itemId)
+      return next
+    })
+    apply(on)
+    setCheck(db, sid, itemId, on).catch(() => apply(!on))
+  }
+
+  const stopTimer = () => {
     if (timerRef.current) clearInterval(timerRef.current)
-    setActiveTimer({ itemId, remaining: duration })
+    setTimer(null)
+  }
+  const startTimer = (itemId: string, seconds: number) => {
+    if (timerRef.current) clearInterval(timerRef.current)
+    setTimer({ itemId, remaining: seconds })
     timerRef.current = setInterval(() => {
-      setActiveTimer(prev => {
+      setTimer(prev => {
         if (!prev) return null
         if (prev.remaining <= 1) {
           clearInterval(timerRef.current!)
@@ -194,526 +175,238 @@ export default function LiveSessionPage() {
       })
     }, 1000)
   }
-
-  const stopTimer = () => {
-    if (timerRef.current) clearInterval(timerRef.current)
-    setActiveTimer(null)
-  }
-
   useEffect(() => () => { if (timerRef.current) clearInterval(timerRef.current) }, [])
 
-  // ── End session ─────────────────────────────────────────────────────────────
+  const toggle = (itemId: string) => {
+    writeCheck(itemId, !checked.has(itemId))
+    if (timer?.itemId === itemId) stopTimer()
+  }
 
-  const handleEnd = async () => {
+  // ── Scores ────────────────────────────────────────────────────────────────
+  const athletesFor = (it: SessionItem) => (it.assigned_athlete_id ? athletes.filter(a => a.id === it.assigned_athlete_id) : athletes)
+  const saveScores = async (item: SessionItem, values: Record<string, number>) => {
+    const rows = Object.entries(values).map(([athlete_id, score]) => ({ session_id: sid, training_block_item_id: item.id, athlete_id, score }))
+    if (!rows.length) return
+    const { error: e } = await db.from('exercise_scores').upsert(rows, { onConflict: 'session_id,training_block_item_id,athlete_id' })
+    if (e) throw new Error(e.message)
+    setScores(prev => ({ ...prev, [item.id]: { ...prev[item.id], ...values } }))
+  }
+
+  // ── End ───────────────────────────────────────────────────────────────────
+  const end = async () => {
     setEnding(true)
+    setError(null)
     stopTimer()
-    const supabase = createClient()
     const now = new Date().toISOString()
-    await Promise.all([
-      supabase.from('live_sessions').update({ status: 'ended', ended_at: now }).eq('id', sid),
-      sessionInfo?.training_id
-        ? supabase.from('trainings').update({ is_active: false, ended_at: now, status: 'completed' }).eq('id', sessionInfo.training_id)
-        : Promise.resolve(),
+    const [a, b] = await Promise.all([
+      db.from('live_sessions').update({ status: 'ended', ended_at: now }).eq('id', sid),
+      info?.trainingId
+        ? db.from('trainings').update({ is_active: false, ended_at: now, status: 'completed' }).eq('id', info.trainingId)
+        : Promise.resolve({ error: null }),
     ])
+    const e = a.error ?? b.error
+    if (e) { setError(e.message); setEnding(false); return }
+    reload()
     router.push('/live')
   }
 
-  // ── Toggle check ────────────────────────────────────────────────────────────
+  // ── Render ────────────────────────────────────────────────────────────────
+  const checkable = blocks.filter(b => b.block_type !== 'athlete').flatMap(b => b.items)
+  const doneCount = checkable.filter(it => checked.has(it.id)).length
+  const allDone = checkable.length > 0 && doneCount === checkable.length
+  const running = info?.status === 'active'
+  const group = pair ? pairGroups(data, pair) : info?.groupName ?? 'Pass'
+  const line = pair ? pairNowLine(data, pair) : info?.groupName ?? ''
 
-  // Saved in live_session_checks; shown at once and rolled back if the write fails
-  const writeCheck = (itemId: string, on: boolean) => {
-    const apply = (value: boolean) => setChecked(prev => {
-      const next = new Set(Array.from(prev))
-      if (value) next.add(itemId)
-      else next.delete(itemId)
-      return next
-    })
-    apply(on)
-    setCheck(createClient(), sid, itemId, on).catch(() => apply(!on))
+  const subText = (it: SessionItem) => {
+    const time = it.duration_seconds != null && it.reps == null
+    const amount = time ? `${Math.round((it.duration_seconds ?? 0) / 60)} min` : it.reps ? `${it.reps} ${it.dive ? 'hopp' : 'st'}` : ''
+    return [it.sets ? `${it.sets} set` : '', amount, it.height ? `${it.height} m` : ''].filter(Boolean).join(' · ')
   }
-
-  const toggleCheck = (itemId: string) => {
-    writeCheck(itemId, !checked.has(itemId))
-    if (activeTimer?.itemId === itemId) stopTimer()
-  }
-
-  // ── Scoring ─────────────────────────────────────────────────────────────────
-
-  const openScoreSheet = (item: SessionItem) => {
-    const existing = savedScores[item.id] ?? []
-    const preSelected = item.assigned_athlete_id
-      ? new Set([item.assigned_athlete_id])
-      : new Set(existing.map(s => s.athleteId))
-    const preInputs: Record<string, string> = {}
-    existing.forEach(s => { preInputs[s.athleteId] = String(s.score) })
-    setScoringItem(item)
-    setSelectedAthletes(preSelected)
-    setScoreInputs(preInputs)
-  }
-
-  const toggleAthlete = (athleteId: string) => {
-    setSelectedAthletes(prev => {
-      const next = new Set(prev)
-      if (next.has(athleteId)) next.delete(athleteId)
-      else next.add(athleteId)
-      return next
-    })
-  }
-
-  const saveScores = async () => {
-    if (!scoringItem) return
-    setSavingScore(true)
-    const supabase = createClient()
-    const rows = Array.from(selectedAthletes)
-      .filter(aid => scoreInputs[aid]?.trim() !== '')
-      .map(aid => ({
-        session_id: sid,
-        training_block_item_id: scoringItem.id,
-        athlete_id: aid,
-        score: parseFloat(scoreInputs[aid]),
-      }))
-    if (rows.length > 0) {
-      await supabase.from('exercise_scores').upsert(rows, {
-        onConflict: 'session_id,training_block_item_id,athlete_id',
-      })
-    }
-    setSavedScores(prev => ({
-      ...prev,
-      [scoringItem.id]: rows.map(r => ({ athleteId: r.athlete_id, score: r.score })),
-    }))
-    setSavingScore(false)
-    setScoringItem(null)
-  }
-
-  // ── Render ──────────────────────────────────────────────────────────────────
-
-  const totalItems = blocks.reduce((s, b) => s + b.items.length, 0)
-  const checkedCount = checked.size
 
   return (
-    <div style={{ maxWidth: 520, margin: '0 auto', paddingBottom: 'calc(80px + env(safe-area-inset-bottom, 0px) + 24px)' }}>
-
-      {/* Header */}
-      <div className="glass-nav" style={{
-        position: 'sticky', top: 0, zIndex: 10,
-        display: 'flex', alignItems: 'center', gap: 12,
-        padding: '0 16px', height: 56,
-        borderRadius: 0, borderTop: 'none', borderLeft: 'none', borderRight: 'none',
-        borderBottom: '1px solid #E1E8F0',
-      }}>
-        <button
-          onClick={() => router.push('/live')}
-          style={{
-            width: 36, height: 36, borderRadius: 11,
-            background: 'rgba(0,0,0,0.05)',
-            border: '1px solid #E1E8F0',
-            cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0,
-          }}
-        >
-          <ArrowLeft size={16} color="#1E2B42" strokeWidth={2.5} />
+    <div style={{ maxWidth: 560, margin: '0 auto', color: C.text, minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
+      <header style={{ height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.line}` }}>
+        <button type="button" onClick={() => router.push('/live')} aria-label="Tillbaka till Live" style={iconButton}>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
         </button>
-
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 15, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.02em' }}>
-            {sessionInfo?.groupName ?? 'Session'}
-          </div>
-          {!loading && totalItems > 0 && (
-            <div style={{ fontSize: 11, color: '#56637A', fontWeight: 600 }}>
-              {checkedCount}/{totalItems} klart
+          <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>{group}</div>
+          {info && (
+            <div style={{ fontSize: 13, fontWeight: 700, color: running ? C.primary : C.muted }}>
+              {running ? `Pågår · ${minutesSince(info.startedAt)} min` : 'Avslutat'}
             </div>
           )}
         </div>
+      </header>
 
-        <button
-          onClick={handleEnd}
-          disabled={ending}
-          style={{
-            padding: '7px 14px', borderRadius: 10,
-            background: 'rgba(220,38,38,0.1)',
-            border: '1px solid rgba(220,38,38,0.2)',
-            fontSize: 13, fontWeight: 700, color: '#DC2626',
-            cursor: ending ? 'default' : 'pointer',
-            opacity: ending ? 0.6 : 1,
-          }}
-        >
-          {ending ? 'Avslutar…' : 'Avsluta'}
-        </button>
-      </div>
-
-      {/* Progress bar */}
-      {totalItems > 0 && (
-        <div style={{ height: 3, background: 'rgba(43,92,158,0.08)' }}>
-          <div style={{
-            height: '100%',
-            width: `${(checkedCount / totalItems) * 100}%`,
-            background: 'var(--gradient-hero)',
-            transition: 'width 0.3s ease',
-          }} />
-        </div>
-      )}
-
-      {/* Body */}
-      <div style={{ padding: '16px 16px 0' }}>
+      <div style={{ flex: 1, padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {loading ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px', color: '#56637A' }}>Laddar…</div>
-        ) : noTraining ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Fritt pass</div>
-            <div style={{ fontSize: 13, color: '#56637A' }}>Inget innehåll är planerat för det här passet.</div>
-          </div>
-        ) : blocks.length === 0 ? (
-          <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inga övningar</div>
-            <div style={{ fontSize: 13, color: '#56637A' }}>Passet har inga block eller övningar ännu.</div>
-          </div>
+          <p style={{ margin: 0, fontSize: 15, color: C.muted, fontWeight: 500 }}>Hämtar passet …</p>
+        ) : !info ? (
+          <p style={{ margin: 0, fontSize: 15, color: C.muted, fontWeight: 500 }}>Passet finns inte.</p>
         ) : (
-          blocks.map(block => {
-            if (block.block_type === 'athlete') {
+          <>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 900, letterSpacing: '-0.03em', lineHeight: 1.15 }}>{info.title ?? 'Fritt pass'}</h1>
+              {line && <div style={{ fontSize: 14, fontWeight: 500, color: C.muted, marginTop: 2 }}>{line}</div>}
+            </div>
+
+            {!info.trainingId && <Card><p style={emptyText}>Inget innehåll är planerat för det här passet.</p></Card>}
+            {info.trainingId && blocks.length === 0 && <Card><p style={emptyText}>Passet har inga övningar ännu.</p></Card>}
+
+            {blocks.map(b => {
+              if (b.block_type === 'athlete') {
+                return (
+                  <section key={b.id} style={sectionStyle}>
+                    <h2 style={blockTitle}>{b.name}</h2>
+                    <Card padding={8}>
+                      <AthleteBlockLive block={b} athletes={athletes}
+                        savedScores={Object.fromEntries(Object.entries(scores).map(([k, v]) => [k, Object.entries(v).map(([athleteId, score]) => ({ athleteId, score }))]))}
+                        onScore={it => setScoring(b.items.find(x => x.id === it.id) ?? { ...it, dive: true })} />
+                    </Card>
+                  </section>
+                )
+              }
+              const done = b.items.filter(it => checked.has(it.id)).length
               return (
-                <div key={block.id} style={{ marginBottom: 16 }}>
-                  <div style={{
-                    fontSize: 11, fontWeight: 800, color: '#2B5C9E',
-                    textTransform: 'uppercase', letterSpacing: '0.08em',
-                    marginBottom: 8, paddingLeft: 2,
-                  }}>
-                    {block.name}
+                <section key={b.id} style={sectionStyle}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+                    <h2 style={{ ...blockTitle, flex: 1 }}>{b.name}</h2>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.muted }}>{done} av {b.items.length}</span>
                   </div>
-                  <AthleteBlockLive
-                    block={block}
-                    athletes={athletes}
-                    savedScores={savedScores}
-                    onScore={openScoreSheet}
-                  />
-                </div>
-              )
-            }
-
-            const color = BLOCK_COLORS[block.category] ?? '#56637A'
-            return (
-              <div key={block.id} style={{ marginBottom: 16 }}>
-                <div style={{
-                  fontSize: 11, fontWeight: 800, color,
-                  textTransform: 'uppercase', letterSpacing: '0.08em',
-                  marginBottom: 8, paddingLeft: 2,
-                }}>
-                  {block.name}
-                </div>
-
-                <div className="glass-card" style={{ padding: 0, overflow: 'hidden' }}>
-                  {block.items.map((item, ii) => {
-                    const isChecked = checked.has(item.id)
-                    const isTimerActive = activeTimer?.itemId === item.id
-                    const dur = item.duration_seconds
-                    const durLabel = dur
-                      ? `${Math.floor(dur / 60)}:${String(dur % 60).padStart(2, '0')}`
-                      : null
-                    const setsPrefix = item.sets && item.sets > 1 ? `${item.sets} × ` : ''
-                    const itemScores = savedScores[item.id] ?? []
-                    const hasScores = itemScores.length > 0
-
-                    return (
-                      <div
-                        key={item.id}
-                        style={{
-                          display: 'flex', alignItems: 'center', gap: 12,
-                          padding: '14px 16px',
-                          borderBottom: ii < block.items.length - 1 ? '1px solid #E1E8F0' : 'none',
-                          background: isChecked ? 'rgba(43,92,158,0.04)' : 'transparent',
-                          transition: 'background 0.2s ease',
-                        }}
-                      >
-                        {/* Checkbox */}
-                        <button
-                          onClick={() => toggleCheck(item.id)}
-                          style={{
-                            width: 26, height: 26, borderRadius: 8, flexShrink: 0,
-                            border: isChecked ? 'none' : '2px solid rgba(0,0,0,0.15)',
-                            background: isChecked ? '#2B5C9E' : 'transparent',
-                            cursor: 'pointer',
-                            display: 'flex', alignItems: 'center', justifyContent: 'center',
-                            transition: 'all 0.15s ease',
-                          }}
-                        >
-                          {isChecked && (
-                            <svg width="12" height="9" viewBox="0 0 12 9" fill="none">
-                              <path d="M1 4L4.5 7.5L11 1" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-                            </svg>
-                          )}
-                        </button>
-
-                        {/* Name + active timer display */}
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{
-                            fontSize: 14, fontWeight: 600,
-                            color: isChecked ? '#56637A' : '#1E2B42',
-                            textDecoration: isChecked ? 'line-through' : 'none',
-                            transition: 'all 0.2s ease',
-                          }}>
-                            {setsPrefix}{item.name}
+                  <div style={{ borderRadius: 18, background: '#fff', border: `1px solid ${C.line}`, padding: '0 12px 0 10px' }}>
+                    {b.items.map((it, i) => {
+                      const on = checked.has(it.id)
+                      const time = it.duration_seconds != null && it.reps == null
+                      const scored = Object.keys(scores[it.id] ?? {}).length
+                      const timing = timer?.itemId === it.id
+                      return (
+                        <div key={it.id} style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '8px 0', minHeight: 60, boxSizing: 'border-box', borderBottom: i < b.items.length - 1 ? `1px solid ${C.line}` : 'none' }}>
+                          <button type="button" onClick={() => toggle(it.id)} aria-pressed={on} aria-label={`${on ? 'Klar' : 'Markera klar'}: ${it.name}`} style={{
+                            width: 44, height: 44, flex: 'none', borderRadius: 12, fontSize: 20, fontWeight: 800, padding: 0, display: 'flex',
+                            alignItems: 'center', justifyContent: 'center', fontFamily: 'inherit', color: '#fff', cursor: 'pointer',
+                            background: on ? C.primary : '#fff', border: `2px solid ${on ? C.primary : '#B9C6D8'}`,
+                          }}>✓</button>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ fontSize: 15, fontWeight: 700, color: on ? C.muted : C.text }}>{it.name}</div>
+                            <div style={{ fontSize: 13, fontWeight: 500, color: C.muted, marginTop: 1 }}>{subText(it)}</div>
                           </div>
-                          {isTimerActive && (
-                            <div style={{
-                              fontSize: 22, fontWeight: 800, color: '#2B5C9E',
-                              letterSpacing: '-0.03em', lineHeight: 1.2, marginTop: 2,
-                            }}>
-                              {formatTime(activeTimer!.remaining)}
-                            </div>
-                          )}
-                        </div>
-
-                        {/* Right: chips + timer + score buttons */}
-                        <div style={{ display: 'flex', gap: 6, alignItems: 'center', flexShrink: 0 }}>
-                          {item.reps && !isTimerActive && (
-                            <span style={{
-                              fontSize: 12, fontWeight: 700,
-                              background: 'rgba(86,99,122,0.08)', color: '#56637A',
-                              padding: '3px 8px', borderRadius: 9999,
-                            }}>
-                              🔁 {item.reps}
-                            </span>
-                          )}
-                          {dur && !isChecked && (
-                            isTimerActive ? (
-                              <button
-                                onClick={stopTimer}
-                                style={{
-                                  fontSize: 12, fontWeight: 700,
-                                  background: 'rgba(220,38,38,0.1)',
-                                  border: '1px solid rgba(220,38,38,0.2)',
-                                  color: '#DC2626',
-                                  padding: '5px 10px', borderRadius: 9999,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                Stopp
-                              </button>
-                            ) : (
-                              <button
-                                onClick={() => startTimer(item.id, dur)}
-                                style={{
-                                  display: 'flex', alignItems: 'center', gap: 4,
-                                  fontSize: 12, fontWeight: 700,
-                                  background: 'rgba(43,92,158,0.08)',
-                                  border: '1px solid rgba(43,92,158,0.15)',
-                                  color: '#2B5C9E',
-                                  padding: '5px 10px', borderRadius: 9999,
-                                  cursor: 'pointer',
-                                }}
-                              >
-                                <Timer size={12} strokeWidth={2.5} />
-                                {durLabel}
-                              </button>
-                            )
-                          )}
-
-                          {/* Score button */}
-                          {athletes.length > 0 && (
-                            <button
-                              onClick={() => openScoreSheet(item)}
-                              style={{
-                                display: 'flex', alignItems: 'center', gap: 4,
-                                fontSize: 12, fontWeight: 700,
-                                background: hasScores ? 'rgba(43,92,158,0.12)' : 'rgba(86,99,122,0.08)',
-                                border: `1px solid ${hasScores ? 'rgba(43,92,158,0.25)' : 'rgba(86,99,122,0.15)'}`,
-                                color: hasScores ? '#2B5C9E' : '#56637A',
-                                padding: '5px 10px', borderRadius: 9999,
-                                cursor: 'pointer',
-                                transition: 'all 0.15s',
-                              }}
-                            >
-                              <Star size={11} strokeWidth={hasScores ? 2.5 : 2} fill={hasScores ? '#2B5C9E' : 'none'} />
-                              {hasScores ? itemScores.length : 'Score'}
+                          {time ? (
+                            <button type="button" onClick={() => (timing ? stopTimer() : startTimer(it.id, it.duration_seconds ?? 0))} style={action(false)}>
+                              {timing ? `Stoppa ${mmss(timer!.remaining)}` : 'Starta tid'}
                             </button>
-                          )}
+                          ) : it.dive && athletesFor(it).length > 0 ? (
+                            <button type="button" onClick={() => setScoring(it)} style={action(scored > 0)}>
+                              {scored > 0 ? `Poäng ${scored} av ${athletesFor(it).length}` : 'Sätt poäng'}
+                            </button>
+                          ) : null}
                         </div>
-                      </div>
-                    )
-                  })}
-                </div>
-              </div>
-            )
-          })
+                      )
+                    })}
+                  </div>
+                </section>
+              )
+            })}
+
+            {athletes.length > 0 && (
+              <button type="button" onClick={() => setPickAthlete(true)} style={{ minHeight: 50, borderRadius: 14, border: `1.5px solid ${C.primary}`, background: '#fff', color: C.primary, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+                + Lägg till hopp för en atlet
+              </button>
+            )}
+            {note && <p role="status" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{note}</p>}
+
+            {info.trainingId && athletes.length > 0 && (
+              <section style={sectionStyle}>
+                <button type="button" onClick={() => setShowLogging(s => !s)} aria-expanded={showLogging} style={{
+                  display: 'flex', alignItems: 'center', minHeight: 48, padding: '0 16px', borderRadius: 18, border: `1px solid ${C.line}`,
+                  background: '#fff', fontFamily: 'inherit', fontSize: 15, fontWeight: 700, color: C.text, cursor: 'pointer', textAlign: 'left',
+                }}>
+                  <span style={{ flex: 1 }}>Anteckningar per atlet</span>
+                  <span aria-hidden style={{ fontSize: 20, color: '#8A96A8', transform: showLogging ? 'rotate(90deg)' : 'none' }}>›</span>
+                </button>
+                {showLogging && <AthleteLogging trainingId={info.trainingId} groupId={info.groupId} />}
+              </section>
+            )}
+            {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
+          </>
         )}
       </div>
 
-      {/* Athlete logging section */}
-      {!loading && sessionInfo?.training_id && (
-        <AthleteLogging
-          trainingId={sessionInfo.training_id}
-          groupId={sessionInfo.group_id}
-          onFinish={handleEnd}
-        />
-      )}
-
-      {/* All done state */}
-      {!loading && !noTraining && totalItems > 0 && checkedCount === totalItems && (
-        <div style={{ padding: '24px 16px', textAlign: 'center' }}>
-          <div style={{
-            display: 'inline-block',
-            background: 'rgba(22,163,74,0.08)',
-            borderRadius: 16, padding: '16px 28px',
-          }}>
-            <div style={{ fontSize: 32, marginBottom: 6 }}>✅</div>
-            <div style={{ fontSize: 15, fontWeight: 800, color: '#16A34A' }}>Alla övningar klara!</div>
-            <button
-              onClick={handleEnd}
-              style={{
-                marginTop: 12, padding: '10px 24px',
-                background: 'linear-gradient(135deg, #16A34A, #15803d)',
-                color: 'white', border: 'none', borderRadius: 12,
-                fontSize: 14, fontWeight: 700, cursor: 'pointer',
-                boxShadow: 'none',
-              }}
-            >
-              Avsluta pass
-            </button>
+      {info && running && (
+        <div style={{ position: 'sticky', bottom: 0, padding: '12px 16px', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>{doneCount} av {checkable.length} övningar klara</span>
+            <span style={{ height: 6, borderRadius: 3, background: C.primarySoft, display: 'block', overflow: 'hidden' }}>
+              <span style={{ display: 'block', height: '100%', borderRadius: 3, background: C.primary, width: `${checkable.length ? Math.round((doneCount / checkable.length) * 100) : 0}%` }} />
+            </span>
           </div>
+          <button type="button" onClick={end} disabled={ending} style={{
+            display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, padding: '0 22px', borderRadius: 14,
+            fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', border: `1.5px solid ${C.primary}`,
+            background: allDone ? C.primary : '#fff', color: allDone ? '#fff' : C.primary, opacity: ending ? 0.7 : 1,
+          }}>{ending ? 'Avslutar …' : 'Avsluta pass'}</button>
         </div>
       )}
 
-      {/* ── Add dive sheet ───────────────────────────────────────────────────── */}
-      {addDiveTarget && (
-        <Portal>
-          <div
-            onClick={() => setAddDiveTarget(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 300 }}
-          />
-          <AddDiveSheet
-            athleteId={addDiveTarget.athleteId}
-            athleteName={addDiveTarget.athleteName}
-            sessionId={sid}
-            onClose={() => {
-              setAddDiveTarget(null)
-              setRefreshKey(k => k + 1)
-            }}
-          />
-        </Portal>
+      {scoring && (
+        <ScoreSheet title={scoring.name}
+          sub={['Sätt poäng', scoring.height ? `${scoring.height} m` : '', scoring.reps ? `${scoring.reps} hopp` : ''].filter(Boolean).join(' · ')}
+          athletes={athletesFor(scoring)} initial={scores[scoring.id] ?? {}}
+          onSave={values => saveScores(scoring, values)} onClose={() => setScoring(null)} />
       )}
 
-      {/* ── Scoring bottom sheet ─────────────────────────────────────────────── */}
-      {scoringItem && (
-        <Portal>
-          {/* Backdrop */}
-          <div
-            onClick={() => setScoringItem(null)}
-            style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.4)', zIndex: 1000 }}
-          />
-
-          {/* Sheet */}
-          <div
-            className="glass-sheet"
-            style={{
-              position: 'fixed', bottom: 0, left: 0, right: 0, zIndex: 1001,
-              borderRadius: '24px 24px 0 0',
-              padding: '20px 20px calc(var(--safe-bottom) + 100px)',
-              maxWidth: 520, margin: '0 auto',
-              maxHeight: '85vh', overflowY: 'auto',
-            }}
-          >
-            {/* Handle */}
-            <div style={{ width: 36, height: 4, borderRadius: 2, background: '#E1E8F0', margin: '0 auto 20px' }} />
-
-            {/* Exercise title */}
-            <div style={{ marginBottom: 20 }}>
-              <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4 }}>
-                Scora övning
-              </div>
-              <div style={{ fontSize: 18, fontWeight: 800, color: '#1E2B42', letterSpacing: '-0.03em', lineHeight: 1.2 }}>
-                {scoringItem.name}
-              </div>
-            </div>
-
-            {/* Athlete chips — hidden for athlete-block items (athlete is pre-assigned) */}
-            {!scoringItem.assigned_athlete_id && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-                  Välj utövare
-                </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: 8 }}>
-                  {athletes.map(athlete => {
-                    const isSelected = selectedAthletes.has(athlete.id)
-                    return (
-                      <button
-                        key={athlete.id}
-                        onClick={() => toggleAthlete(athlete.id)}
-                        style={{
-                          padding: '8px 16px', borderRadius: 9999, border: 'none', cursor: 'pointer',
-                          fontSize: 14, fontWeight: 700,
-                          background: isSelected ? '#2B5C9E' : 'rgba(0,0,0,0.06)',
-                          color: isSelected ? 'white' : '#56637A',
-                          transition: 'all 0.15s',
-                        }}
-                      >
-                        {athlete.name}
-                      </button>
-                    )
-                  })}
-                </div>
-              </div>
-            )}
-            {scoringItem.assigned_athlete_id && (
-              <div style={{ fontSize: 15, fontWeight: 700, color: '#1E2B42', marginBottom: 20 }}>
-                {athletes.find(a => a.id === scoringItem.assigned_athlete_id)?.name}
-              </div>
-            )}
-
-            {/* Score inputs for selected athletes */}
-            {selectedAthletes.size > 0 && (
-              <div style={{ marginBottom: 20 }}>
-                <div style={{ fontSize: 11, fontWeight: 700, color: '#56637A', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 10 }}>
-                  Poäng (0 – 10)
-                </div>
-                <div style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {athletes
-                    .filter(a => selectedAthletes.has(a.id))
-                    .map(athlete => (
-                      <div key={athlete.id} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                        <div style={{ flex: 1, fontSize: 15, fontWeight: 600, color: '#1E2B42' }}>
-                          {athlete.name}
-                        </div>
-                        <input
-                          type="number"
-                          step="0.5"
-                          min="0"
-                          max="10"
-                          value={scoreInputs[athlete.id] ?? ''}
-                          onChange={e => setScoreInputs(prev => ({ ...prev, [athlete.id]: e.target.value }))}
-                          placeholder="—"
-                          style={{
-                            width: 90, padding: '10px 12px',
-                            border: '1.5px solid rgba(43,92,158,0.25)',
-                            borderRadius: 12, fontSize: 18, fontWeight: 700,
-                            textAlign: 'center',
-                            background: '#FFFFFF',
-                            color: '#1E2B42', outline: 'none',
-                          }}
-                        />
-                      </div>
-                    ))
-                  }
-                </div>
-              </div>
-            )}
-
-            {/* Save button */}
-            <button
-              onClick={saveScores}
-              disabled={savingScore || selectedAthletes.size === 0}
-              className="btn-primary"
-              style={{
-                width: '100%', padding: '14px', fontSize: 15, fontWeight: 800,
-                borderRadius: 16,
-                opacity: (savingScore || selectedAthletes.size === 0) ? 0.5 : 1,
-                cursor: (savingScore || selectedAthletes.size === 0) ? 'default' : 'pointer',
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8,
-              }}
-            >
-              <Star size={16} color="white" strokeWidth={2.5} />
-              {savingScore ? 'Sparar…' : 'Spara scores'}
-            </button>
+      {pickAthlete && (
+        <BottomSheet title="Lägg till hopp för" onClose={() => setPickAthlete(false)}>
+          <div style={{ borderRadius: 16, border: `1px solid ${C.line}`, padding: '0 16px' }}>
+            {athletes.map((a, i) => (
+              <button key={a.id} type="button" onClick={() => { setPickAthlete(false); setNote(null); setAddDiveFor(a) }} style={{
+                width: '100%', display: 'flex', alignItems: 'center', minHeight: 52, background: 'none', border: 'none', padding: 0,
+                boxShadow: i < athletes.length - 1 ? `inset 0 -1px 0 ${C.line}` : 'none', textAlign: 'left', fontFamily: 'inherit',
+                fontSize: 15, fontWeight: 700, color: C.text, cursor: 'pointer',
+              }}>
+                <span style={{ flex: 1 }}>{a.name}</span>
+                <span aria-hidden style={{ fontSize: 20, color: '#8A96A8' }}>›</span>
+              </button>
+            ))}
           </div>
-        </Portal>
+        </BottomSheet>
+      )}
+
+      {addDiveFor && (
+        <>
+          <Portal><div onClick={() => setAddDiveFor(null)} style={{ position: 'fixed', inset: 0, background: 'rgba(30,43,66,0.45)', zIndex: 300 }} /></Portal>
+          <AddDiveSheet athleteId={addDiveFor.id} athleteName={addDiveFor.name} sessionId={sid}
+            onClose={() => { setNote(`Hopp sparat för ${addDiveFor.name}.`); setAddDiveFor(null) }} />
+        </>
       )}
     </div>
   )
 }
+
+interface RawBlock {
+  id: string; name: string; sort_order: number | null; block_type: string | null
+  training_block_items: {
+    id: string; custom_name: string | null; reps: number | null; sets: number | null; height: string | null
+    duration_seconds: number | null; sort_order: number | null; assigned_athlete_id: string | null
+    library_item: { name: string; type: string | null; category_id: string | null } | null
+  }[]
+}
+
+function Card({ children, padding }: { children: React.ReactNode; padding?: number }) {
+  return <div style={{ borderRadius: 18, background: '#fff', border: `1px solid ${C.line}`, padding: padding ?? '0 16px' }}>{children}</div>
+}
+
+const sectionStyle: React.CSSProperties = { display: 'flex', flexDirection: 'column', gap: 8 }
+const blockTitle: React.CSSProperties = { margin: 0, fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }
+const emptyText: React.CSSProperties = { margin: 0, padding: '14px 0', fontSize: 15, color: C.muted, fontWeight: 500 }
+
+const iconButton: React.CSSProperties = {
+  width: 44, height: 44, flex: 'none', borderRadius: 12, border: `1px solid ${C.line}`, background: '#fff',
+  display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer',
+}
+
+const action = (muted: boolean): React.CSSProperties => ({
+  flex: 'none', minHeight: 44, display: 'flex', alignItems: 'center', border: 'none', background: 'none', padding: '0 2px',
+  fontSize: 14, fontWeight: muted ? 600 : 700, color: muted ? C.muted : C.primary, fontFamily: 'inherit', cursor: 'pointer',
+})

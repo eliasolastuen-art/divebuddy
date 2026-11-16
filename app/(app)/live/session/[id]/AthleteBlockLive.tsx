@@ -130,8 +130,8 @@ export default function AthleteBlockLive({ block, athletes, savedScores, onScore
                 {athleteItems.length > 0 && (
                   <span style={{
                     fontSize: 12, fontWeight: 600,
-                    color: allScored ? '#16A34A' : '#56637A',
-                    background: allScored ? 'rgba(22,163,74,0.1)' : 'rgba(0,0,0,0.05)',
+                    color: allScored ? '#2B5C9E' : '#56637A',
+                    background: allScored ? '#E3ECF7' : 'rgba(0,0,0,0.05)',
                     padding: '2px 8px', borderRadius: 9999,
                   }}>
                     {scoredCount}/{athleteItems.length}
