@@ -6,6 +6,7 @@ import { useSchedule } from '@/lib/schedule/store'
 import { useViewer } from '@/lib/schedule/viewer'
 import { addDays, DAY_LONG, mondayOf, shortDate, todayISO, weekNumber, weekRangeLabel, weekdayIndex } from '@/lib/schedule/format'
 import { hasMe, pairGroups, pairPasses, type PassPair } from '@/lib/schedule/pairing'
+import { TRAINING_STATUS_LABEL } from '@/lib/schedule/types'
 import OldPassSheet from './schedule/PassSheet'
 import PassSheet from '@/components/schedule/PassSheet'
 import PlanStartSheet from '@/components/planning/PlanStartSheet'
@@ -15,7 +16,7 @@ import { C, Empty, ListCard } from '@/components/schedule/ui'
 type Scope = 'mina' | 'alla'
 
 // Design screen 3: one week of scheduled passes, "Mina pass" / "Alla pass".
-// A pass without content opens "Planera pass"; others open the pass sheet.
+// A pass with content opens /planning/[id]; without content "Planera pass".
 function PlanningContent() {
   const params = useSearchParams()
   const router = useRouter()
@@ -45,7 +46,12 @@ function PlanningContent() {
   const open = find(openId)
   const planning = find(planId)
 
-  const tap = (p: PassPair) => (p.trainingId || p.cancelled ? setOpenId(p.id) : setPlanId(p.id))
+  // With content → the pass page; cancelled → pass sheet as before; empty → "Planera pass"
+  const tap = (p: PassPair) => {
+    if (p.cancelled) setOpenId(p.id)
+    else if (p.trainingId) router.push(`/planning/${p.trainingId}`)
+    else setPlanId(p.id)
+  }
 
   return (
     <div style={{ maxWidth: 560, margin: '0 auto', padding: '16px 16px 24px', display: 'flex', flexDirection: 'column', gap: 20, color: C.text }}>
@@ -74,7 +80,7 @@ function PlanningContent() {
           <ListCard>
             {d.items.map((p, i) => (
               <button key={p.id} type="button" onClick={() => tap(p)} style={{
-                width: '100%', display: 'flex', alignItems: 'center', gap: 14, padding: '14px 0', minHeight: 48,
+                width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '14px 0', minHeight: 48,
                 background: 'none', border: 'none', borderBottom: i < d.items.length - 1 ? `1px solid ${C.line}` : 'none',
                 textAlign: 'left', fontFamily: 'inherit', color: C.text, cursor: 'pointer',
               }}>
@@ -85,6 +91,11 @@ function PlanningContent() {
                     {p.cancelled ? 'Inställt' : p.training?.title ?? 'Planera innehåll'}
                   </div>
                 </div>
+                {!p.cancelled && p.training && (
+                  <span style={{ fontSize: 13, ...(p.training.status === 'draft' ? { color: C.primary, fontWeight: 800 } : { color: C.muted, fontWeight: 600 }) }}>
+                    {TRAINING_STATUS_LABEL[p.training.status]}
+                  </span>
+                )}
                 <span aria-hidden style={{ fontSize: 20, color: '#8A96A8', lineHeight: 1 }}>›</span>
               </button>
             ))}

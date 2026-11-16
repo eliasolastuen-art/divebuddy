@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="sv">
+<head>
+<meta charset="utf-8">
+<title>Live – passet</title>
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<helmet>
+<style>
+body{margin:0}
+a{color:#2B5C9E}a:hover{color:#1F4577}
+</style>
+</helmet>
+<div style="width: 390px; height: 844px; display: flex; flex-direction: column; background: #EEF3F8; color: #1E2B42; font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', system-ui, sans-serif; overflow: hidden">
+  <header style="flex: none; height: 56px; padding: 0 16px; display: flex; align-items: center; gap: 12px; background: #EEF3F8; border-bottom: 1px solid #E1E8F0">
+    <a href="Live.dc.html" aria-label="Tillbaka till Live" style="width: 44px; height: 44px; flex: none; border-radius: 12px; border: 1px solid #E1E8F0; background: #fff; display: flex; align-items: center; justify-content: center"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1E2B42" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M15 6l-6 6 6 6"/></svg></a>
+    <div style="flex: 1; min-width: 0">
+      <div style="font-size: 16px; font-weight: 800; letter-spacing: -0.02em">TG + FG</div>
+      <div style="font-size: 13px; font-weight: 700; color: #2B5C9E">Pågår · 52 min</div>
+    </div>
+  </header>
+  <div style="flex: 1; min-height: 0; overflow-y: auto; padding: 16px 16px 20px; display: flex; flex-direction: column; gap: 20px">
+    <div>
+      <h1 style="margin: 0; font-size: 22px; font-weight: 900; letter-spacing: -0.03em; line-height: 1.15">Teknik: framåt + inåt 3 m</h1>
+      <div style="font-size: 14px; font-weight: 500; color: #56637A; margin-top: 2px">Vatten till 19:00 · Maria och Elias</div>
+    </div>
+    <sc-for list="{{ blocks }}" as="b" hint-placeholder-count="2">
+      <section style="display: flex; flex-direction: column; gap: 8px">
+        <div style="display: flex; align-items: baseline; gap: 10px">
+          <h2 style="flex: 1; margin: 0; font-size: 16px; font-weight: 800; letter-spacing: -0.02em">{{ b.name }}</h2>
+          <span style="font-size: 13px; font-weight: 600; color: #56637A">{{ b.count }}</span>
+        </div>
+        <div style="border-radius: 18px; background: #fff; border: 1px solid #E1E8F0; padding: 0 12px 0 10px">
+          <sc-for list="{{ b.items }}" as="it" hint-placeholder-count="3">
+            <div style="{{ it.rowStyle }}">
+              <button onClick="{{ it.toggle }}" aria-pressed="{{ it.pressed }}" aria-label="{{ it.aria }}" style="{{ it.checkStyle }}">✓</button>
+              <div style="flex: 1; min-width: 0">
+                <div style="{{ it.nameStyle }}">{{ it.name }}</div>
+                <div style="font-size: 13px; font-weight: 500; color: #56637A; margin-top: 1px">{{ it.sub }}</div>
+              </div>
+              <a href="{{ it.href }}" style="{{ it.actionStyle }}">{{ it.action }}</a>
+            </div>
+          </sc-for>
+        </div>
+      </section>
+    </sc-for>
+    <button style="min-height: 50px; border-radius: 14px; border: 1.5px solid #2B5C9E; background: #fff; color: #2B5C9E; font-size: 15px; font-weight: 700; font-family: inherit">+ Lägg till hopp för en atlet</button>
+  </div>
+  <div style="flex: none; padding: 12px 16px 22px; background: #fff; border-top: 1px solid #E1E8F0; display: flex; align-items: center; gap: 14px">
+    <div style="flex: 1; display: flex; flex-direction: column; gap: 6px">
+      <span style="font-size: 14px; font-weight: 700">{{ doneText }}</span>
+      <span style="height: 6px; border-radius: 3px; background: #E3ECF7; display: block; overflow: hidden"><span style="{{ barStyle }}"></span></span>
+    </div>
+    <a href="Live.dc.html" style="{{ endStyle }}">Avsluta pass</a>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props='{"$preview":{"width":390,"height":844}}'>
+class Component extends DCLogic {
+  state = { done: { a: 1, b: 1, c: 1 } };
+  renderVals() {
+    const { done } = this.state;
+    const I = (id, name, sub, kind, scored) => {
+      const on = !!done[id];
+      return { name, sub, pressed: on ? 'true' : 'false',
+        aria: (on ? 'Klar: ' : 'Markera klar: ') + name,
+        toggle: () => this.setState({ done: { ...done, [id]: on ? 0 : 1 } }),
+        rowStyle: 'display:flex;align-items:center;gap:12px;padding:8px 0;min-height:60px;box-sizing:border-box;border-bottom:1px solid #E1E8F0',
+        checkStyle: 'width:44px;height:44px;flex:none;border-radius:12px;font-size:20px;font-weight:800;padding:0;display:flex;align-items:center;justify-content:center;font-family:inherit;color:#fff;' + (on ? 'background:#2B5C9E;border:2px solid #2B5C9E' : 'background:#fff;border:2px solid #B9C6D8'),
+        nameStyle: 'font-size:15px;font-weight:700;color:' + (on ? '#56637A' : '#1E2B42'),
+        href: kind === 'score' ? 'Poang.dc.html' : '#',
+        action: kind === 'score' ? (scored ? 'Poäng ' + scored : 'Sätt poäng') : kind === 'time' ? 'Starta tid' : '',
+        actionStyle: 'flex:none;min-height:44px;display:' + (kind ? 'flex' : 'none') + ';align-items:center;font-size:14px;text-decoration:none;font-weight:' + (scored ? '600;color:#56637A' : '700;color:#2B5C9E') };
+    };
+    const raw = [
+      { name: 'Uppvärmning', ids: ['a', 'b'], items: [ I('a', 'Rörlighet axlar', '5 min', 'time'), I('b', 'Upphopp på trampett', '10 st', '') ] },
+      { name: 'Hopp 3 m', ids: ['c', 'd', 'e', 'f'], items: [ I('c', '101B Framåt', '4 hopp · 3 m', 'score', '6 av 6'), I('d', '103B Framåt 1½ volt', '4 hopp · 3 m', 'score'), I('e', '401B Inåt', '3 hopp · 3 m', 'score'), I('f', '403B Inåt 1½ volt', '10 min · 3 m', 'score') ] },
+    ];
+    const blocks = raw.map(b => ({ name: b.name, items: b.items, count: b.ids.filter(k => done[k]).length + ' av ' + b.ids.length }));
+    const n = ['a', 'b', 'c', 'd', 'e', 'f'].filter(k => done[k]).length;
+    const all = n === 6;
+    return { blocks, doneText: n + ' av 6 övningar klara',
+      barStyle: 'display:block;height:100%;border-radius:3px;background:#2B5C9E;width:' + Math.round(n / 6 * 100) + '%',
+      endStyle: 'display:flex;align-items:center;justify-content:center;min-height:52px;padding:0 22px;border-radius:14px;font-size:16px;font-weight:700;text-decoration:none;' + (all ? 'background:#2B5C9E;color:#fff;border:1.5px solid #2B5C9E' : 'background:#fff;color:#2B5C9E;border:1.5px solid #2B5C9E') };
+  }
+}
+</script>
+</body>
+</html>

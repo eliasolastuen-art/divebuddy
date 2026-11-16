@@ -108,9 +108,17 @@ export interface SchedulePass {
 
 export type Attendance = 'narvarande' | 'franvarande' | 'ersatt'
 
+export type TrainingStatus = 'draft' | 'published' | 'completed'
+
+export const TRAINING_STATUS_LABEL: Record<TrainingStatus, string> = {
+  draft: 'Utkast', published: 'Publicerat', completed: 'Klart',
+}
+
 export interface TrainingSummary {
   id: string
   title: string
+  status: TrainingStatus
+  updatedAt: string
   blocks: number
   items: number
 }

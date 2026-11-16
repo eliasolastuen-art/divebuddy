@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { UI } from './format'
-import type { Attendance, ClubEvent, EventType, LiveRef, ScheduleData, SchedulePass, Staff, Term, TrainingSummary } from './types'
+import type { Attendance, ClubEvent, EventType, LiveRef, ScheduleData, SchedulePass, Staff, Term, TrainingStatus, TrainingSummary } from './types'
 
 // Supabase reads and writes for the term schedule. Tables:
 // schedule_sessions (+ _groups, _coaches), club_staff, club_events.
@@ -122,15 +122,17 @@ export async function loadSchedule(db: SupabaseClient, clubId: string): Promise<
   }
 }
 
+const toTrainingStatus = (s: string | null): TrainingStatus => (s === 'published' || s === 'completed' ? s : 'draft')
+
 async function loadTrainingSummaries(db: SupabaseClient, ids: string[]): Promise<Record<string, TrainingSummary>> {
   const unique = Array.from(new Set(ids))
   if (!unique.length) return {}
   const { data, error } = await db.from('trainings')
-    .select('id, title, training_blocks(id, training_block_items(count))').in('id', unique)
+    .select('id, title, status, updated_at, training_blocks(id, training_block_items(count))').in('id', unique)
   if (error) throw new Error(error.message)
-  const rows = data as unknown as { id: string; title: string; training_blocks: { training_block_items: { count: number }[] }[] }[]
+  const rows = data as unknown as { id: string; title: string; status: string | null; updated_at: string; training_blocks: { training_block_items: { count: number }[] }[] }[]
   return Object.fromEntries(rows.map(t => [t.id, {
-    id: t.id, title: t.title, blocks: t.training_blocks.length,
+    id: t.id, title: t.title, status: toTrainingStatus(t.status), updatedAt: t.updated_at, blocks: t.training_blocks.length,
     items: t.training_blocks.reduce((s, b) => s + (b.training_block_items[0]?.count ?? 0), 0),
   }]))
 }
