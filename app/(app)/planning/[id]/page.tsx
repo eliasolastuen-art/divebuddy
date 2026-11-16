@@ -67,6 +67,14 @@ export default function TrainingDetailPage() {
 
   useEffect(() => { load() }, [trainingId])
 
+  // ?edit=1 (from "Planera pass") opens the builder straight away
+  useEffect(() => {
+    if (!loading && training && new URLSearchParams(window.location.search).get('edit') === '1') {
+      setShowEdit(true)
+      router.replace(`/planning/${trainingId}`)
+    }
+  }, [loading, training]) // eslint-disable-line react-hooks/exhaustive-deps
+
   const updateStatus = async (newStatus: string) => {
     const supabase = createClient()
     await supabase.from('trainings').update({ status: newStatus }).eq('id', trainingId)

@@ -1,6 +1,6 @@
 'use client'
 
-import { useEffect } from 'react'
+import { useEffect, useState } from 'react'
 import Link from 'next/link'
 import { X } from 'lucide-react'
 import Portal from '@/components/Portal'
@@ -11,6 +11,7 @@ import { staffNames } from '@/lib/schedule/select'
 import { longDate, pairGroups, pairStatus, pairTime, type PassPair } from '@/lib/schedule/pairing'
 import { C, primaryButton } from './ui'
 import { useStartLive } from './useStartLive'
+import PlanStartSheet from '@/components/planning/PlanStartSheet'
 
 // Design screen 2: one scheduled pass (land + vatten together) as a bottom sheet
 export default function PassSheet({ pair, onClose }: { pair: PassPair; onClose: () => void }) {
@@ -29,8 +30,10 @@ export default function PassSheet({ pair, onClose }: { pair: PassPair; onClose: 
   const here = myParts.length > 0 && myParts.every(p => p.attendance?.[me!.id] === 'narvarande')
   const toggleHere = () => me && setAttendance(myParts.map(p => p.id), me.id, here ? null : 'narvarande')
 
-  const planHref = `/planning?view=vecka&week=${mondayOf(pair.date)}&pass=${pair.id}`
-  const contentHref = pair.trainingId ? `/planning/${pair.trainingId}` : planHref
+  const editHref = `/planning?week=${mondayOf(pair.date)}&pass=${pair.id}&edit=1`
+  const [planning, setPlanning] = useState(false)
+
+  if (planning) return <PlanStartSheet pair={pair} onClose={onClose} />
 
   return (
     <Portal>
@@ -73,7 +76,7 @@ export default function PassSheet({ pair, onClose }: { pair: PassPair; onClose: 
 
           <section style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
             <h2 style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.muted }}>Innehåll</h2>
-            <Link href={contentHref} onClick={onClose} style={{ textDecoration: 'none', color: 'inherit', borderRadius: 16, border: `1px solid ${C.line}`, padding: '14px 16px', display: 'flex', alignItems: 'center', gap: 12, minHeight: 48 }}>
+            <ContentRow href={pair.trainingId ? `/planning/${pair.trainingId}` : null} onPlan={() => setPlanning(true)}>
               <div style={{ flex: 1 }}>
                 {pair.training ? (
                   <>
@@ -87,7 +90,7 @@ export default function PassSheet({ pair, onClose }: { pair: PassPair; onClose: 
                 )}
               </div>
               <span aria-hidden style={{ fontSize: 22, color: C.primary, lineHeight: 1 }}>›</span>
-            </Link>
+            </ContentRow>
           </section>
 
           {myParts.length > 0 && status !== 'cancelled' && (
@@ -111,11 +114,23 @@ export default function PassSheet({ pair, onClose }: { pair: PassPair; onClose: 
               {status === 'running' ? 'Fortsätt passet' : starting ? 'Startar …' : 'Starta live'}
             </button>
           )}
-          <Link href={planHref} onClick={onClose} style={{ minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.primary, textDecoration: 'none' }}>
+          <Link href={editHref} onClick={onClose} style={{ minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 14, fontWeight: 700, color: C.primary, textDecoration: 'none' }}>
             Ändra tid, tränare eller ställ in
           </Link>
         </div>
       </div>
     </Portal>
   )
+}
+
+const rowStyle: React.CSSProperties = {
+  textDecoration: 'none', color: 'inherit', borderRadius: 16, border: `1px solid ${C.line}`, padding: '14px 16px',
+  display: 'flex', alignItems: 'center', gap: 12, minHeight: 48, width: '100%', background: '#fff',
+  fontFamily: 'inherit', textAlign: 'left', cursor: 'pointer',
+}
+
+// The training when there is one, otherwise "Planera innehåll" → start sheet
+function ContentRow({ href, onPlan, children }: { href: string | null; onPlan: () => void; children: React.ReactNode }) {
+  if (href) return <Link href={href} style={rowStyle}>{children}</Link>
+  return <button type="button" onClick={onPlan} style={rowStyle}>{children}</button>
 }
