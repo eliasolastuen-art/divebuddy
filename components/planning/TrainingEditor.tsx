@@ -6,7 +6,9 @@ import { createClient } from '@/lib/supabase/client'
 import { useUser } from '@/lib/context/user'
 import { DAY_LONG, shortDate, weekdayIndex } from '@/lib/schedule/format'
 import { isDive, type PrefilledItem } from '@/lib/library/queries'
-import { fromRows, isTimeMode, saveAsTemplate, saveTraining, type EditorBlock, type EditorItem, type TrainingFields } from '@/lib/library/trainingSave'
+import { fromRows, saveAsTemplate, saveTraining, type EditorBlock, type EditorItem, type TrainingFields } from '@/lib/library/trainingSave'
+import { divesAndMinutes } from '@/lib/schedule/trainingSummary'
+import { TRAINING_STATUS_LABEL } from '@/lib/schedule/types'
 import AthleteBlockEditor from '@/app/(app)/planning/AthleteBlockEditor'
 import ExercisePicker from '@/components/library/ExercisePicker'
 import { useLibrary } from '@/components/library/useLibrary'
@@ -14,6 +16,7 @@ import { C } from '@/components/schedule/ui'
 import BlockCard, { type RowContext } from './BlockCard'
 import { BlockSheet, ExerciseDetailSheet, NewBlockSheet, type NewBlockKind } from './EditorSheets'
 import TrainingMenu from './TrainingMenu'
+import BottomSheet, { linkButton } from './BottomSheet'
 import Portal from '@/components/Portal'
 
 // Design screen 8 "Bygg passet". Replaces TrainingBuilder: one name field,
@@ -101,9 +104,14 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
   const ctx: RowContext = { unitFor: it => (dive(it) ? 'hopp' : 'st'), defaultReps: it => (dive(it) ? 4 : 10) }
 
   const allItems = blocks.flatMap(b => b.items)
-  const hopp = allItems.filter(it => !isTimeMode(it) && dive(it)).reduce((s, it) => s + (it.reps ?? 0), 0)
-  const min = Math.round(allItems.filter(isTimeMode).reduce((s, it) => s + (it.duration_seconds ?? 0), 0) / 60)
+  const { hopp, min } = divesAndMinutes(allItems, dive)
   const summary = [hopp ? `${hopp} hopp` : '', min ? `${min} min` : ''].filter(Boolean).join(' · ') || `${allItems.length} övningar`
+
+  // Unsaved changes: compared with the state the editor opened with. A new pass is unsaved until saved.
+  const snapshot = useMemo(() => JSON.stringify({ fields, blocks }), []) // eslint-disable-line react-hooks/exhaustive-deps
+  const dirty = !existingTraining?.id || JSON.stringify({ fields, blocks }) !== snapshot
+  const [askSave, setAskSave] = useState(false)
+  const back = () => (dirty ? setAskSave(true) : onClose())
 
   // ── Edits ────────────────────────────────────────────────────────────────
   const patchBlock = (id: string, fn: (b: EditorBlock) => EditorBlock) => setBlocks(bs => bs.map(b => (b.id === id ? fn(b) : b)))
@@ -140,21 +148,23 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
     }
   }
 
-  const save = async () => {
+  // "Publicera" saves with status published; the other buttons keep the status
+  const save = async (status: TrainingFields['status'] = fields.status) => {
     if (!profile?.club_id) return
-    if (!fields.title.trim()) { setError('Ge passet ett namn.'); return }
+    if (!fields.title.trim()) { setAskSave(false); setError('Ge passet ett namn.'); return }
     setSaving(true)
     setError(null)
     try {
       const { trainingId } = await saveTraining(db, {
         trainingId: existingTraining?.id ?? null, clubId: profile.club_id, profileId: profile.id,
-        createdBy: existingTraining?.created_by ?? null, fields: { ...fields, title: fields.title.trim() },
+        createdBy: existingTraining?.created_by ?? null, fields: { ...fields, status, title: fields.title.trim() },
         blocks, savedBlockIds, savedItemIds,
       })
       onSaved(trainingId)
     } catch (e) {
       setError(e instanceof Error ? e.message : 'Kunde inte spara passet')
       setSaving(false)
+      setAskSave(false)
     }
   }
 
@@ -177,12 +187,14 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
         background: C.bg, color: C.text, paddingTop: 'var(--safe-top)',
       }}>
         <header style={{ flex: 'none', height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, background: C.bg, borderBottom: `1px solid ${C.line}` }}>
-          <button type="button" onClick={onClose} aria-label="Tillbaka" style={iconButton}>
+          <button type="button" onClick={back} aria-label="Tillbaka" style={iconButton}>
             <ArrowLeft size={18} color={C.text} strokeWidth={2.2} aria-hidden />
           </button>
           <div style={{ flex: 1, minWidth: 0 }}>
             <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{headTitle}</div>
-            <div style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>{headSub}</div>
+            <div style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>
+              {headSub} · <span style={fields.status === 'draft' ? { color: C.primary, fontWeight: 700 } : { fontWeight: 600 }}>{TRAINING_STATUS_LABEL[fields.status]}</span>
+            </div>
           </div>
           <button type="button" onClick={() => setMenu(true)} aria-label="Mer" style={iconButton}>
             <MoreHorizontal size={18} color={C.text} strokeWidth={2.2} aria-hidden />
@@ -219,11 +231,19 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
           {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
         </div>
 
-        <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-          <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: C.muted }}>{summary}</div>
-          <button type="button" onClick={save} disabled={saving} style={{ minHeight: 52, padding: '0 28px', borderRadius: 14, border: 'none', background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-            {saving ? 'Sparar …' : 'Spara pass'}
-          </button>
+        <div style={{ flex: 'none', padding: '10px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', flexDirection: 'column', gap: 10 }}>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 10 }}>
+            <span style={{ flex: 1, fontSize: 14, fontWeight: 700 }}>{summary}</span>
+            <span style={{ fontSize: 13, fontWeight: 600, color: C.muted }}>{saving ? 'Sparar …' : dirty ? 'Ändringar ej sparade' : 'Sparat'}</span>
+          </div>
+          {fields.status === 'draft' ? (
+            <div style={{ display: 'flex', gap: 10 }}>
+              <button type="button" onClick={() => save('draft')} disabled={saving} style={{ ...outlinedButton, flex: 1, opacity: saving ? 0.7 : 1 }}>Spara utkast</button>
+              <button type="button" onClick={() => save('published')} disabled={saving} style={{ ...filledButton, flex: 1, opacity: saving ? 0.7 : 1 }}>Publicera</button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => save()} disabled={saving} style={{ ...filledButton, opacity: saving ? 0.7 : 1 }}>Spara ändringar</button>
+          )}
         </div>
 
         {picker && pickerBlock && (
@@ -252,10 +272,24 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
             onSaveTemplate={name => saveAsTemplate(db, name, fields.group_id, blocks)}
             onClose={() => setMenu(false)} />
         )}
+        {askSave && (
+          <BottomSheet title="Spara ändringarna?" onClose={() => setAskSave(false)}>
+            <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: C.muted }}>Du har ändringar som inte är sparade.</p>
+            <button type="button" onClick={() => save()} disabled={saving} style={{ ...filledButton, opacity: saving ? 0.7 : 1 }}>{saving ? 'Sparar …' : 'Spara'}</button>
+            <button type="button" onClick={onClose} disabled={saving} style={outlinedButton}>Släng</button>
+            <button type="button" onClick={() => setAskSave(false)} style={{ ...linkButton, alignSelf: 'center' }}>Avbryt</button>
+          </BottomSheet>
+        )}
       </div>
     </Portal>
   )
 }
+
+const filledButton: React.CSSProperties = {
+  display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 52, borderRadius: 14, border: 'none',
+  background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer',
+}
+const outlinedButton: React.CSSProperties = { ...filledButton, border: `1.5px solid ${C.primary}`, background: '#fff', color: C.primary }
 
 const iconButton: React.CSSProperties = {
   width: 44, height: 44, flex: 'none', borderRadius: 12, border: `1px solid ${C.line}`, background: '#fff',

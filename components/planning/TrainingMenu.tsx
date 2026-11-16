@@ -2,7 +2,6 @@
 
 import { useState } from 'react'
 import type { TrainingFields } from '@/lib/library/trainingSave'
-import { Segmented } from '@/components/library/GroupTiles'
 import { C } from '@/components/schedule/ui'
 import BottomSheet, { fieldLabel, linkButton, textInput } from './BottomSheet'
 
@@ -52,12 +51,6 @@ export default function TrainingMenu({ fields, onChange, folders, purposeTypes, 
           </label>
         </>
       )}
-      <div style={fieldLabel}>
-        Status
-        <Segmented label="Status" value={fields.status === 'published' ? 'published' : 'draft'}
-          options={[['draft', 'Utkast'], ['published', 'Publicerat']]}
-          onChange={s => onChange({ status: s })} />
-      </div>
       <label style={fieldLabel}>
         Fokus
         <select value={fields.purpose_type ?? ''} onChange={e => {
