@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { useParams, useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import type { PlanningFolder } from '@/types'
-import TrainingBuilder from '../TrainingBuilder'
+import TrainingEditor from '@/components/planning/TrainingEditor'
 import Portal from '@/components/Portal'
 import { ArrowLeft, MoreHorizontal, Pencil, Copy, Trash2, LayoutList } from 'lucide-react'
 
@@ -352,7 +352,7 @@ export default function TrainingDetailPage() {
       )}
 
       {showEdit && (
-        <TrainingBuilder
+        <TrainingEditor
           folders={folders}
           existingTraining={training}
           existingBlocks={blocks}
