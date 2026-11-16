@@ -7,6 +7,7 @@ import AthleteLogging from './AthleteLogging'
 import AthleteBlockLive from './AthleteBlockLive'
 import AddDiveSheet from './AddDiveSheet'
 import { useUser } from '@/lib/context/user'
+import { loadChecks, setCheck } from '@/lib/live/checks'
 import Portal from '@/components/Portal'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -119,7 +120,7 @@ export default function LiveSessionPage() {
         return
       }
 
-      const [blockResult, scoresResult] = await Promise.all([
+      const [blockResult, scoresResult, savedChecks] = await Promise.all([
         supabase
           .from('training_blocks')
           .select(`
@@ -135,7 +136,9 @@ export default function LiveSessionPage() {
           .from('exercise_scores')
           .select('training_block_item_id, athlete_id, score')
           .eq('session_id', sid),
+        loadChecks(supabase, sid).catch(() => new Set<string>()),
       ])
+      setChecked(savedChecks)
 
       if (blockResult.data) {
         setBlocks(blockResult.data.map((b: any) => ({
@@ -183,7 +186,8 @@ export default function LiveSessionPage() {
         if (!prev) return null
         if (prev.remaining <= 1) {
           clearInterval(timerRef.current!)
-          setChecked(c => new Set(Array.from(c).concat(prev.itemId)))
+          const done = prev.itemId
+          queueMicrotask(() => writeCheck(done, true)) // outside the state updater
           return null
         }
         return { ...prev, remaining: prev.remaining - 1 }
@@ -216,12 +220,20 @@ export default function LiveSessionPage() {
 
   // ── Toggle check ────────────────────────────────────────────────────────────
 
-  const toggleCheck = (itemId: string) => {
-    setChecked(prev => {
-      const arr = Array.from(prev)
-      if (prev.has(itemId)) return new Set(arr.filter(x => x !== itemId))
-      return new Set(arr.concat(itemId))
+  // Saved in live_session_checks; shown at once and rolled back if the write fails
+  const writeCheck = (itemId: string, on: boolean) => {
+    const apply = (value: boolean) => setChecked(prev => {
+      const next = new Set(Array.from(prev))
+      if (value) next.add(itemId)
+      else next.delete(itemId)
+      return next
     })
+    apply(on)
+    setCheck(createClient(), sid, itemId, on).catch(() => apply(!on))
+  }
+
+  const toggleCheck = (itemId: string) => {
+    writeCheck(itemId, !checked.has(itemId))
     if (activeTimer?.itemId === itemId) stopTimer()
   }
 
