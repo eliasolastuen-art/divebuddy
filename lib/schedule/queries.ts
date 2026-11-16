@@ -1,6 +1,6 @@
 import type { SupabaseClient } from '@supabase/supabase-js'
 import { UI } from './format'
-import type { ClubEvent, EventType, ScheduleData, SchedulePass, Staff, Term } from './types'
+import type { Attendance, ClubEvent, EventType, LiveRef, ScheduleData, SchedulePass, Staff, Term, TrainingSummary } from './types'
 
 // Supabase reads and writes for the term schedule. Tables:
 // schedule_sessions (+ _groups, _coaches), club_staff, club_events.
@@ -16,7 +16,7 @@ interface SessionRow {
   training_id: string | null
   is_extra: boolean
   schedule_session_groups: { group_id: string }[]
-  schedule_session_coaches: { staff_id: string }[]
+  schedule_session_coaches: { staff_id: string; attendance: Attendance | null }[]
 }
 
 interface EventRow {
@@ -43,6 +43,9 @@ function toPass(r: SessionRow): SchedulePass {
     groupIds: r.schedule_session_groups.map(g => g.group_id),
     staffIds: r.schedule_session_coaches.map(c => c.staff_id),
     trainingId: r.training_id,
+    training: null,
+    attendance: Object.fromEntries(r.schedule_session_coaches.map(c => [c.staff_id, c.attendance])),
+    live: null,
     contentStatus: r.training_id ? 'planned' : 'none',
     content: null,
     completed: false,
@@ -74,20 +77,34 @@ function groupsCoachedBy(staffId: string, passes: SchedulePass[], order: string[
 }
 
 export async function loadSchedule(db: SupabaseClient, clubId: string): Promise<ScheduleData> {
-  const [groups, staff, sessions, events] = await Promise.all([
+  const [groups, staff, sessions, events, lives] = await Promise.all([
     db.from('groups').select('id, name').eq('club_id', clubId).order('sort_order'),
     db.from('club_staff').select('id, name, profile_id').eq('club_id', clubId).eq('active', true).order('sort_order'),
     db.from('schedule_sessions')
-      .select('id, session_date, start_time, end_time, place, status, cancel_reason, training_id, is_extra, schedule_session_groups(group_id), schedule_session_coaches(staff_id)')
+      .select('id, session_date, start_time, end_time, place, status, cancel_reason, training_id, is_extra, schedule_session_groups(group_id), schedule_session_coaches(staff_id, attendance)')
       .eq('club_id', clubId)
       .order('session_date').order('start_time')
       .range(0, 4999),
     db.from('club_events').select('id, start_date, end_date, title, type, note, group_ids, staff_ids').eq('club_id', clubId).order('start_date'),
+    db.from('live_sessions').select('id, schedule_session_id, status, started_at')
+      .eq('club_id', clubId).not('schedule_session_id', 'is', null).order('started_at'),
   ])
-  const err = groups.error ?? staff.error ?? sessions.error ?? events.error
+  const err = groups.error ?? staff.error ?? sessions.error ?? events.error ?? lives.error
   if (err) throw new Error(err.message)
 
   const passes = (sessions.data as unknown as SessionRow[]).map(toPass)
+
+  // Latest live session per pass → Pågår / Klart
+  const liveBy: Record<string, LiveRef> = {}
+  for (const l of (lives.data ?? []) as { id: string; schedule_session_id: string; status: string; started_at: string }[]) {
+    liveBy[l.schedule_session_id] = { id: l.id, status: l.status === 'active' ? 'active' : 'ended', startedAt: l.started_at }
+  }
+  const trainings = await loadTrainingSummaries(db, passes.map(p => p.trainingId).filter((x): x is string => !!x))
+  for (const p of passes) {
+    p.live = liveBy[p.id] ?? null
+    p.completed = p.live?.status === 'ended'
+    p.training = p.trainingId ? trainings[p.trainingId] ?? null : null
+  }
   const groupOrder = (groups.data ?? []).map(g => g.id)
   const staffList: Staff[] = (staff.data ?? []).map(s => ({
     id: s.id, name: s.name, color: UI.primary, profileId: s.profile_id,
@@ -103,6 +120,19 @@ export async function loadSchedule(db: SupabaseClient, clubId: string): Promise<
     weekFocus: [],
     templates: [],
   }
+}
+
+async function loadTrainingSummaries(db: SupabaseClient, ids: string[]): Promise<Record<string, TrainingSummary>> {
+  const unique = Array.from(new Set(ids))
+  if (!unique.length) return {}
+  const { data, error } = await db.from('trainings')
+    .select('id, title, training_blocks(id, training_block_items(count))').in('id', unique)
+  if (error) throw new Error(error.message)
+  const rows = data as unknown as { id: string; title: string; training_blocks: { training_block_items: { count: number }[] }[] }[]
+  return Object.fromEntries(rows.map(t => [t.id, {
+    id: t.id, title: t.title, blocks: t.training_blocks.length,
+    items: t.training_blocks.reduce((s, b) => s + (b.training_block_items[0]?.count ?? 0), 0),
+  }]))
 }
 
 type PassFields = Pick<SchedulePass, 'date' | 'start' | 'end' | 'place' | 'groupIds' | 'staffIds'>
@@ -160,6 +190,31 @@ export const writes = {
       id, club_id: clubId, start_date: e.startsOn, end_date: e.endsOn, title: e.title, type: e.type,
       note: e.note || null, group_ids: e.groupIds, staff_ids: e.staffIds,
     }))
+  },
+
+  async setAttendance(db: SupabaseClient, sessionIds: string[], staffId: string, attendance: Attendance | null) {
+    if (!sessionIds.length) return
+    check(await db.from('schedule_session_coaches').upsert(
+      sessionIds.map(session_id => ({ session_id, staff_id: staffId, attendance })),
+      { onConflict: 'session_id,staff_id' },
+    ))
+  },
+
+  // Live from a scheduled pass: links training, first group and the pass, marks me present
+  async startLive(db: SupabaseClient, input: {
+    clubId: string; profileId: string; sessionIds: string[]; mySessionIds: string[]; groupId: string | null; trainingId: string | null; staffId: string | null
+  }): Promise<string> {
+    const { data, error } = await db.from('live_sessions').insert({
+      club_id: input.clubId, coach_id: input.profileId, group_id: input.groupId,
+      training_id: input.trainingId, schedule_session_id: input.sessionIds[0], status: 'active',
+    }).select('id').single()
+    if (error || !data) throw new Error(error?.message ?? 'Kunde inte starta passet')
+    if (input.trainingId) {
+      check(await db.from('trainings').update({ is_active: true, started_at: new Date().toISOString() }).eq('id', input.trainingId))
+    }
+    // Mark me present on the parts I coach
+    if (input.staffId && input.mySessionIds.length) await writes.setAttendance(db, input.mySessionIds, input.staffId, 'narvarande')
+    return data.id as string
   },
 
   async deleteEvent(db: SupabaseClient, id: string) {

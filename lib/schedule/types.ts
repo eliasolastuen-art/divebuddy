@@ -94,6 +94,9 @@ export interface SchedulePass {
   groupIds: string[]
   staffIds: string[]
   trainingId: string | null // schedule_sessions.training_id
+  training?: TrainingSummary | null // the linked training's name and size
+  attendance?: Record<string, Attendance | null> // staff id → närvaro
+  live?: LiveRef | null // latest live session started from this pass
   contentStatus: ContentStatus
   content?: PassContent | null
   review?: PassReview | null
@@ -101,6 +104,21 @@ export interface SchedulePass {
   cancelledReason: string | null
   isExtra: boolean
   removed: boolean
+}
+
+export type Attendance = 'narvarande' | 'franvarande' | 'ersatt'
+
+export interface TrainingSummary {
+  id: string
+  title: string
+  blocks: number
+  items: number
+}
+
+export interface LiveRef {
+  id: string
+  status: 'active' | 'ended'
+  startedAt: string
 }
 
 export interface ClubEvent {

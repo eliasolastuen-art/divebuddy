@@ -346,8 +346,8 @@ export default function LiveSessionPage() {
           <div style={{ textAlign: 'center', padding: '60px 20px', color: '#56637A' }}>Laddar…</div>
         ) : noTraining ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>
-            <div style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Inget träningspass kopplat</div>
-            <div style={{ fontSize: 13, color: '#56637A' }}>Sessionen startades utan ett schemalagt pass.</div>
+            <div style={{ fontSize: 15, fontWeight: 700, color: '#56637A', marginBottom: 4 }}>Fritt pass</div>
+            <div style={{ fontSize: 13, color: '#56637A' }}>Inget innehåll är planerat för det här passet.</div>
           </div>
         ) : blocks.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '60px 20px' }}>

@@ -6,7 +6,7 @@ import { useUser } from '@/lib/context/user'
 import { addDays, shortDate } from './format'
 import { applyTemplate, cloneContent, copyBetweenWeeks, findPreviousPlanned, hasContent, newId, weekToTemplate } from './content'
 import { loadSchedule, writes } from './queries'
-import type { ClubEvent, ContentStatus, PassContent, PassReview, PlanTemplate, ScheduleData, SchedulePass, WeekFocus } from './types'
+import type { Attendance, ClubEvent, ContentStatus, PassContent, PassReview, PlanTemplate, ScheduleData, SchedulePass, WeekFocus } from './types'
 
 // Schedule state shared by Planning, Dashboard, Live and the athlete view.
 // Source: Supabase (schedule_sessions, club_staff, club_events). Pass content
@@ -226,6 +226,36 @@ const actions = {
   // Ledare (admin): which groups a coach counts as "mine" (local)
   setStaffGroups: (staffId: string, groupIds: string[]) =>
     update(d => ({ ...d, staff: d.staff.map(s => (s.id === staffId ? { ...s, groupIds } : s)) })),
+
+  // Närvaro for one coach on one or more parts
+  setAttendance: (passIds: string[], staffId: string, attendance: Attendance | null) => {
+    const ids = new Set(passIds)
+    update(d => ({
+      ...d,
+      passes: d.passes.map(p => ids.has(p.id)
+        ? { ...p, staffIds: p.staffIds.includes(staffId) ? p.staffIds : [...p.staffIds, staffId], attendance: { ...p.attendance, [staffId]: attendance } }
+        : p),
+    }))
+    persist(() => writes.setAttendance(db(), passIds, staffId, attendance))
+  },
+
+  // Start live from a scheduled pass (both parts when land + vatten); returns the live session id
+  startLive: async (input: { profileId: string; passIds: string[]; groupId: string | null; trainingId: string | null; staffId: string | null }) => {
+    if (!status.clubId) throw new Error('Ingen klubb')
+    const mine = current.passes.filter(p => input.passIds.includes(p.id) && input.staffId && p.staffIds.includes(input.staffId)).map(p => p.id)
+    const id = await writes.startLive(db(), { ...input, clubId: status.clubId, sessionIds: input.passIds, mySessionIds: mine })
+    const ids = new Set(input.passIds)
+    const live = { id, status: 'active' as const, startedAt: new Date().toISOString() }
+    update(d => ({
+      ...d,
+      passes: d.passes.map(p => !ids.has(p.id) ? p : {
+        ...p,
+        live: p.id === input.passIds[0] ? live : p.live,
+        attendance: input.staffId && p.staffIds.includes(input.staffId) ? { ...p.attendance, [input.staffId]: 'narvarande' as const } : p.attendance,
+      }),
+    }))
+    return id
+  },
 
   reload: () => { if (status.clubId) reload(status.clubId) },
 }
