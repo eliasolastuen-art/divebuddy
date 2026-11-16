@@ -8,19 +8,20 @@ import { lastUsedReps, prefill, searchExercises, type Exercise, type LibraryArea
 import GroupTiles, { AREAS, Segmented } from './GroupTiles'
 import ExerciseList from './ExerciseList'
 import { useLibrary } from './useLibrary'
+import ExerciseForm from './ExerciseForm'
 
 // Design screen 9 "Lägg till övningar": search across all exercises, Vatten/Land,
 // group tiles, multi-select that survives switching group or searching, and
 // one button that adds everything with prefilled values.
 
-export default function ExercisePicker({ initialArea = 'vatten', onClose, onAdd, onNewExercise }: {
+export default function ExercisePicker({ initialArea = 'vatten', onClose, onAdd }: {
   initialArea?: LibraryArea
   onClose: () => void
   onAdd: (items: PrefilledItem[]) => void
-  onNewExercise?: (group: LibraryGroup | null) => void
 }) {
   const { profile } = useUser()
-  const { groups, exercises, loading, error } = useLibrary()
+  const { groups, exercises, loading, error, addLocal } = useLibrary()
+  const [newIn, setNewIn] = useState<{ group: LibraryGroup | null } | null>(null)
   const [query, setQuery] = useState('')
   const [area, setArea] = useState<LibraryArea>(initialArea)
   const [groupId, setGroupId] = useState<string | null>(null)
@@ -51,18 +52,27 @@ export default function ExercisePicker({ initialArea = 'vatten', onClose, onAdd,
   const toggle = (e: Exercise) =>
     setSelected(s => (s.some(x => x.id === e.id) ? s.filter(x => x.id !== e.id) : [...s, e]))
 
-  const add = async () => {
-    if (!selected.length) { onClose(); return }
+  const add = async (chosen: Exercise[] = selected) => {
+    if (!chosen.length) { onClose(); return }
     setAdding(true)
     let last: Record<string, number> = {}
     try {
-      if (profile?.id) last = await lastUsedReps(createClient(), profile.id, selected.map(e => e.id))
+      if (profile?.id) last = await lastUsedReps(createClient(), profile.id, chosen.map(e => e.id))
     } catch (err) {
       console.error('lastUsedReps failed:', err) // fall back to defaults
     }
-    onAdd(prefill(selected, groups, last))
+    onAdd(prefill(chosen, groups, last))
     setAdding(false)
   }
+
+  // A new exercise is chosen right away and everything goes back into the pass
+  const onCreated = (e: Exercise) => {
+    addLocal(e)
+    setNewIn(null)
+    add([...selected, e])
+  }
+
+  const onNewExercise = (g: LibraryGroup | null) => setNewIn({ group: g })
 
   const n = selected.length
   const cta = n === 0 ? 'Klar' : n === 1 ? 'Lägg till 1 övning' : `Lägg till ${n} övningar`
@@ -77,7 +87,7 @@ export default function ExercisePicker({ initialArea = 'vatten', onClose, onAdd,
           <X size={18} color="#1E2B42" strokeWidth={2.2} aria-hidden />
         </button>
         <span style={{ flex: 1, fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em' }}>Lägg till övningar</span>
-        {onNewExercise && (
+        {(
           <button type="button" onClick={() => onNewExercise(group)} style={{ minHeight: 44, border: 'none', background: 'none', padding: 0, fontFamily: 'inherit', fontSize: 15, fontWeight: 700, color: '#2B5C9E', cursor: 'pointer' }}>+ Ny övning</button>
         )}
       </header>
@@ -112,18 +122,23 @@ export default function ExercisePicker({ initialArea = 'vatten', onClose, onAdd,
               {searching ? 'Sökresultat' : `${group!.name}${group!.description ? ` · ${group!.description}` : ''}`}
             </h2>
             <ExerciseList exercises={list} subtitle={subtitle} selected={selectedIds} onToggle={toggle}
-              onNew={onNewExercise ? () => onNewExercise(searching ? null : group) : undefined} />
+              onNew={() => onNewExercise(searching ? null : group)} />
           </div>
         )}
       </div>
 
       <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: '1px solid #E1E8F0' }}>
-        <button type="button" onClick={add} disabled={adding} style={{
+        <button type="button" onClick={() => add()} disabled={adding} style={{
           width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 54, borderRadius: 14,
           border: 'none', background: '#2B5C9E', color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit',
           cursor: 'pointer', opacity: adding ? 0.7 : 1,
         }}>{cta}</button>
       </div>
+
+      {newIn && (
+        <ExerciseForm groups={groups} initialArea={newIn.group?.area ?? area} initialGroupId={newIn.group?.id ?? null}
+          saveLabel="Spara och lägg till i passet" onSaved={onCreated} onClose={() => setNewIn(null)} />
+      )}
     </div>
   )
 }
