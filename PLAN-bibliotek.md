@@ -149,6 +149,15 @@ create policy "exercise images: club staff write" on storage.objects for insert 
 4. Bibliotek sprint 3–5.
 5. Schema sprint 4–5.
 
+### Status sprint 1 (17 nov)
+
+- Migrationen är körd. Fördelningen följer avsnitt 3.
+- Följande var redan arkiverade innan migrationen, fick rätt grupp och syns fortfarande inte: 101A, 102, 1,5 volt i pik, Dubbel volt fram, Fall bakåt i rak stil, springa, indian smyg, Elefantgång, Bygga tak, Sparka pik, Warmup - Stretch och Dryland - Jump Training.
+- Aktiva övningar per grupp: 100 (13), 200 (14), 300 (13), 400 (11), Skruvar (27), Armsving (6), Fall (4), Längor (3) och Lekar (1).
+- Mallarna har `club_id`, och grupp är valfri.
+- Bucketen och policyn är testade: egen klubb tillåts, fel klubb nekas.
+- **`trainings.created_by` är tomt på alla 13 pass**, eftersom gamla `TrainingBuilder` inte sätter det. "Senaste antal" börjar därför fungera först när `trainingSave.ts` (sprint 3) sätter `created_by`.
+
 ## 6. Risker
 
 - **Kategorier är globala.** Det fungerar med en klubb. En andra klubb skulle dela grupperna (övningarna är fortfarande per klubb).
