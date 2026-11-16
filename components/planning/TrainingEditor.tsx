@@ -14,6 +14,7 @@ import { C } from '@/components/schedule/ui'
 import BlockCard, { type RowContext } from './BlockCard'
 import { BlockSheet, ExerciseDetailSheet, NewBlockSheet, type NewBlockKind } from './EditorSheets'
 import TrainingMenu from './TrainingMenu'
+import Portal from '@/components/Portal'
 
 // Design screen 8 "Bygg passet". Replaces TrainingBuilder: one name field,
 // blocks as cards with − value + rows, everything else in the ⋯ menu.
@@ -170,87 +171,89 @@ export default function TrainingEditor({ folders, onClose, onSaved, existingTrai
   const sheetBlock = blockSheet ? blocks.find(b => b.id === blockSheet) : null
 
   return (
-    <div role="dialog" aria-modal="true" aria-label="Bygg passet" style={{
-      position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', flexDirection: 'column',
-      background: C.bg, color: C.text, paddingTop: 'var(--safe-top)',
-    }}>
-      <header style={{ flex: 'none', height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, background: C.bg, borderBottom: `1px solid ${C.line}` }}>
-        <button type="button" onClick={onClose} aria-label="Tillbaka" style={iconButton}>
-          <ArrowLeft size={18} color={C.text} strokeWidth={2.2} aria-hidden />
-        </button>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{headTitle}</div>
-          <div style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>{headSub}</div>
+    <Portal>
+      <div role="dialog" aria-modal="true" aria-label="Bygg passet" style={{
+        position: 'fixed', inset: 0, zIndex: 10000, display: 'flex', flexDirection: 'column',
+        background: C.bg, color: C.text, paddingTop: 'var(--safe-top)',
+      }}>
+        <header style={{ flex: 'none', height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, background: C.bg, borderBottom: `1px solid ${C.line}` }}>
+          <button type="button" onClick={onClose} aria-label="Tillbaka" style={iconButton}>
+            <ArrowLeft size={18} color={C.text} strokeWidth={2.2} aria-hidden />
+          </button>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em', whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>{headTitle}</div>
+            <div style={{ fontSize: 13, color: C.muted, fontWeight: 500 }}>{headSub}</div>
+          </div>
+          <button type="button" onClick={() => setMenu(true)} aria-label="Mer" style={iconButton}>
+            <MoreHorizontal size={18} color={C.text} strokeWidth={2.2} aria-hidden />
+          </button>
+        </header>
+
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+          <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 700, color: C.muted }}>
+            Passets namn
+            <input type="text" value={fields.title} onChange={e => setFields(f => ({ ...f, title: e.target.value }))}
+              style={{ minHeight: 48, borderRadius: 14, border: '1px solid #C9D5E3', background: '#fff', padding: '0 14px', fontSize: 16, fontWeight: 700, color: C.text, fontFamily: 'inherit' }} />
+          </label>
+
+          {blocks.map(b => (
+            <BlockCard key={b.id} block={b} ctx={ctx}
+              onChangeItem={it => patchItem(b.id, it)}
+              onOpenItem={it => setDetail({ blockId: b.id, itemId: it.id })}
+              onAdd={() => setPicker({ blockId: b.id, athleteId: null })}
+              onOpenBlock={() => setBlockSheet(b.id)}>
+              {b.block_type === 'athlete' ? (
+                <AthleteBlockEditor
+                  items={b.items}
+                  athletes={b.selectedAthleteIds?.length ? athletes.filter(a => b.selectedAthleteIds!.includes(a.id)) : athletes}
+                  onChange={items => patchBlock(b.id, x => ({ ...x, items: items as EditorItem[] }))}
+                  onOpenPicker={athleteId => setPicker({ blockId: b.id, athleteId })}
+                />
+              ) : undefined}
+            </BlockCard>
+          ))}
+
+          <button type="button" onClick={() => setNewBlock(true)} style={{ minHeight: 50, borderRadius: 14, border: `1.5px solid ${C.primary}`, background: '#fff', color: C.primary, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
+            + Nytt block
+          </button>
+          {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
         </div>
-        <button type="button" onClick={() => setMenu(true)} aria-label="Mer" style={iconButton}>
-          <MoreHorizontal size={18} color={C.text} strokeWidth={2.2} aria-hidden />
-        </button>
-      </header>
 
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
-        <label style={{ display: 'flex', flexDirection: 'column', gap: 6, fontSize: 14, fontWeight: 700, color: C.muted }}>
-          Passets namn
-          <input type="text" value={fields.title} onChange={e => setFields(f => ({ ...f, title: e.target.value }))}
-            style={{ minHeight: 48, borderRadius: 14, border: '1px solid #C9D5E3', background: '#fff', padding: '0 14px', fontSize: 16, fontWeight: 700, color: C.text, fontFamily: 'inherit' }} />
-        </label>
+        <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+          <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: C.muted }}>{summary}</div>
+          <button type="button" onClick={save} disabled={saving} style={{ minHeight: 52, padding: '0 28px', borderRadius: 14, border: 'none', background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
+            {saving ? 'Sparar …' : 'Spara pass'}
+          </button>
+        </div>
 
-        {blocks.map(b => (
-          <BlockCard key={b.id} block={b} ctx={ctx}
-            onChangeItem={it => patchItem(b.id, it)}
-            onOpenItem={it => setDetail({ blockId: b.id, itemId: it.id })}
-            onAdd={() => setPicker({ blockId: b.id, athleteId: null })}
-            onOpenBlock={() => setBlockSheet(b.id)}>
-            {b.block_type === 'athlete' ? (
-              <AthleteBlockEditor
-                items={b.items}
-                athletes={b.selectedAthleteIds?.length ? athletes.filter(a => b.selectedAthleteIds!.includes(a.id)) : athletes}
-                onChange={items => patchBlock(b.id, x => ({ ...x, items: items as EditorItem[] }))}
-                onOpenPicker={athleteId => setPicker({ blockId: b.id, athleteId })}
-              />
-            ) : undefined}
-          </BlockCard>
-        ))}
-
-        <button type="button" onClick={() => setNewBlock(true)} style={{ minHeight: 50, borderRadius: 14, border: `1.5px solid ${C.primary}`, background: '#fff', color: C.primary, fontSize: 15, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer' }}>
-          + Nytt block
-        </button>
-        {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
+        {picker && pickerBlock && (
+          <ExercisePicker
+            initialArea={LAND_CATEGORIES.includes(pickerBlock.category) ? 'land' : 'vatten'}
+            onClose={() => setPicker(null)}
+            onAdd={items => addPicked(picker.blockId, picker.athleteId, items)}
+          />
+        )}
+        {detail && detailItem && (
+          <ExerciseDetailSheet item={detailItem}
+            onSave={it => patchItem(detail.blockId, it)}
+            onRemove={() => removeItem(detail.blockId, detail.itemId)}
+            onClose={() => setDetail(null)} />
+        )}
+        {sheetBlock && (
+          <BlockSheet block={sheetBlock}
+            onRename={name => patchBlock(sheetBlock.id, b => ({ ...b, name }))}
+            onRemove={() => setBlocks(bs => bs.filter(b => b.id !== sheetBlock.id))}
+            onClose={() => setBlockSheet(null)} />
+        )}
+        {newBlock && <NewBlockSheet onCreate={createBlock} onClose={() => setNewBlock(false)} />}
+        {menu && (
+          <TrainingMenu fields={fields} onChange={patch => setFields(f => ({ ...f, ...patch }))}
+            folders={folders} purposeTypes={purposeTypes} groups={groups} fromSchedule={!!link}
+            onSaveTemplate={name => saveAsTemplate(db, name, fields.group_id, blocks)}
+            onClose={() => setMenu(false)} />
+        )}
       </div>
-
-      <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 14 }}>
-        <div style={{ flex: 1, fontSize: 14, fontWeight: 600, color: C.muted }}>{summary}</div>
-        <button type="button" onClick={save} disabled={saving} style={{ minHeight: 52, padding: '0 28px', borderRadius: 14, border: 'none', background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', opacity: saving ? 0.7 : 1 }}>
-          {saving ? 'Sparar …' : 'Spara pass'}
-        </button>
-      </div>
-
-      {picker && pickerBlock && (
-        <ExercisePicker
-          initialArea={LAND_CATEGORIES.includes(pickerBlock.category) ? 'land' : 'vatten'}
-          onClose={() => setPicker(null)}
-          onAdd={items => addPicked(picker.blockId, picker.athleteId, items)}
-        />
-      )}
-      {detail && detailItem && (
-        <ExerciseDetailSheet item={detailItem}
-          onSave={it => patchItem(detail.blockId, it)}
-          onRemove={() => removeItem(detail.blockId, detail.itemId)}
-          onClose={() => setDetail(null)} />
-      )}
-      {sheetBlock && (
-        <BlockSheet block={sheetBlock}
-          onRename={name => patchBlock(sheetBlock.id, b => ({ ...b, name }))}
-          onRemove={() => setBlocks(bs => bs.filter(b => b.id !== sheetBlock.id))}
-          onClose={() => setBlockSheet(null)} />
-      )}
-      {newBlock && <NewBlockSheet onCreate={createBlock} onClose={() => setNewBlock(false)} />}
-      {menu && (
-        <TrainingMenu fields={fields} onChange={patch => setFields(f => ({ ...f, ...patch }))}
-          folders={folders} purposeTypes={purposeTypes} groups={groups} fromSchedule={!!link}
-          onSaveTemplate={name => saveAsTemplate(db, name, fields.group_id, blocks)}
-          onClose={() => setMenu(false)} />
-      )}
-    </div>
+    </Portal>
   )
 }
 

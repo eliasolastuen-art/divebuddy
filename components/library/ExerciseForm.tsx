@@ -7,6 +7,7 @@ import { useUser } from '@/lib/context/user'
 import { createExercise, updateExercise, type Exercise, type LibraryArea, type LibraryGroup } from '@/lib/library/queries'
 import { exerciseImageUrl, uploadExerciseImage } from '@/lib/library/image'
 import { C } from '@/components/schedule/ui'
+import Portal from '@/components/Portal'
 
 // Design screen 10 "Ny övning": photo first (camera opens directly on a phone),
 // name (the only required field), where (Land/Vatten) and group.
@@ -93,87 +94,89 @@ export default function ExerciseForm({ groups, exercise, initialArea = 'vatten',
   }
 
   return (
-    <div role="dialog" aria-modal="true" aria-label={exercise ? 'Ändra övning' : 'Ny övning'} style={{
-      position: 'fixed', inset: 0, zIndex: 10300, display: 'flex', flexDirection: 'column',
-      background: C.bg, color: C.text, paddingTop: 'var(--safe-top)',
-    }}>
-      <header style={{ flex: 'none', height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, background: C.bg, borderBottom: `1px solid ${C.line}` }}>
-        <button type="button" onClick={onClose} aria-label="Tillbaka" style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.line}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer' }}>
-          <ArrowLeft size={18} color={C.text} strokeWidth={2.2} aria-hidden />
-        </button>
-        <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em' }}>{exercise ? 'Ändra övning' : 'Ny övning'}</span>
-      </header>
+    <Portal>
+      <div role="dialog" aria-modal="true" aria-label={exercise ? 'Ändra övning' : 'Ny övning'} style={{
+        position: 'fixed', inset: 0, zIndex: 10300, display: 'flex', flexDirection: 'column',
+        background: C.bg, color: C.text, paddingTop: 'var(--safe-top)',
+      }}>
+        <header style={{ flex: 'none', height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, background: C.bg, borderBottom: `1px solid ${C.line}` }}>
+          <button type="button" onClick={onClose} aria-label="Tillbaka" style={{ width: 44, height: 44, borderRadius: 12, border: `1px solid ${C.line}`, background: '#fff', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: 0, cursor: 'pointer' }}>
+            <ArrowLeft size={18} color={C.text} strokeWidth={2.2} aria-hidden />
+          </button>
+          <span style={{ fontSize: 17, fontWeight: 800, letterSpacing: '-0.02em' }}>{exercise ? 'Ändra övning' : 'Ny övning'}</span>
+        </header>
 
-      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
-        <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={e => pick(e.target.files?.[0] ?? null)} />
-        <button type="button" onClick={() => fileRef.current?.click()} style={{
-          height: 170, flex: 'none', borderRadius: 18, border: preview ? `1px solid ${C.line}` : '2px dashed #9DB3CF', background: '#fff',
-          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit',
-          color: C.primary, cursor: 'pointer', overflow: 'hidden', padding: 0, position: 'relative',
-        }}>
-          {preview ? (
-            <>
-              {/* eslint-disable-next-line @next/next/no-img-element */}
-              <img src={preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
-              <span style={{ position: 'absolute', bottom: 10, right: 10, background: '#fff', borderRadius: 10, padding: '6px 10px', fontSize: 13.5, fontWeight: 700 }}>Byt bild</span>
-            </>
-          ) : (
-            <>
-              <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13.5" r="3.5" /></svg>
-              <span style={{ fontSize: 17, fontWeight: 800 }}>Ta bild</span>
-              <span style={{ fontSize: 13.5, fontWeight: 500, color: C.muted }}>eller välj en bild från mobilen</span>
-            </>
-          )}
-        </button>
+        <div style={{ flex: 1, minHeight: 0, overflowY: 'auto', padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 22 }}>
+          <input ref={fileRef} type="file" accept="image/*" capture="environment" hidden onChange={e => pick(e.target.files?.[0] ?? null)} />
+          <button type="button" onClick={() => fileRef.current?.click()} style={{
+            height: 170, flex: 'none', borderRadius: 18, border: preview ? `1px solid ${C.line}` : '2px dashed #9DB3CF', background: '#fff',
+            display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 8, fontFamily: 'inherit',
+            color: C.primary, cursor: 'pointer', overflow: 'hidden', padding: 0, position: 'relative',
+          }}>
+            {preview ? (
+              <>
+                {/* eslint-disable-next-line @next/next/no-img-element */}
+                <img src={preview} alt="" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <span style={{ position: 'absolute', bottom: 10, right: 10, background: '#fff', borderRadius: 10, padding: '6px 10px', fontSize: 13.5, fontWeight: 700 }}>Byt bild</span>
+              </>
+            ) : (
+              <>
+                <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke={C.primary} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M4 8h3l2-3h6l2 3h3a1 1 0 0 1 1 1v10a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V9a1 1 0 0 1 1-1z" /><circle cx="12" cy="13.5" r="3.5" /></svg>
+                <span style={{ fontSize: 17, fontWeight: 800 }}>Ta bild</span>
+                <span style={{ fontSize: 13.5, fontWeight: 500, color: C.muted }}>eller välj en bild från mobilen</span>
+              </>
+            )}
+          </button>
 
-        <label style={{ ...label, display: 'flex', flexDirection: 'column', gap: 6 }}>
-          Namn
-          <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="T.ex. Volt på matta" style={{
-            minHeight: 50, borderRadius: 14, border: '1px solid #C9D5E3', background: '#fff', padding: '0 14px', fontSize: 16,
-            fontWeight: 600, color: C.text, fontFamily: 'inherit',
-          }} />
-        </label>
+          <label style={{ ...label, display: 'flex', flexDirection: 'column', gap: 6 }}>
+            Namn
+            <input type="text" value={name} onChange={e => setName(e.target.value)} placeholder="T.ex. Volt på matta" style={{
+              minHeight: 50, borderRadius: 14, border: '1px solid #C9D5E3', background: '#fff', padding: '0 14px', fontSize: 16,
+              fontWeight: 600, color: C.text, fontFamily: 'inherit',
+            }} />
+          </label>
 
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <span style={label}>Var</span>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {(['land', 'vatten'] as LibraryArea[]).map(a => (
-              <button key={a} type="button" aria-pressed={area === a} onClick={() => setArea(a)} style={chip(area === a)}>{a === 'land' ? 'Land' : 'Vatten'}</button>
-            ))}
-          </div>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-          <span style={label}>Grupp</span>
-          <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-            {areaGroups.map(g => (
-              <button key={g.id} type="button" aria-pressed={groupId === g.id} onClick={() => setGroupId(g.id)} style={chip(groupId === g.id)}>{g.name}</button>
-            ))}
-          </div>
-        </div>
-
-        {exercise && (
           <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
-            <span style={label}>Höjd (meter)</span>
+            <span style={label}>Var</span>
             <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
-              {HEIGHTS.map(h => (
-                <button key={h} type="button" aria-pressed={height === h} onClick={() => setHeight(height === h ? '' : h)} style={chip(height === h)}>{h} m</button>
+              {(['land', 'vatten'] as LibraryArea[]).map(a => (
+                <button key={a} type="button" aria-pressed={area === a} onClick={() => setArea(a)} style={chip(area === a)}>{a === 'land' ? 'Land' : 'Vatten'}</button>
               ))}
             </div>
           </div>
-        )}
 
-        {!exercise && <p style={{ margin: 0, fontSize: 13.5, color: C.muted, fontWeight: 500 }}>Bara namnet måste fyllas i. Gruppen är förvald efter var du kom ifrån.</p>}
-        {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
-      </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+            <span style={label}>Grupp</span>
+            <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+              {areaGroups.map(g => (
+                <button key={g.id} type="button" aria-pressed={groupId === g.id} onClick={() => setGroupId(g.id)} style={chip(groupId === g.id)}>{g.name}</button>
+              ))}
+            </div>
+          </div>
 
-      <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}` }}>
-        <button type="button" onClick={save} disabled={saving || !name.trim() || !groupId} style={{
-          width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 54, borderRadius: 14, border: 'none',
-          background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer',
-          opacity: saving || !name.trim() ? 0.6 : 1,
-        }}>{saving ? 'Sparar …' : saveLabel}</button>
+          {exercise && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              <span style={label}>Höjd (meter)</span>
+              <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap' }}>
+                {HEIGHTS.map(h => (
+                  <button key={h} type="button" aria-pressed={height === h} onClick={() => setHeight(height === h ? '' : h)} style={chip(height === h)}>{h} m</button>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {!exercise && <p style={{ margin: 0, fontSize: 13.5, color: C.muted, fontWeight: 500 }}>Bara namnet måste fyllas i. Gruppen är förvald efter var du kom ifrån.</p>}
+          {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
+        </div>
+
+        <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}` }}>
+          <button type="button" onClick={save} disabled={saving || !name.trim() || !groupId} style={{
+            width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center', minHeight: 54, borderRadius: 14, border: 'none',
+            background: C.primary, color: '#fff', fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer',
+            opacity: saving || !name.trim() ? 0.6 : 1,
+          }}>{saving ? 'Sparar …' : saveLabel}</button>
+        </div>
       </div>
-    </div>
+    </Portal>
   )
 }
