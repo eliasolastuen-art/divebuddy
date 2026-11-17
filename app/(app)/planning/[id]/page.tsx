@@ -17,6 +17,10 @@ import { longDate, pairGroups, pairLayout, pairPasses, pairTime } from '@/lib/sc
 import { passSummary } from '@/lib/schedule/trainingSummary'
 import type { TrainingStatus } from '@/lib/schedule/types'
 import { C } from '@/components/schedule/ui'
+import { useUser } from '@/lib/context/user'
+import { useStartLive } from '@/components/schedule/useStartLive'
+import { latestRun, type LatestRun } from '@/lib/live/queries'
+import ResultsSheet from '@/components/live/ResultsSheet'
 
 // Design PassetUtkast / PassetPublicerat / PassetKlart: one page per pass with
 // its status, publish / unpublish and the content. Blocks are edited in the builder.
@@ -39,6 +43,9 @@ interface BlockRow {
 
 const toStatus = (s: string | null): TrainingStatus => (s === 'published' || s === 'completed' ? s : 'draft')
 
+const hhmm = (iso: string) => new Date(iso).toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })
+const dayWord = (iso: string) => savedText(iso).replace(/ \d{2}:\d{2}$/, '')
+
 // "idag 21:42", "igår 08:10", "12 nov 21:42"
 function savedText(iso: string) {
   const d = new Date(iso)
@@ -57,6 +64,8 @@ export default function TrainingPage() {
   const db = useMemo(() => createClient(), [])
   const { data, reload } = useSchedule()
   const { groups: libGroups } = useLibrary()
+  const { profile } = useUser()
+  const { start, error: startError } = useStartLive()
 
   const [training, setTraining] = useState<TrainingRow | null>(null)
   const [blocks, setBlocks] = useState<BlockRow[]>([])
@@ -66,6 +75,8 @@ export default function TrainingPage() {
   const [menu, setMenu] = useState(false)
   const [copying, setCopying] = useState(false)
   const [restart, setRestart] = useState(false)
+  const [run, setRun] = useState<LatestRun | null>(null)
+  const [results, setResults] = useState(false)
   const [busy, setBusy] = useState(false)
   const [error, setError] = useState<string | null>(null)
 
@@ -81,6 +92,7 @@ export default function TrainingPage() {
       db.from('training_block_items').select('*, library_item:library_items(*)').eq('block_id', block.id).order('sort_order')
         .then(({ data: items }) => ({ ...block, items: (items ?? []) as ItemRow[] }) as BlockRow)))
     setBlocks(withItems)
+    setRun(await latestRun(db, trainingId).catch(() => null))
     setLoading(false)
   }, [db, trainingId])
 
@@ -117,6 +129,43 @@ export default function TrainingPage() {
     return (dive(it) && name.match(/^\d{3,4}[A-Da-d]\b/)?.[0]) || name
   }
   const summary = passSummary(blocks, dive)
+
+  // Latest finished run (Passet, klart): checked exercises outside athlete blocks, scored dives
+  const runBlocks = blocks.filter(b => b.block_type !== 'athlete')
+  const runItems = runBlocks.flatMap(b => b.items)
+  const shownRun = status === 'completed' ? run : null
+  const doneCount = shownRun ? runItems.filter(it => shownRun.checked.has(it.id)).length : 0
+  const allItems = blocks.flatMap(b => b.items)
+  const scoredCount = shownRun ? new Set(shownRun.scores.map(x => x.itemId)).size - new Set(shownRun.scores
+    .filter(x => { const it = allItems.find(i => i.id === x.itemId); return !it || !dive(it) }).map(x => x.itemId)).size : 0
+  const runLine = shownRun
+    ? `Kördes ${dayWord(shownRun.startedAt)} ${hhmm(shownRun.startedAt)}${shownRun.endedAt ? `–${hhmm(shownRun.endedAt)}` : ''}. ${doneCount} av ${runItems.length} övningar${scoredCount ? `, poäng på ${scoredCount} hopp` : ''}.`
+    : null
+  const blockLine = (b: BlockRow) => {
+    if (!shownRun || b.block_type === 'athlete') return b.items.length ? Array.from(new Set(b.items.map(label))).join(', ') : 'Inga övningar'
+    const missed = b.items.filter(it => !shownRun.checked.has(it.id)).map(label)
+    return `${b.items.length - missed.length} av ${b.items.length} klara${missed.length && missed.length < b.items.length ? ` · ${Array.from(new Set(missed)).join(', ')} hanns inte` : ''}`
+  }
+
+  // "Kör igen": a new live session for the same pass; the old run keeps its scores and checks
+  const runAgain = async () => {
+    setBusy(true)
+    setError(null)
+    try {
+      if (pair) { await start(pair); return }
+      const { data: row, error: e } = await db.from('live_sessions').insert({
+        club_id: training.club_id, coach_id: profile?.id ?? null, group_id: training.group_id, training_id: trainingId, status: 'active',
+      }).select('id').single()
+      if (e || !row) throw new Error(e?.message ?? 'Kunde inte starta passet')
+      await db.from('trainings').update({ is_active: true, started_at: new Date().toISOString() }).eq('id', trainingId)
+      router.push(`/live/session/${(row as { id: string }).id}`)
+    } catch (e) {
+      setError(e instanceof Error ? e.message : 'Kunde inte starta passet')
+      setRestart(false)
+    } finally {
+      setBusy(false)
+    }
+  }
 
   const setStatus = async (next: TrainingStatus) => {
     setBusy(true)
@@ -165,6 +214,7 @@ export default function TrainingPage() {
               <div>
                 <div style={{ fontSize: 19, fontWeight: 900, letterSpacing: '-0.02em' }}>{status === 'draft' ? 'Utkast' : 'Klart'}</div>
                 {status === 'draft' && <div style={{ fontSize: 14, fontWeight: 500, color: C.muted, marginTop: 2 }}>Bara tränare ser passet. {saved}</div>}
+                {runLine && <div style={{ fontSize: 14, fontWeight: 500, color: C.muted, marginTop: 2 }}>{runLine}</div>}
               </div>
               {status === 'draft' && (
                 <button type="button" disabled={busy} onClick={() => setStatus('published')} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
@@ -176,26 +226,26 @@ export default function TrainingPage() {
               )}
             </section>
           )}
-          {error && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error}</p>}
+          {(error || startError) && <p role="alert" style={{ margin: 0, fontSize: 14, fontWeight: 600 }}>{error ?? startError}</p>}
 
           <section style={{ display: 'flex', flexDirection: 'column', gap: 10 }}>
             <h2 style={{ margin: 0, fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>Innehåll</h2>
             <div style={{ ...card, padding: '0 16px' }}>
               <div style={{ padding: '14px 0', borderBottom: blocks.length ? `1px solid ${C.line}` : 'none' }}>
                 <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>{training.title || 'Pass utan namn'}</div>
-                <div style={{ fontSize: 13.5, fontWeight: 500, color: C.muted, marginTop: 2 }}>{blocks.length ? summary : 'Inga övningar än'}</div>
+                <div style={{ fontSize: 13.5, fontWeight: 500, color: C.muted, marginTop: 2 }}>{!blocks.length ? 'Inga övningar än' : shownRun ? `${blocks.length} block · ${doneCount} av ${runItems.length} övningar klara` : summary}</div>
               </div>
               {blocks.map((b, i) => (
                 <div key={b.id} style={{ padding: '12px 0', borderBottom: i < blocks.length - 1 ? `1px solid ${C.line}` : 'none' }}>
                   <div style={{ fontSize: 15, fontWeight: 700 }}>{b.name}</div>
                   <div style={{ fontSize: 13.5, fontWeight: 500, color: C.muted, marginTop: 2 }}>
-                    {b.items.length ? Array.from(new Set(b.items.map(label))).join(', ') : 'Inga övningar'}
+                    {blockLine(b)}
                   </div>
                 </div>
               ))}
             </div>
             {status === 'completed' ? (
-              <button type="button" onClick={() => setRestart(true)} style={outlinedButton}>Starta om passet</button>
+              <button type="button" onClick={() => setRestart(true)} style={outlinedButton}>Kör igen</button>
             ) : (
               <button type="button" onClick={() => setShowEdit(true)} style={status === 'published' ? filledButton : outlinedButton}>
                 Redigera pass
@@ -203,7 +253,12 @@ export default function TrainingPage() {
             )}
           </section>
 
-          {pair && (
+          {shownRun && (
+            <button type="button" onClick={() => setResults(true)} style={{ alignSelf: 'center', minHeight: 44, border: 'none', background: 'none', fontFamily: 'inherit', fontSize: 14, fontWeight: 700, color: C.primary, cursor: 'pointer' }}>
+              Visa poäng och anteckningar
+            </button>
+          )}
+          {pair && status !== 'completed' && (
             <Link href={`/planning?week=${mondayOf(pair.date)}&pass=${pair.id}&edit=1`} style={{ alignSelf: 'center', minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 700, color: C.primary, textDecoration: 'none' }}>
               Ändra tid, tränare eller ställ in
             </Link>
@@ -231,13 +286,18 @@ export default function TrainingPage() {
       {restart && (
         <BottomSheet title="Är du säker?" onClose={() => !busy && setRestart(false)}>
           <p style={{ margin: 0, fontSize: 15, fontWeight: 500, color: C.muted }}>
-            Passet blir publicerat igen så att du kan ändra det och köra det en gång till. Poäng från förra gången ligger kvar.
+            Passet startas live en gång till. Poäng och avbockningar från förra gången ligger kvar.
           </p>
-          <button type="button" disabled={busy} onClick={async () => { await setStatus('published'); setRestart(false) }} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
-            {busy ? 'Startar om …' : 'Starta om passet'}
+          <button type="button" disabled={busy} onClick={runAgain} style={{ ...filledButton, opacity: busy ? 0.7 : 1 }}>
+            {busy ? 'Startar …' : 'Kör igen'}
           </button>
           <button type="button" disabled={busy} onClick={() => setRestart(false)} style={{ ...linkButton, alignSelf: 'center' }}>Avbryt</button>
         </BottomSheet>
+      )}
+
+      {results && shownRun && (
+        <ResultsSheet trainingId={trainingId} scores={shownRun.scores}
+          items={blocks.flatMap(b => b.items.map(it => ({ id: it.id, label: label(it) })))} onClose={() => setResults(false)} />
       )}
 
       {copying && (
