@@ -9,7 +9,7 @@ import { useLibrary } from '@/components/library/useLibrary'
 import { isDive } from '@/lib/library/queries'
 import { pairGroups, pairNowLine, pairPasses } from '@/lib/schedule/pairing'
 import { loadChecks, setCheck } from '@/lib/live/checks'
-import { minutesSince } from '@/lib/live/queries'
+import { minutesSince, runningLabel } from '@/lib/live/queries'
 import BottomSheet from '@/components/planning/BottomSheet'
 import ScoreSheet from '@/components/live/ScoreSheet'
 import { C } from '@/components/schedule/ui'
@@ -213,10 +213,15 @@ export default function LiveSessionPage() {
   // ── Render ────────────────────────────────────────────────────────────────
   const checkable = blocks.filter(b => b.block_type !== 'athlete').flatMap(b => b.items)
   const doneCount = checkable.filter(it => checked.has(it.id)).length
-  const allDone = checkable.length > 0 && doneCount === checkable.length
+  const athleteItems = blocks.filter(b => b.block_type === 'athlete').flatMap(b => b.items)
+  const scoredAthleteItems = athleteItems.filter(it => Object.keys(scores[it.id] ?? {}).length > 0).length
+  const progress = checkable.length
+    ? { done: doneCount, total: checkable.length, text: `${doneCount} av ${checkable.length} övningar klara` }
+    : { done: scoredAthleteItems, total: athleteItems.length, text: `Poäng på ${scoredAthleteItems} av ${athleteItems.length} hopp` }
+  const allDone = progress.total > 0 && progress.done === progress.total
   const running = info?.status === 'active'
   const group = pair ? pairGroups(data, pair) : info?.groupName ?? 'Pass'
-  const line = pair ? pairNowLine(data, pair) : info?.groupName ?? ''
+  const line = pair ? pairNowLine(data, pair) : ''
 
   const subText = (it: SessionItem) => {
     const time = it.duration_seconds != null && it.reps == null
@@ -225,8 +230,12 @@ export default function LiveSessionPage() {
   }
 
   return (
-    <div style={{ maxWidth: 560, margin: '0 auto', color: C.text, minHeight: '100%', display: 'flex', flexDirection: 'column' }}>
-      <header style={{ height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.line}` }}>
+    <Portal>
+    <div role="dialog" aria-modal="true" aria-label="Passet pågår" style={{
+      position: 'fixed', inset: 0, zIndex: 100, display: 'flex', flexDirection: 'column',
+      background: C.bg, color: C.text, paddingTop: 'var(--safe-top)',
+    }}>
+      <header style={{ flex: 'none', height: 56, padding: '0 16px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: `1px solid ${C.line}`, width: '100%', maxWidth: 560, margin: '0 auto', boxSizing: 'border-box' }}>
         <button type="button" onClick={() => router.push('/live')} aria-label="Tillbaka till Live" style={iconButton}>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={C.text} strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden><path d="M15 6l-6 6 6 6" /></svg>
         </button>
@@ -234,13 +243,14 @@ export default function LiveSessionPage() {
           <div style={{ fontSize: 16, fontWeight: 800, letterSpacing: '-0.02em' }}>{group}</div>
           {info && (
             <div style={{ fontSize: 13, fontWeight: 700, color: running ? C.primary : C.muted }}>
-              {running ? `Pågår · ${minutesSince(info.startedAt)} min` : 'Avslutat'}
+              {running ? (minutesSince(info.startedAt) < 600 ? `Pågår · ${minutesSince(info.startedAt)} min` : `Inte avslutat · ${runningLabel(info.startedAt)}`) : 'Avslutat'}
             </div>
           )}
         </div>
       </header>
 
-      <div style={{ flex: 1, padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
+      <div style={{ flex: 1, minHeight: 0, overflowY: 'auto' }}>
+      <div style={{ maxWidth: 560, margin: '0 auto', padding: '16px 16px 20px', display: 'flex', flexDirection: 'column', gap: 20 }}>
         {loading ? (
           <p style={{ margin: 0, fontSize: 15, color: C.muted, fontWeight: 500 }}>Hämtar passet …</p>
         ) : !info ? (
@@ -332,13 +342,15 @@ export default function LiveSessionPage() {
           </>
         )}
       </div>
+      </div>
 
       {info && running && (
-        <div style={{ position: 'sticky', bottom: 0, padding: '12px 16px', background: '#fff', borderTop: `1px solid ${C.line}`, display: 'flex', alignItems: 'center', gap: 14 }}>
+        <div style={{ flex: 'none', padding: '12px 16px calc(22px + var(--safe-bottom))', background: '#fff', borderTop: `1px solid ${C.line}` }}>
+        <div style={{ maxWidth: 528, margin: '0 auto', display: 'flex', alignItems: 'center', gap: 14 }}>
           <div style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <span style={{ fontSize: 14, fontWeight: 700 }}>{doneCount} av {checkable.length} övningar klara</span>
+            <span style={{ fontSize: 14, fontWeight: 700 }}>{progress.text}</span>
             <span style={{ height: 6, borderRadius: 3, background: C.primarySoft, display: 'block', overflow: 'hidden' }}>
-              <span style={{ display: 'block', height: '100%', borderRadius: 3, background: C.primary, width: `${checkable.length ? Math.round((doneCount / checkable.length) * 100) : 0}%` }} />
+              <span style={{ display: 'block', height: '100%', borderRadius: 3, background: C.primary, width: `${progress.total ? Math.round((progress.done / progress.total) * 100) : 0}%` }} />
             </span>
           </div>
           <button type="button" onClick={end} disabled={ending} style={{
@@ -346,6 +358,7 @@ export default function LiveSessionPage() {
             fontSize: 16, fontWeight: 700, fontFamily: 'inherit', cursor: 'pointer', border: `1.5px solid ${C.primary}`,
             background: allDone ? C.primary : '#fff', color: allDone ? '#fff' : C.primary, opacity: ending ? 0.7 : 1,
           }}>{ending ? 'Avslutar …' : 'Avsluta pass'}</button>
+        </div>
         </div>
       )}
 
@@ -381,8 +394,10 @@ export default function LiveSessionPage() {
         </>
       )}
     </div>
+    </Portal>
   )
 }
+
 
 interface RawBlock {
   id: string; name: string; sort_order: number | null; block_type: string | null

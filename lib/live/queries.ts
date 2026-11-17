@@ -74,3 +74,12 @@ export async function latestRun(db: SupabaseClient, trainingId: string): Promise
       .map(r => ({ itemId: r.training_block_item_id, athleteId: r.athlete_id, score: Number(r.score), notes: r.notes })),
   }
 }
+
+// "pågår 52 min"; after 10 hours it is a session left open, so show when it started
+export function runningLabel(iso: string) {
+  const min = minutesSince(iso)
+  if (min < 600) return `pågår ${min} min`
+  const d = new Date(iso)
+  const day = d.toLocaleDateString('sv-SE', { weekday: 'long', day: 'numeric', month: 'short' }).replace('.', '')
+  return `startat ${day} ${d.toLocaleTimeString('sv-SE', { hour: '2-digit', minute: '2-digit' })}`
+}

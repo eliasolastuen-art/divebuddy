@@ -10,7 +10,7 @@ import { useViewer } from '@/lib/schedule/viewer'
 import { addDays, DAY_LONG, mondayOf, MONTHS_FULL, parseISO, shortDate, todayISO, weekNumber, weekdayIndex } from '@/lib/schedule/format'
 import { toDateString } from '@/lib/utils/week'
 import { hasMe, pairGroups, pairLayout, pairPasses, pairTime, type PassPair } from '@/lib/schedule/pairing'
-import { activeSessions, minutesSince, type ActiveSession } from '@/lib/live/queries'
+import { activeSessions, runningLabel, type ActiveSession } from '@/lib/live/queries'
 import { useStartLive } from '@/components/schedule/useStartLive'
 import { Segmented } from '@/components/library/GroupTiles'
 import LiveCard from '@/components/live/LiveCard'
@@ -129,7 +129,7 @@ export default function LivePage() {
         const live = running(p)
         return (
           <LiveCard key={p.id} heading={day === today ? 'Idag' : DAY_LONG[weekdayIndex(day)]}
-            top={`${pairTime(p)}${live ? ` · pågår ${minutesSince(live.startedAt)} min` : ''}`}
+            top={`${pairTime(p)}${live ? ` · ${runningLabel(live.startedAt)}` : ''}`}
             group={pairGroups(data, p)}
             title={p.training?.title ?? ''}
             sub={pairLayout(data, p)}
